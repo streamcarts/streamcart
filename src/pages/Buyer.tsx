@@ -16,10 +16,12 @@ import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { ReviewDialog } from "@/components/ReviewDialog";
 
 type Order = {
   id: string;
   product_id: string;
+  seller_id: string;
   service_name: string;
   total_paid: number;
   credentials_email: string;
@@ -27,6 +29,8 @@ type Order = {
   status: string;
   created_at: string;
 };
+
+type Review = { order_id: string; rating: number; comment: string | null };
 
 type Topup = { id: string; amount: number; status: string; created_at: string };
 
@@ -37,6 +41,7 @@ const Buyer = () => {
   const [balance, setBalance] = useState<number | null>(null);
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [topups, setTopups] = useState<Topup[]>([]);
+  const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [amount, setAmount] = useState("");
   const [upiRef, setUpiRef] = useState("");
@@ -54,8 +59,15 @@ const Buyer = () => {
       supabase.from("wallet_topups").select("id,amount,status,created_at").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(10),
     ]);
     setBalance(Number(w.data?.balance ?? 0));
-    setOrders((o.data as Order[]) ?? []);
+    const orderList = (o.data as Order[]) ?? [];
+    setOrders(orderList);
     setTopups((t.data as Topup[]) ?? []);
+    if (orderList.length > 0) {
+      const { data: rData } = await supabase.from("reviews").select("order_id,rating,comment").in("order_id", orderList.map((x) => x.id));
+      const map: Record<string, Review> = {};
+      (rData ?? []).forEach((r: any) => { map[r.order_id] = r; });
+      setReviews(map);
+    }
   };
 
   const submitTopup = async (e: React.FormEvent) => {
@@ -242,6 +254,14 @@ const Buyer = () => {
                       })}>
                         <FileText className="h-3.5 w-3.5 mr-1.5" /> Invoice
                       </Button>
+                      <ReviewDialog
+                        orderId={o.id}
+                        productId={o.product_id}
+                        sellerId={o.seller_id}
+                        serviceName={o.service_name}
+                        existing={reviews[o.id] ?? null}
+                        onDone={load}
+                      />
                     </div>
                   </div>
                 );

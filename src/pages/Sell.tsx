@@ -17,6 +17,8 @@ const Sell = () => {
   const { user, isSeller, refreshRoles } = useAuth();
   const navigate = useNavigate();
   const [biz, setBiz] = useState("");
+  const [productType, setProductType] = useState("OTT");
+  const [experience, setExperience] = useState("");
   const [desc, setDesc] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -35,6 +37,7 @@ const Sell = () => {
     setBusy(true);
     const { error } = await supabase.from("vendor_applications").insert({
       user_id: user!.id, business_name: biz.trim(), description: desc.trim() || null,
+      product_type: productType, experience: experience.trim() || null,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -70,6 +73,23 @@ const Sell = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="biz">Business / vendor name</Label>
                 <Input id="biz" value={biz} onChange={(e) => setBiz(e.target.value)} maxLength={100} required />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Product type</Label>
+                  <Select value={productType} onValueChange={setProductType}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["OTT", "AI Tools", "VPN", "SMM", "Other"].map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="exp">Experience (optional)</Label>
+                  <Input id="exp" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="e.g. 2 years reselling" maxLength={100} />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="desc">What will you sell?</Label>

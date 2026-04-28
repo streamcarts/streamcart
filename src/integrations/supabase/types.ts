@@ -19,6 +19,7 @@ export type Database = {
           admin_commission: number
           buyer_id: string
           created_at: string
+          credential_id: string | null
           credentials_email: string
           credentials_password: string
           id: string
@@ -33,6 +34,7 @@ export type Database = {
           admin_commission: number
           buyer_id: string
           created_at?: string
+          credential_id?: string | null
           credentials_email: string
           credentials_password: string
           id?: string
@@ -47,6 +49,7 @@ export type Database = {
           admin_commission?: number
           buyer_id?: string
           created_at?: string
+          credential_id?: string | null
           credentials_email?: string
           credentials_password?: string
           id?: string
@@ -67,8 +70,59 @@ export type Database = {
           },
         ]
       }
+      product_credentials: {
+        Row: {
+          access_link: string | null
+          assigned_at: string | null
+          assigned_order_id: string | null
+          created_at: string
+          cred_email: string
+          cred_password: string
+          id: string
+          notes: string | null
+          product_id: string
+          seller_id: string
+          status: Database["public"]["Enums"]["credential_status"]
+        }
+        Insert: {
+          access_link?: string | null
+          assigned_at?: string | null
+          assigned_order_id?: string | null
+          created_at?: string
+          cred_email: string
+          cred_password: string
+          id?: string
+          notes?: string | null
+          product_id: string
+          seller_id: string
+          status?: Database["public"]["Enums"]["credential_status"]
+        }
+        Update: {
+          access_link?: string | null
+          assigned_at?: string | null
+          assigned_order_id?: string | null
+          created_at?: string
+          cred_email?: string
+          cred_password?: string
+          id?: string
+          notes?: string | null
+          product_id?: string
+          seller_id?: string
+          status?: Database["public"]["Enums"]["credential_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_credentials_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
+          avg_rating: number
           base_price: number
           category: Database["public"]["Enums"]["product_category"]
           created_at: string
@@ -79,6 +133,8 @@ export type Database = {
           duration: string | null
           id: string
           image_url: string | null
+          is_active: boolean
+          rating_count: number
           seller_id: string
           service_name: string
           status: Database["public"]["Enums"]["product_status"]
@@ -86,6 +142,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avg_rating?: number
           base_price: number
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string
@@ -96,6 +153,8 @@ export type Database = {
           duration?: string | null
           id?: string
           image_url?: string | null
+          is_active?: boolean
+          rating_count?: number
           seller_id: string
           service_name: string
           status?: Database["public"]["Enums"]["product_status"]
@@ -103,6 +162,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avg_rating?: number
           base_price?: number
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string
@@ -113,6 +173,8 @@ export type Database = {
           duration?: string | null
           id?: string
           image_url?: string | null
+          is_active?: boolean
+          rating_count?: number
           seller_id?: string
           service_name?: string
           status?: Database["public"]["Enums"]["product_status"]
@@ -148,6 +210,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          buyer_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string
+          rating: number
+          seller_id: string
+        }
+        Insert: {
+          buyer_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id: string
+          rating: number
+          seller_id: string
+        }
+        Update: {
+          buyer_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          rating?: number
+          seller_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -174,7 +269,9 @@ export type Database = {
           business_name: string
           created_at: string
           description: string | null
+          experience: string | null
           id: string
+          product_type: string | null
           reviewed_at: string | null
           status: Database["public"]["Enums"]["application_status"]
           user_id: string
@@ -183,7 +280,9 @@ export type Database = {
           business_name: string
           created_at?: string
           description?: string | null
+          experience?: string | null
           id?: string
+          product_type?: string | null
           reviewed_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           user_id: string
@@ -192,7 +291,9 @@ export type Database = {
           business_name?: string
           created_at?: string
           description?: string | null
+          experience?: string | null
           id?: string
+          product_type?: string | null
           reviewed_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           user_id?: string
@@ -307,6 +408,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "seller" | "buyer"
       application_status: "pending" | "approved" | "rejected"
+      credential_status: "available" | "assigned"
       order_status: "completed" | "refunded"
       product_category: "OTT" | "AI Tools" | "VPN" | "SMM" | "Other"
       product_status: "hidden" | "approved" | "rejected"
@@ -441,6 +543,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "seller", "buyer"],
       application_status: ["pending", "approved", "rejected"],
+      credential_status: ["available", "assigned"],
       order_status: ["completed", "refunded"],
       product_category: ["OTT", "AI Tools", "VPN", "SMM", "Other"],
       product_status: ["hidden", "approved", "rejected"],

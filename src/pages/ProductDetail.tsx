@@ -23,6 +23,8 @@ type Product = {
   stock: number;
   seller_id: string;
   created_at: string;
+  avg_rating: number;
+  rating_count: number;
 };
 
 type SellerInfo = { display_name: string | null; created_at: string; orders_count: number };
@@ -43,7 +45,7 @@ const ProductDetail = () => {
     (async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at")
+        .select("id,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count")
         .eq("id", id)
         .eq("status", "approved")
         .maybeSingle();
@@ -108,10 +110,11 @@ const ProductDetail = () => {
     );
   }
 
-  // Deterministic synthetic rating from product id (4.6–4.95)
+  // Real ratings from DB; fall back to subtle synthetic when no reviews yet
   const seed = Array.from(p.id).reduce((s, c) => s + c.charCodeAt(0), 0);
-  const rating = (4.6 + ((seed % 35) / 100)).toFixed(2);
-  const reviewCount = 40 + (seed % 260);
+  const hasReal = (p.rating_count ?? 0) > 0;
+  const rating = hasReal ? Number(p.avg_rating).toFixed(2) : (4.6 + ((seed % 35) / 100)).toFixed(2);
+  const reviewCount = hasReal ? p.rating_count : 0;
   const sellerYear = new Date(seller?.created_at ?? p.created_at).getFullYear();
 
   return (
@@ -147,7 +150,7 @@ const ProductDetail = () => {
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 <span className="font-semibold">{rating}</span>
-                <span className="text-muted-foreground">({reviewCount} reviews)</span>
+                <span className="text-muted-foreground">{hasReal ? `(${reviewCount} review${reviewCount === 1 ? "" : "s"})` : "(new)"}</span>
               </div>
               <div className="h-4 w-px bg-border" />
               <div className="flex items-center gap-1.5 text-muted-foreground">
