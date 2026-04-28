@@ -968,19 +968,14 @@ export type Database = {
         Args: { _order_id: string; _reason?: string }
         Returns: string
       }
-      purchase_product:
-        | {
-            Args: { _coupon_code?: string; _product_id: string }
-            Returns: string
-          }
-        | {
-            Args: {
-              _affiliate_slug?: string
-              _coupon_code?: string
-              _product_id: string
-            }
-            Returns: string
-          }
+      purchase_product: {
+        Args: {
+          _affiliate_slug?: string
+          _coupon_code?: string
+          _product_id: string
+        }
+        Returns: string
+      }
       reject_pending_order: {
         Args: { _id: string; _note?: string }
         Returns: undefined
