@@ -49,16 +49,19 @@ const Buyer = () => {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const [upiId, setUpiId] = useState<string>("streamcart@upi");
 
   useEffect(() => { document.title = "Buyer dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
 
   const load = async () => {
-    const [w, o, t] = await Promise.all([
+    const [w, o, t, s] = await Promise.all([
       supabase.from("wallets").select("balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("orders").select("*").eq("buyer_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("id,amount,status,created_at").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(10),
+      supabase.from("platform_settings").select("upi_id").eq("id", 1).maybeSingle(),
     ]);
+    if (s.data?.upi_id) setUpiId(s.data.upi_id);
     setBalance(Number(w.data?.balance ?? 0));
     const orderList = (o.data as Order[]) ?? [];
     setOrders(orderList);
