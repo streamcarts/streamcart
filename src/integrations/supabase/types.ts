@@ -341,9 +341,11 @@ export type Database = {
           admin_note: string | null
           affiliate_slug: string | null
           amount: number
+          auto_match_score: number
           buyer_id: string
           coupon_code: string | null
           created_at: string
+          expires_at: string
           id: string
           items: Json
           order_ids: string[] | null
@@ -351,6 +353,7 @@ export type Database = {
           reviewed_by: string | null
           screenshot_path: string
           status: string
+          txn_id: string | null
           updated_at: string
           upi_reference: string | null
         }
@@ -358,9 +361,11 @@ export type Database = {
           admin_note?: string | null
           affiliate_slug?: string | null
           amount: number
+          auto_match_score?: number
           buyer_id: string
           coupon_code?: string | null
           created_at?: string
+          expires_at?: string
           id?: string
           items: Json
           order_ids?: string[] | null
@@ -368,6 +373,7 @@ export type Database = {
           reviewed_by?: string | null
           screenshot_path: string
           status?: string
+          txn_id?: string | null
           updated_at?: string
           upi_reference?: string | null
         }
@@ -375,9 +381,11 @@ export type Database = {
           admin_note?: string | null
           affiliate_slug?: string | null
           amount?: number
+          auto_match_score?: number
           buyer_id?: string
           coupon_code?: string | null
           created_at?: string
+          expires_at?: string
           id?: string
           items?: Json
           order_ids?: string[] | null
@@ -385,6 +393,7 @@ export type Database = {
           reviewed_by?: string | null
           screenshot_path?: string
           status?: string
+          txn_id?: string | null
           updated_at?: string
           upi_reference?: string | null
         }
@@ -955,6 +964,8 @@ export type Database = {
       approve_topup: { Args: { _topup_id: string }; Returns: undefined }
       approve_vendor: { Args: { _app_id: string }; Returns: undefined }
       approve_withdrawal: { Args: { _wd_id: string }; Returns: undefined }
+      cancel_expired_pending_orders: { Args: never; Returns: number }
+      cancel_my_pending_order: { Args: { _id: string }; Returns: undefined }
       gen_referral_code: { Args: { _seed: string }; Returns: string }
       has_role: {
         Args: {
@@ -983,6 +994,18 @@ export type Database = {
       set_user_ban: {
         Args: { _banned: boolean; _reason?: string; _user_id: string }
         Returns: undefined
+      }
+      submit_pending_order: {
+        Args: {
+          _affiliate_slug?: string
+          _amount: number
+          _coupon_code?: string
+          _items: Json
+          _screenshot_path: string
+          _txn_id: string
+          _upi_reference?: string
+        }
+        Returns: string
       }
       track_affiliate_click: {
         Args: {
