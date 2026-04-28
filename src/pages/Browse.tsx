@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
+import { ProductCard, ratingFor } from "@/components/ProductCard";
 import { inr } from "@/lib/format";
-import { useCart } from "@/lib/cart";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ShoppingCart, Search, Star, Filter, X, BadgeCheck } from "lucide-react";
+import { Search, Star, Filter, X } from "lucide-react";
 
 type Product = {
   id: string;
