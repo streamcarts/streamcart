@@ -21,6 +21,9 @@ import Sell from "./pages/Sell.tsx";
 import Seller from "./pages/Seller.tsx";
 import Admin from "./pages/Admin.tsx";
 import Affiliate from "./pages/Affiliate.tsx";
+import Terms from "./pages/Terms.tsx";
+import Privacy from "./pages/Privacy.tsx";
+import Refund from "./pages/Refund.tsx";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +54,9 @@ const App = () => (
               <Route path="/sell" element={<RequireAuth><Sell /></RequireAuth>} />
               <Route path="/seller" element={<RequireAuth role="seller"><Seller /></RequireAuth>} />
               <Route path="/admin" element={<RequireAuth role="admin"><Admin /></RequireAuth>} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/refund" element={<Refund />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>

@@ -46,9 +46,9 @@ export const Footer = () => {
         ]} />
 
         <FooterCol title="Legal" links={[
-          { label: "Terms of service", to: "#" },
-          { label: "Privacy policy", to: "#" },
-          { label: "Refund policy", to: "#" },
+          { label: "Terms of service", to: "/terms" },
+          { label: "Privacy policy", to: "/privacy" },
+          { label: "Refund policy", to: "/refund" },
         ]} />
       </div>
 

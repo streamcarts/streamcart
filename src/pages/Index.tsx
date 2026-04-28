@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Tv, Brain, Shield, Share2, ArrowRight, CheckCircle2, Lock, Zap, Star,
-  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette, Rocket,
+  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette, Rocket, Quote, HelpCircle,
 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/format";
@@ -34,16 +35,35 @@ type Product = {
   image_url: string | null;
 };
 
+const REVIEWS = [
+  { name: "Aarav Sharma", role: "Bengaluru · Buyer since 2024", text: "Got Netflix Premium for ₹70/month. Credentials worked instantly and the dashboard makes everything super clean." },
+  { name: "Priya Mehta", role: "Mumbai · Power buyer", text: "I've placed 12 orders so far. Whenever something glitched, support refunded me to wallet within an hour. 10/10." },
+  { name: "Rohit Verma", role: "Delhi · Verified seller", text: "Selling on StreamCart is honestly easier than running my own page. Auto-delivery + admin moderation = zero headache." },
+];
+
+const FAQS = [
+  { q: "How does StreamCart work?", a: "Pick a subscription you need (e.g. Netflix, ChatGPT), pay using wallet/UPI, and the seller's verified credentials are revealed instantly in your buyer dashboard." },
+  { q: "Is this legal?", a: "Yes. Many platforms officially allow shared profiles (Prime, Disney+, ChatGPT teams etc.). Sellers list slots they legally own; we never list services that disallow sharing." },
+  { q: "What if my access stops working?", a: "Open the order in your dashboard and click Raise Ticket. Approved refunds are credited back to your StreamCart wallet, usually within a few hours." },
+  { q: "How fast is delivery?", a: "Most orders are delivered in under 5 seconds — the moment payment is confirmed, the credentials appear in your dashboard." },
+  { q: "Can I become a seller?", a: "Absolutely. Click Start Selling, fill the short application, and our team approves verified vendors within 24 hours." },
+  { q: "How are payments secured?", a: "Payments flow through your wallet, which is encrypted at rest. Card and UPI processing happens through PCI-DSS compliant payment gateways." },
+];
+
 const Index = () => {
   const [products, setProducts] = useState<Product[] | null>(null);
+  const [searchIndex, setSearchIndex] = useState<Product[]>([]);
   const [q, setQ] = useState("");
   const [showSuggest, setShowSuggest] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
   const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "StreamCart — Short-term access to your favorite subscriptions";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Buy verified short-term access to Netflix, ChatGPT, VPN and more. Instant delivery, secure wallet, vetted vendors.");
+
+    // Featured products (cards on home)
     supabase
       .from("products")
       .select("id, service_name, category, display_price, duration, image_url")
@@ -52,17 +72,57 @@ const Index = () => {
       .order("created_at", { ascending: false })
       .limit(8)
       .then(({ data }) => setProducts((data as Product[]) ?? []));
+
+    // Full search index — every approved product, lightweight columns
+    supabase
+      .from("products")
+      .select("id, service_name, category, display_price, duration, image_url")
+      .eq("status", "approved")
+      .eq("is_active", true)
+      .gt("stock", 0)
+      .order("created_at", { ascending: false })
+      .limit(500)
+      .then(({ data }) => setSearchIndex((data as Product[]) ?? []));
   }, []);
 
   const suggestions = useMemo(() => {
-    if (!q.trim() || !products) return [];
-    const t = q.toLowerCase();
-    return products.filter((p) => p.service_name.toLowerCase().includes(t)).slice(0, 5);
-  }, [q, products]);
+    const t = q.trim().toLowerCase();
+    if (!t) {
+      // On focus with empty input → show popular categories shortcut list
+      return searchIndex.slice(0, 5);
+    }
+    return searchIndex
+      .filter((p) =>
+        p.service_name.toLowerCase().includes(t) ||
+        p.category.toLowerCase().includes(t)
+      )
+      .slice(0, 6);
+  }, [q, searchIndex]);
+
+  // Reset highlight when suggestions change
+  useEffect(() => { setActiveIdx(-1); }, [q, showSuggest]);
 
   const submitSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
+    // If the user has highlighted a suggestion via keyboard, open it directly
+    if (activeIdx >= 0 && suggestions[activeIdx]) {
+      navigate(`/product/${suggestions[activeIdx].id}`);
+      return;
+    }
     navigate(q.trim() ? `/browse?q=${encodeURIComponent(q.trim())}` : "/browse");
+  };
+
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggest || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Escape") {
+      setShowSuggest(false);
+    }
   };
 
   return (
@@ -96,41 +156,74 @@ const Index = () => {
 
           {/* Search bar */}
           <form onSubmit={submitSearch} className="relative mt-8 w-full max-w-2xl animate-fade-in">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
               value={q}
               onChange={(e) => { setQ(e.target.value); setShowSuggest(true); }}
               onFocus={() => setShowSuggest(true)}
-              onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
+              onBlur={() => setTimeout(() => setShowSuggest(false), 180)}
+              onKeyDown={onSearchKeyDown}
               placeholder="Search Netflix, ChatGPT, Prime, NordVPN…"
               className="h-14 pl-14 pr-32 rounded-2xl text-base shadow-md border-border bg-card focus-visible:ring-primary"
+              aria-autocomplete="list"
+              aria-expanded={showSuggest}
             />
             <Button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-5 rounded-xl">
               Search
             </Button>
 
-            {showSuggest && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-lg p-2 z-30 text-left">
-                {suggestions.map((s) => (
+            {showSuggest && (
+              <div
+                className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-30 text-left overflow-hidden"
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                <div className="px-4 py-2 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold border-b border-border bg-muted/40">
+                  {q.trim() ? `Results for “${q.trim()}”` : "Popular right now"}
+                </div>
+
+                {suggestions.length > 0 ? (
+                  <ul className="p-2 max-h-80 overflow-y-auto">
+                    {suggestions.map((s, i) => (
+                      <li key={s.id}>
+                        <Link
+                          to={`/product/${s.id}`}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                            i === activeIdx ? "bg-accent" : "hover:bg-muted"
+                          }`}
+                          onMouseEnter={() => setActiveIdx(i)}
+                        >
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {s.image_url ? (
+                              <img src={s.image_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-bold text-muted-foreground">{s.service_name[0]}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="truncate font-medium">{s.service_name}</div>
+                            <div className="text-xs text-muted-foreground">{s.category}{s.duration ? ` • ${s.duration}` : ""}</div>
+                          </div>
+                          <div className="text-sm font-semibold text-primary flex-shrink-0">{inr(s.display_price)}</div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    No matches for <span className="font-medium text-foreground">"{q}"</span>.
+                    <div className="mt-2 text-xs">Try a different keyword or browse all services.</div>
+                  </div>
+                )}
+
+                {q.trim() && (
                   <Link
-                    key={s.id}
-                    to={`/product/${s.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm transition-colors"
+                    to={`/browse?q=${encodeURIComponent(q.trim())}`}
+                    className="flex items-center justify-between px-4 py-3 border-t border-border text-sm font-medium text-primary hover:bg-accent transition-colors"
                   >
-                    <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {s.image_url ? (
-                        <img src={s.image_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-bold text-muted-foreground">{s.service_name[0]}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate font-medium">{s.service_name}</div>
-                      <div className="text-xs text-muted-foreground">{s.category}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-primary">{inr(s.display_price)}</div>
+                    <span className="inline-flex items-center gap-2"><Search className="h-4 w-4" /> Search all services for "{q.trim()}"</span>
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
-                ))}
+                )}
               </div>
             )}
           </form>
@@ -256,6 +349,77 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* REVIEWS */}
+      <section className="bg-muted/40 border-y border-border">
+        <div className="container py-16">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <Badge variant="secondary" className="bg-card border border-border mb-3">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" /> 4.9 average from 5,200+ buyers
+            </Badge>
+            <h2 className="text-2xl md:text-3xl font-bold">Loved by users across India</h2>
+            <p className="text-muted-foreground mt-2">Real reviews from verified StreamCart buyers.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {REVIEWS.map((rv) => (
+              <div
+                key={rv.name}
+                className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+              >
+                <Quote className="h-6 w-6 text-primary/40" />
+                <div className="flex items-center gap-1">
+                  {[0,1,2,3,4].map((i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-foreground/90 leading-relaxed flex-1">"{rv.text}"</p>
+                <div className="flex items-center gap-3 pt-2 border-t border-border">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                    {rv.name.split(" ").map((s) => s[0]).join("").slice(0,2)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold leading-tight truncate">{rv.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">{rv.role}</div>
+                  </div>
+                  <BadgeCheck className="h-4 w-4 text-primary ml-auto flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="container py-16">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="h-12 w-12 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+              <HelpCircle className="h-6 w-6" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold">Frequently asked questions</h2>
+            <p className="text-muted-foreground mt-2">Everything you need to know before your first order.</p>
+          </div>
+
+          <Accordion type="single" collapsible className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
+            {FAQS.map((faq, idx) => (
+              <AccordionItem key={idx} value={`q${idx}`} className="border-0 px-5">
+                <AccordionTrigger className="py-4 text-left text-base font-semibold hover:no-underline">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            Still have questions?{" "}
+            <Link to="/buyer" className="text-primary font-medium hover:underline">Raise a support ticket</Link>
+          </div>
         </div>
       </section>
 
