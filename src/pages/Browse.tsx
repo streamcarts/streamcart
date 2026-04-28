@@ -30,7 +30,6 @@ type SortKey = "newest" | "price_asc" | "price_desc" | "popular";
 
 const Browse = () => {
   const [params, setParams] = useSearchParams();
-  const { add } = useCart();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,11 +64,8 @@ const Browse = () => {
     setLoading(false);
   };
 
-  // Deterministic synthetic rating per product
-  const ratingFor = (id: string) => {
-    const seed = Array.from(id).reduce((s, c) => s + c.charCodeAt(0), 0);
-    return 4.6 + ((seed % 35) / 100);
-  };
+  // Deterministic synthetic rating per product (shared with ProductCard)
+  // ratingFor imported from ProductCard
 
   const filtered = useMemo(() => {
     let list = products
