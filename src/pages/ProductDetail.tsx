@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { inr } from "@/lib/format";
 import { toast } from "sonner";
 import { Loader2, ShoppingCart, Zap, Lock, BadgeCheck, Star, Users, Clock, Package, ChevronLeft, ShieldCheck } from "lucide-react";
+import { ProductReviews } from "@/components/ProductReviews";
 
 type Product = {
   id: string;
@@ -226,6 +227,14 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        <ProductReviews
+          productId={p.id}
+          sellerId={p.seller_id}
+          serviceName={p.service_name}
+          avgRating={Number(p.avg_rating || 0)}
+          ratingCount={p.rating_count || 0}
+        />
       </main>
       <Footer />
     </div>

@@ -34,8 +34,6 @@ export const Footer = () => {
         </div>
 
         <FooterCol title="Marketplace" links={[
-          { label: "Browse services", to: "/browse" },
-          { label: "Become a seller", to: "/sell" },
           { label: "Affiliate program", to: "/affiliate" },
         ]} />
 
