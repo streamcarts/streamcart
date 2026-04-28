@@ -153,7 +153,7 @@ const Buyer = () => {
               <form onSubmit={submitTopup} className="space-y-4">
                 <div className="rounded-lg bg-muted p-4 text-sm">
                   <div className="font-semibold mb-1">Pay to UPI:</div>
-                  <code className="text-primary font-mono">streamcart@upi</code>
+                  <code className="text-primary font-mono">{upiId}</code>
                   <p className="text-muted-foreground mt-2 text-xs">After paying, upload the screenshot below. Admin will credit your wallet within minutes.</p>
                 </div>
                 <div className="space-y-1.5">
