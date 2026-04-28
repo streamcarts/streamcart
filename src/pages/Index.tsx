@@ -35,13 +35,16 @@ type Product = {
   image_url: string | null;
 };
 
-const REVIEWS = [
+type Review = { name: string; role: string; text: string };
+type Faq = { q: string; a: string };
+
+const reviewsList: Review[] = [
   { name: "Aarav Sharma", role: "Bengaluru · Buyer since 2024", text: "Got Netflix Premium for ₹70/month. Credentials worked instantly and the dashboard makes everything super clean." },
   { name: "Priya Mehta", role: "Mumbai · Power buyer", text: "I've placed 12 orders so far. Whenever something glitched, support refunded me to wallet within an hour. 10/10." },
   { name: "Rohit Verma", role: "Delhi · Verified seller", text: "Selling on StreamCart is honestly easier than running my own page. Auto-delivery + admin moderation = zero headache." },
 ];
 
-const FAQS = [
+const faqsList: Faq[] = [
   { q: "How does StreamCart work?", a: "Pick a subscription you need (e.g. Netflix, ChatGPT), pay using wallet/UPI, and the seller's verified credentials are revealed instantly in your buyer dashboard." },
   { q: "Is this legal?", a: "Yes. Many platforms officially allow shared profiles (Prime, Disney+, ChatGPT teams etc.). Sellers list slots they legally own; we never list services that disallow sharing." },
   { q: "What if my access stops working?", a: "Open the order in your dashboard and click Raise Ticket. Approved refunds are credited back to your StreamCart wallet, usually within a few hours." },
@@ -364,7 +367,7 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-5">
-            {REVIEWS.map((rv) => (
+            {reviewsList.map((rv) => (
               <div
                 key={rv.name}
                 className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
@@ -404,7 +407,7 @@ const Index = () => {
           </div>
 
           <Accordion type="single" collapsible className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {FAQS.map((faq, idx) => (
+            {faqsList.map((faq, idx) => (
               <AccordionItem key={idx} value={`q${idx}`} className="border-0 px-5">
                 <AccordionTrigger className="py-4 text-left text-base font-semibold hover:no-underline">
                   {faq.q}
