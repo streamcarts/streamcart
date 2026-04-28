@@ -21,13 +21,12 @@ Deno.serve(async (req) => {
     const anon = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: cerr } = await anon.auth.getClaims(token);
-    if (cerr || !claims?.claims?.sub) {
+    const { data: userData, error: uerr } = await anon.auth.getUser();
+    if (uerr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const userId = claims.claims.sub;
-    const userEmail = claims.claims.email ?? "";
+    const userId = userData.user.id;
+    const userEmail = userData.user.email ?? "";
 
     const body = await req.json().catch(() => ({}));
     const purpose = body.purpose === "checkout" ? "checkout" : "topup";
