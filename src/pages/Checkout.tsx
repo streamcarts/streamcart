@@ -208,8 +208,36 @@ const Checkout = () => {
                 </div>
               </div>
               <Button className="w-full" size="lg" onClick={placeOrder} disabled={processing || insufficient || balance === null}>
-                {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing…</> : <>Pay {inr(total)} <ArrowRight className="ml-2 h-4 w-4" /></>}
+                {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing…</> : <>Pay {inr(total)} from wallet <ArrowRight className="ml-2 h-4 w-4" /></>}
               </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                size="lg"
+                disabled={processing || total <= 0}
+                onClick={async () => {
+                  setProcessing(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke("urpay-create", {
+                      body: {
+                        purpose: "checkout",
+                        amount: total,
+                        metadata: { items: items.map((i: any) => ({ id: i.id, qty: i.qty })), coupon: couponCode || null },
+                      },
+                    });
+                    if (error) throw error;
+                    if (!data?.payment_url) throw new Error("No payment URL");
+                    window.location.href = data.payment_url;
+                  } catch (e: any) {
+                    toast.error(e.message || "UrPay failed to start");
+                  } finally {
+                    setProcessing(false);
+                  }
+                }}
+              >
+                Pay {inr(total)} with UrPay
+              </Button>
+              {insufficient && <p className="text-xs text-muted-foreground text-center">Wallet balance too low — pay with UrPay above.</p>}
               <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
                 <Lock className="h-3 w-3" /> 256-bit secure checkout
               </p>
