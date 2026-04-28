@@ -367,7 +367,7 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-5">
-            {REVIEWS.map((rv) => (
+            {reviewsList.map((rv) => (
               <div
                 key={rv.name}
                 className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
@@ -407,7 +407,7 @@ const Index = () => {
           </div>
 
           <Accordion type="single" collapsible className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {FAQS.map((faq, idx) => (
+            {faqsList.map((faq, idx) => (
               <AccordionItem key={idx} value={`q${idx}`} className="border-0 px-5">
                 <AccordionTrigger className="py-4 text-left text-base font-semibold hover:no-underline">
                   {faq.q}
