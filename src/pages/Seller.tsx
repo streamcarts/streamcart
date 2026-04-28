@@ -19,6 +19,7 @@ import { inr, calcDisplayPrice } from "@/lib/format";
 import { toast } from "sonner";
 import { Loader2, Plus, Wallet, Banknote, Package, Pencil, Trash2, Key, ShoppingBag, TrendingUp, Star, BarChart3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
+import { useCategories } from "@/lib/categories";
 
 type Product = {
   id: string; service_name: string; description: string | null; category: string;
@@ -29,7 +30,7 @@ type Order = { id: string; service_name: string; seller_earning: number; total_p
 type Withdrawal = { id: string; amount: number; status: string; created_at: string; upi_id: string };
 type Credential = { id: string; product_id: string; cred_email: string; cred_password: string; status: string; created_at: string; assigned_at: string | null };
 
-const CATS = ["OTT", "AI Tools", "VPN", "SMM", "Other"];
+// Categories now come from product_categories table via useCategories()
 
 const Seller = () => {
   const { user } = useAuth();
@@ -361,6 +362,7 @@ const DeleteProductButton = ({ product, onDone }: { product: Product; onDone: ()
 
 const ProductDialog = ({ product, onDone, userId }: { product?: Product; onDone: () => void; userId: string }) => {
   const editing = !!product;
+  const { cats } = useCategories({ activeOnly: true });
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(product?.service_name ?? "");
   const [desc, setDesc] = useState(product?.description ?? "");
@@ -372,10 +374,13 @@ const ProductDialog = ({ product, onDone, userId }: { product?: Product; onDone:
   const [credPwd, setCredPwd] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const minPrice = cats.find(c => c.name === cat)?.min_price ?? 0;
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const b = parseFloat(base);
     if (!name.trim() || !b || b <= 0) return toast.error("Fill required fields");
+    if (b < minPrice) return toast.error(`Minimum price for ${cat} is ₹${minPrice}`);
     if (!editing && (!credEmail || !credPwd)) return toast.error("Add a starter credential to enable auto-delivery");
     setBusy(true);
 
@@ -429,7 +434,9 @@ const ProductDialog = ({ product, onDone, userId }: { product?: Product; onDone:
               <Label>Category</Label>
               <Select value={cat} onValueChange={setCat}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{CATS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  {(cats.length ? cats.map(c => c.name) : [cat]).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
@@ -443,8 +450,11 @@ const ProductDialog = ({ product, onDone, userId }: { product?: Product; onDone:
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Base price (₹)</Label>
-              <Input type="number" step="0.01" min="1" value={base} onChange={(e) => setBase(e.target.value)} required />
+              <Label>Base price (₹) {minPrice > 0 && <span className="text-xs text-muted-foreground font-normal">— min ₹{minPrice}</span>}</Label>
+              <Input type="number" step="0.01" min={minPrice || 1} value={base} onChange={(e) => setBase(e.target.value)} required />
+              {parseFloat(base) > 0 && parseFloat(base) < minPrice && (
+                <p className="text-xs text-destructive">Price must be at least ₹{minPrice} for {cat}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Sells at (auto +10%)</Label>
