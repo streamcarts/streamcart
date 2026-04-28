@@ -17,6 +17,8 @@ const Sell = () => {
   const { user, isSeller, refreshRoles } = useAuth();
   const navigate = useNavigate();
   const [biz, setBiz] = useState("");
+  const [productType, setProductType] = useState("OTT");
+  const [experience, setExperience] = useState("");
   const [desc, setDesc] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -35,6 +37,7 @@ const Sell = () => {
     setBusy(true);
     const { error } = await supabase.from("vendor_applications").insert({
       user_id: user!.id, business_name: biz.trim(), description: desc.trim() || null,
+      product_type: productType, experience: experience.trim() || null,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
