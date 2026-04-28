@@ -29,6 +29,7 @@ const Admin = () => {
   const [vapps, setVapps] = useState<any[]>([]);
   const [pendingProducts, setPendingProducts] = useState<any[]>([]);
   const [topups, setTopups] = useState<any[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
   const [wds, setWds] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -45,7 +46,7 @@ const Admin = () => {
 
   const loadAll = async () => {
     setLoading(true);
-    const [v, p, t, w, oRes, profs, roles, prods, refs, cps, tks, ans, ffs, st] = await Promise.all([
+    const [v, p, t, w, oRes, profs, roles, prods, refs, cps, tks, ans, ffs, st, po] = await Promise.all([
       supabase.from("vendor_applications").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("*").order("created_at", { ascending: false }),
@@ -60,11 +61,13 @@ const Admin = () => {
       supabase.from("announcements").select("*").order("created_at", { ascending: false }),
       supabase.from("fraud_flags").select("*").eq("resolved", false).order("created_at", { ascending: false }),
       supabase.from("platform_settings").select("*").maybeSingle(),
+      supabase.from("pending_orders").select("*").order("created_at", { ascending: false }),
     ]);
 
     setVapps(v.data ?? []);
     setPendingProducts((p.data ?? []).filter((x: any) => x.status === "hidden"));
     setTopups((t.data ?? []).filter((x: any) => x.status === "pending"));
+    setPendingOrders((po.data ?? []).filter((x: any) => x.status === "pending"));
     setWds((w.data ?? []).filter((x: any) => x.status === "pending"));
     setAllOrders(oRes.data ?? []);
     setAllUsers(profs.data ?? []);
@@ -183,8 +186,23 @@ const Admin = () => {
     const { data } = await supabase.storage.from("topup-screenshots").createSignedUrl(path, 60);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
+  const viewPaymentScreenshot = async (path: string) => {
+    const { data } = await supabase.storage.from("payment-screenshots").createSignedUrl(path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+  const approvePendingOrder = async (id: string) => {
+    const { error } = await supabase.rpc("approve_pending_order", { _id: id, _note: null });
+    if (error) return toast.error(error.message);
+    toast.success("Order approved & credentials delivered"); loadAll();
+  };
+  const rejectPendingOrder = async (id: string) => {
+    const note = window.prompt("Reason for rejection (optional):") || null;
+    const { error } = await supabase.rpc("reject_pending_order", { _id: id, _note: note });
+    if (error) return toast.error(error.message);
+    toast.success("Order rejected"); loadAll();
+  };
 
-  const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length;
+  const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length + pendingOrders.length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
