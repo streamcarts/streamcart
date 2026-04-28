@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Tv, Brain, Shield, Share2, ArrowRight, CheckCircle2, Lock, Zap, Star,
-  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette,
+  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette, Rocket,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -218,8 +218,17 @@ const Index = () => {
         {products === null ? (
           <ProductGridSkeleton count={8} />
         ) : products.length === 0 ? (
-          <div className="card-elevated p-12 text-center text-muted-foreground">
-            No products yet — be the first vendor!
+          <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
+            <div className="h-14 w-14 mx-auto rounded-2xl bg-accent text-accent-foreground flex items-center justify-center mb-4">
+              <Rocket className="h-6 w-6" />
+            </div>
+            <h3 className="text-lg font-semibold">No listings yet. Start selling and earn now 🚀</h3>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-md mx-auto">
+              Be one of the first verified vendors on StreamCart and reach 19,000+ ready buyers.
+            </p>
+            <Button asChild size="lg" className="mt-5 rounded-xl font-semibold">
+              <Link to="/sell">Become a Seller</Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -228,16 +237,19 @@ const Index = () => {
         )}
       </section>
 
-      {/* TRUST */}
+      {/* TRUST / WHY US */}
       <section className="container pb-16">
         <div className="grid md:grid-cols-3 gap-5">
           {[
-            { icon: Zap, title: "Instant delivery", desc: "Credentials revealed in your dashboard the moment you pay." },
-            { icon: Lock, title: "Wallet protected", desc: "Funds stay in your wallet until you choose what to buy." },
-            { icon: CheckCircle2, title: "Vetted vendors", desc: "Every seller and listing is reviewed by our admin team." },
+            { icon: Zap, title: "Instant delivery", desc: "Credentials revealed in your dashboard the moment you pay.", tone: "bg-amber-100 text-amber-700" },
+            { icon: Lock, title: "Wallet protected", desc: "Funds stay in your wallet until you choose what to buy.", tone: "bg-sky-100 text-sky-700" },
+            { icon: CheckCircle2, title: "Vetted vendors", desc: "Every seller and listing is reviewed by our admin team.", tone: "bg-emerald-100 text-emerald-700" },
           ].map((f) => (
-            <div key={f.title} className="bg-card border border-border rounded-2xl p-6 transition-all hover:shadow-md hover:border-primary/30">
-              <div className="h-11 w-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center mb-4">
+            <div
+              key={f.title}
+              className="bg-card border border-border rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+            >
+              <div className={`h-12 w-12 rounded-2xl ${f.tone} flex items-center justify-center mb-4 transition-transform duration-200 hover:scale-110`}>
                 <f.icon className="h-5 w-5" />
               </div>
               <div className="font-semibold mb-1">{f.title}</div>
@@ -263,6 +275,21 @@ const Stat = ({ icon: Icon, label, value }: { icon: any; label: string; value: s
     </div>
   </div>
 );
+
+const TrustBadge = ({ icon: Icon, label, sub, tone }: { icon: any; label: string; sub: string; tone: "primary" | "amber" }) => {
+  const toneClass = tone === "amber" ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary";
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`h-10 w-10 rounded-xl ${toneClass} flex items-center justify-center flex-shrink-0`}>
+        <Icon className={`h-5 w-5 ${tone === "amber" ? "fill-amber-400" : ""}`} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-semibold leading-tight truncate">{label}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{sub}</div>
+      </div>
+    </div>
+  );
+};
 
 const TrustPill = ({ icon: Icon, label }: { icon: any; label: string }) => (
   <div className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-3 py-1.5">
