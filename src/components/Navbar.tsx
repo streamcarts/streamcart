@@ -69,6 +69,11 @@ export const Navbar = () => {
                     <Store className="mr-2 h-4 w-4" /> Seller dashboard
                   </DropdownMenuItem>
                 )}
+                {isAffiliate && (
+                  <DropdownMenuItem onClick={() => navigate("/affiliate")}>
+                    <TrendingUp className="mr-2 h-4 w-4" /> Affiliate dashboard
+                  </DropdownMenuItem>
+                )}
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => navigate("/admin")}>
                     <Shield className="mr-2 h-4 w-4" /> Admin panel
