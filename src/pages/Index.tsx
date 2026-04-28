@@ -36,14 +36,18 @@ type Product = {
 
 const Index = () => {
   const [products, setProducts] = useState<Product[] | null>(null);
+  const [searchIndex, setSearchIndex] = useState<Product[]>([]);
   const [q, setQ] = useState("");
   const [showSuggest, setShowSuggest] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
   const navigate = useNavigate();
 
   useEffect(() => {
     document.title = "StreamCart — Short-term access to your favorite subscriptions";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Buy verified short-term access to Netflix, ChatGPT, VPN and more. Instant delivery, secure wallet, vetted vendors.");
+
+    // Featured products (cards on home)
     supabase
       .from("products")
       .select("id, service_name, category, display_price, duration, image_url")
@@ -52,17 +56,57 @@ const Index = () => {
       .order("created_at", { ascending: false })
       .limit(8)
       .then(({ data }) => setProducts((data as Product[]) ?? []));
+
+    // Full search index — every approved product, lightweight columns
+    supabase
+      .from("products")
+      .select("id, service_name, category, display_price, duration, image_url")
+      .eq("status", "approved")
+      .eq("is_active", true)
+      .gt("stock", 0)
+      .order("created_at", { ascending: false })
+      .limit(500)
+      .then(({ data }) => setSearchIndex((data as Product[]) ?? []));
   }, []);
 
   const suggestions = useMemo(() => {
-    if (!q.trim() || !products) return [];
-    const t = q.toLowerCase();
-    return products.filter((p) => p.service_name.toLowerCase().includes(t)).slice(0, 5);
-  }, [q, products]);
+    const t = q.trim().toLowerCase();
+    if (!t) {
+      // On focus with empty input → show popular categories shortcut list
+      return searchIndex.slice(0, 5);
+    }
+    return searchIndex
+      .filter((p) =>
+        p.service_name.toLowerCase().includes(t) ||
+        p.category.toLowerCase().includes(t)
+      )
+      .slice(0, 6);
+  }, [q, searchIndex]);
+
+  // Reset highlight when suggestions change
+  useEffect(() => { setActiveIdx(-1); }, [q, showSuggest]);
 
   const submitSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
+    // If the user has highlighted a suggestion via keyboard, open it directly
+    if (activeIdx >= 0 && suggestions[activeIdx]) {
+      navigate(`/product/${suggestions[activeIdx].id}`);
+      return;
+    }
     navigate(q.trim() ? `/browse?q=${encodeURIComponent(q.trim())}` : "/browse");
+  };
+
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggest || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIdx((i) => Math.max(i - 1, -1));
+    } else if (e.key === "Escape") {
+      setShowSuggest(false);
+    }
   };
 
   return (
