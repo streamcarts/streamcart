@@ -14,6 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          audience: string
+          body: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          title: string
+          variant: string
+        }
+        Insert: {
+          audience?: string
+          body: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          variant?: string
+        }
+        Update: {
+          audience?: string
+          body?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          variant?: string
+        }
+        Relationships: []
+      }
+      coupon_redemptions: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          discount_applied: number
+          id: string
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          discount_applied: number
+          id?: string
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          discount_applied?: number
+          id?: string
+          order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order_value: number
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_value?: number
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order_value?: number
+          used_count?: number
+        }
+        Relationships: []
+      }
+      fraud_flags: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          resolved: boolean
+          severity: string
+          signal: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean
+          severity?: string
+          signal: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          resolved?: boolean
+          severity?: string
+          signal?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           admin_commission: number
@@ -69,6 +206,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_settings: {
+        Row: {
+          commission_percent: number
+          featured_limit: number
+          id: number
+          maintenance_mode: boolean
+          trending_limit: number
+          updated_at: string
+          upi_id: string
+        }
+        Insert: {
+          commission_percent?: number
+          featured_limit?: number
+          id?: number
+          maintenance_mode?: boolean
+          trending_limit?: number
+          updated_at?: string
+          upi_id?: string
+        }
+        Update: {
+          commission_percent?: number
+          featured_limit?: number
+          id?: number
+          maintenance_mode?: boolean
+          trending_limit?: number
+          updated_at?: string
+          upi_id?: string
+        }
+        Relationships: []
       }
       product_credentials: {
         Row: {
@@ -134,6 +301,8 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          is_featured: boolean
+          is_trending: boolean
           rating_count: number
           seller_id: string
           service_name: string
@@ -154,6 +323,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_featured?: boolean
+          is_trending?: boolean
           rating_count?: number
           seller_id: string
           service_name: string
@@ -174,6 +345,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_featured?: boolean
+          is_trending?: boolean
           rating_count?: number
           seller_id?: string
           service_name?: string
@@ -185,28 +358,70 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ban_reason: string | null
           created_at: string
           display_name: string | null
           email: string | null
           id: string
+          is_banned: boolean
           phone: string | null
           updated_at: string
         }
         Insert: {
+          ban_reason?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           id: string
+          is_banned?: boolean
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          ban_reason?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          is_banned?: boolean
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      refunds: {
+        Row: {
+          amount: number
+          buyer_id: string
+          created_at: string
+          id: string
+          order_id: string
+          processed_by: string | null
+          reason: string | null
+          seller_id: string
+          status: Database["public"]["Enums"]["refund_status"]
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          processed_by?: string | null
+          reason?: string | null
+          seller_id: string
+          status?: Database["public"]["Enums"]["refund_status"]
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          processed_by?: string | null
+          reason?: string | null
+          seller_id?: string
+          status?: Database["public"]["Enums"]["refund_status"]
         }
         Relationships: []
       }
@@ -243,6 +458,74 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          related_order_id: string | null
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          related_order_id?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          related_order_id?: string | null
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          is_admin_reply: boolean
+          ticket_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          is_admin_reply?: boolean
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          is_admin_reply?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -270,7 +553,9 @@ export type Database = {
           created_at: string
           description: string | null
           experience: string | null
+          flag_reason: string | null
           id: string
+          is_flagged: boolean
           product_type: string | null
           reviewed_at: string | null
           status: Database["public"]["Enums"]["application_status"]
@@ -281,7 +566,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           experience?: string | null
+          flag_reason?: string | null
           id?: string
+          is_flagged?: boolean
           product_type?: string | null
           reviewed_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
@@ -292,7 +579,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           experience?: string | null
+          flag_reason?: string | null
           id?: string
+          is_flagged?: boolean
           product_type?: string | null
           reviewed_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
@@ -403,15 +692,37 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
-      purchase_product: { Args: { _product_id: string }; Returns: string }
+      issue_refund: {
+        Args: { _order_id: string; _reason?: string }
+        Returns: string
+      }
+      purchase_product: {
+        Args: { _coupon_code?: string; _product_id: string }
+        Returns: string
+      }
+      set_user_ban: {
+        Args: { _banned: boolean; _reason?: string; _user_id: string }
+        Returns: undefined
+      }
+      validate_coupon: {
+        Args: { _code: string; _subtotal: number }
+        Returns: {
+          coupon_id: string
+          discount: number
+          message: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "seller" | "buyer"
       application_status: "pending" | "approved" | "rejected"
       credential_status: "available" | "assigned"
+      discount_type: "percent" | "fixed"
       order_status: "completed" | "refunded"
       product_category: "OTT" | "AI Tools" | "VPN" | "SMM" | "Other"
       product_status: "hidden" | "approved" | "rejected"
+      refund_status: "pending" | "processed" | "rejected"
+      ticket_status: "open" | "pending_user" | "closed"
       topup_status: "pending" | "approved" | "rejected"
       withdrawal_status: "pending" | "approved" | "rejected"
     }
@@ -544,9 +855,12 @@ export const Constants = {
       app_role: ["admin", "seller", "buyer"],
       application_status: ["pending", "approved", "rejected"],
       credential_status: ["available", "assigned"],
+      discount_type: ["percent", "fixed"],
       order_status: ["completed", "refunded"],
       product_category: ["OTT", "AI Tools", "VPN", "SMM", "Other"],
       product_status: ["hidden", "approved", "rejected"],
+      refund_status: ["pending", "processed", "rejected"],
+      ticket_status: ["open", "pending_user", "closed"],
       topup_status: ["pending", "approved", "rejected"],
       withdrawal_status: ["pending", "approved", "rejected"],
     },
