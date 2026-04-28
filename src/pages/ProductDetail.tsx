@@ -150,7 +150,7 @@ const ProductDetail = () => {
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 <span className="font-semibold">{rating}</span>
-                <span className="text-muted-foreground">({reviewCount} reviews)</span>
+                <span className="text-muted-foreground">{hasReal ? `(${reviewCount} review${reviewCount === 1 ? "" : "s"})` : "(new)"}</span>
               </div>
               <div className="h-4 w-px bg-border" />
               <div className="flex items-center gap-1.5 text-muted-foreground">
