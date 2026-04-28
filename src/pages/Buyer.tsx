@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ReviewDialog } from "@/components/ReviewDialog";
+import { SupportTickets } from "@/components/SupportTickets";
 
 type Order = {
   id: string;
