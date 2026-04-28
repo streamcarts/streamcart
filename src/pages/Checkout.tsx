@@ -32,8 +32,14 @@ const Checkout = () => {
   const [validating, setValidating] = useState(false);
 
   // Manual UPI
-  const [upiRef, setUpiRef] = useState("");
+  const [txnId, setTxnId] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
+  // Unique amount with random paise (0.01–0.99) — generated once per checkout session
+  const [amountSuffix] = useState<number>(() => {
+    // 1..99 paise → 0.01..0.99
+    return Math.floor(Math.random() * 99) + 1;
+  });
 
   useEffect(() => {
     document.title = "Checkout — StreamCart";
@@ -48,7 +54,12 @@ const Checkout = () => {
     });
   }, [user, items.length, navigate]);
 
-  const total = Math.max(0, subtotal - couponDiscount);
+  const baseTotal = Math.max(0, subtotal - couponDiscount);
+  // Unique payable: base + paise suffix (only when base > 0)
+  const uniqueAmount = baseTotal > 0
+    ? Math.round((baseTotal + amountSuffix / 100) * 100) / 100
+    : 0;
+  const total = baseTotal;
   const canPayWallet = balance !== null && balance >= total;
 
   const applyCoupon = async () => {
@@ -104,6 +115,7 @@ const Checkout = () => {
 
   const submitManualUpi = async () => {
     if (!user) return;
+    if (!txnId.trim() || txnId.trim().length < 6) return toast.error("Enter the UPI transaction ID (min 6 characters)");
     if (!file) return toast.error("Please upload your payment screenshot");
     if (file.size > 5 * 1024 * 1024) return toast.error("Screenshot must be under 5 MB");
     setProcessing(true);
@@ -113,26 +125,26 @@ const Checkout = () => {
       const up = await supabase.storage.from("payment-screenshots").upload(path, file);
       if (up.error) throw up.error;
       const affSlug = (await import("@/lib/refTracking")).getStoredAffSlug();
-      const { data, error } = await supabase.from("pending_orders").insert({
-        buyer_id: user.id,
-        amount: total,
-        upi_reference: upiRef.trim() || null,
-        screenshot_path: path,
-        items: items.map((i) => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: i.display_price })),
-        coupon_code: couponCode,
-        affiliate_slug: affSlug,
-      }).select("id").single();
+      const { data, error } = await supabase.rpc("submit_pending_order", {
+        _amount: uniqueAmount,
+        _txn_id: txnId.trim(),
+        _screenshot_path: path,
+        _items: items.map((i) => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: i.display_price })),
+        _coupon_code: couponCode,
+        _affiliate_slug: affSlug,
+        _upi_reference: null,
+      });
       if (error) throw error;
       clear();
       toast.success("Payment submitted! We'll verify in 5–10 minutes.");
-      navigate(`/orders/pending/${data.id}`);
+      navigate(`/orders/pending/${data}`);
     } catch (err: any) {
       toast.error(err.message || "Could not submit payment");
     } finally { setProcessing(false); }
   };
 
   const upiId = settings?.upi_id || "streamcart@upi";
-  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("StreamCart")}&am=${total}&cu=INR&tn=${encodeURIComponent(`Order ${user?.id?.slice(0, 8)}`)}`;
+  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("StreamCart")}&am=${uniqueAmount}&cu=INR&tn=${encodeURIComponent(`Order ${user?.id?.slice(0, 8)}`)}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
 
   const copyUpi = () => { navigator.clipboard.writeText(upiId); toast.success("UPI ID copied"); };
@@ -215,11 +227,18 @@ const Checkout = () => {
 
                 {/* Instructions */}
                 <ol className="text-sm space-y-1.5 text-muted-foreground list-decimal pl-5">
-                  <li>Pay <span className="text-foreground font-semibold">{inr(total)}</span> to the UPI ID or scan the QR</li>
-                  <li>Take a screenshot of the successful payment</li>
-                  <li>Upload it below — we verify in <span className="text-foreground font-medium">5–10 minutes</span></li>
+                  <li>Pay <span className="text-primary font-bold">exactly {inr(uniqueAmount)}</span> to the UPI ID or scan the QR</li>
+                  <li>Copy the <span className="text-foreground font-medium">UPI Transaction ID</span> from your payment app</li>
+                  <li>Upload screenshot + paste txn ID below — verified in <span className="text-foreground font-medium">5–10 minutes</span></li>
                   <li>Credentials delivered instantly after approval</li>
                 </ol>
+
+                {/* Highlighted unique amount */}
+                <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 text-center">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Pay this exact amount</div>
+                  <div className="text-3xl font-bold text-primary font-mono mt-1">{inr(uniqueAmount)}</div>
+                  <div className="text-[11px] text-muted-foreground mt-1">Unique amount helps us auto-match your payment ✨</div>
+                </div>
 
                 <div className="grid sm:grid-cols-2 gap-4 items-start">
                   <div className="rounded-lg bg-muted p-4 text-center">
@@ -234,10 +253,6 @@ const Checkout = () => {
                         <Button type="button" size="icon" variant="outline" onClick={copyUpi}><Copy className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <div>
-                      <Label className="text-xs">Amount</Label>
-                      <div className="px-3 py-2 rounded-md bg-muted font-mono text-base font-bold mt-1">{inr(total)}</div>
-                    </div>
                     <Button type="button" variant="outline" className="w-full" asChild>
                       <a href={upiLink}>Open in UPI app</a>
                     </Button>
@@ -246,20 +261,21 @@ const Checkout = () => {
 
                 <div className="border-t border-border pt-4 space-y-3">
                   <div>
-                    <Label htmlFor="ref" className="text-sm">UPI reference / txn ID <span className="text-muted-foreground">(optional)</span></Label>
-                    <Input id="ref" value={upiRef} onChange={(e) => setUpiRef(e.target.value)} maxLength={100} placeholder="e.g. 4123876543210" className="mt-1.5" />
+                    <Label htmlFor="txn" className="text-sm">UPI Transaction ID <span className="text-destructive">*</span></Label>
+                    <Input id="txn" value={txnId} onChange={(e) => setTxnId(e.target.value)} maxLength={50} placeholder="e.g. 412387654321 (12-digit UTR)" className="mt-1.5 font-mono" />
+                    <p className="text-[11px] text-muted-foreground mt-1">Find it in your UPI app's payment receipt. Each ID can only be used once.</p>
                   </div>
                   <div>
                     <Label htmlFor="file" className="text-sm">Payment screenshot <span className="text-destructive">*</span></Label>
                     <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1.5" />
                     {file && <p className="text-xs text-muted-foreground mt-1">{file.name} ({(file.size / 1024).toFixed(0)} KB)</p>}
                   </div>
-                  <Button className="w-full" size="lg" onClick={submitManualUpi} disabled={processing || !file || total <= 0}>
+                  <Button className="w-full" size="lg" onClick={submitManualUpi} disabled={processing || !file || !txnId.trim() || uniqueAmount <= 0}>
                     {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : <><Upload className="h-4 w-4 mr-2" />Submit payment for verification</>}
                   </Button>
                   <div className="rounded-md bg-warning/10 text-foreground text-xs p-3 flex gap-2 items-start">
                     <Clock className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
-                    <span>After payment, please upload the screenshot for verification. It usually takes <strong>5–10 minutes</strong>. You'll receive credentials in your dashboard once approved.</span>
+                    <span>After payment, upload the screenshot + paste the transaction ID. Verification usually takes <strong>5–10 minutes</strong>. Pending orders auto-cancel after 30 minutes if no proof submitted.</span>
                   </div>
                 </div>
               </div>
