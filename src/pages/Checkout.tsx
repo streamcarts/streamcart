@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { inr } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Lock, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, CreditCard } from "lucide-react";
+import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, Smartphone, Upload, Clock, ShieldCheck, Copy } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Settings = { upi_id: string; commission_percent: number };
@@ -24,12 +24,16 @@ const Checkout = () => {
   const [processing, setProcessing] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
 
-  // Coupon state
+  // Coupon
   const [couponInput, setCouponInput] = useState("");
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
+
+  // Manual UPI
+  const [upiRef, setUpiRef] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     document.title = "Checkout — StreamCart";
@@ -45,7 +49,7 @@ const Checkout = () => {
   }, [user, items.length, navigate]);
 
   const total = Math.max(0, subtotal - couponDiscount);
-  const insufficient = balance !== null && balance < total;
+  const canPayWallet = balance !== null && balance >= total;
 
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
@@ -57,8 +61,7 @@ const Checkout = () => {
       if (error) throw error;
       const row = (data as any[])?.[0];
       if (!row || !row.coupon_id) {
-        setCouponCode(null);
-        setCouponDiscount(0);
+        setCouponCode(null); setCouponDiscount(0);
         setCouponMsg(row?.message ?? "Invalid coupon");
         toast.error(row?.message ?? "Invalid coupon");
         return;
@@ -66,20 +69,15 @@ const Checkout = () => {
       setCouponCode(code);
       setCouponDiscount(Number(row.discount));
       setCouponMsg(`Coupon applied — you save ${inr(Number(row.discount))}`);
-      toast.success(`Coupon applied! Saved ${inr(Number(row.discount))}`);
+      toast.success(`Saved ${inr(Number(row.discount))}`);
     } catch (err: any) {
       toast.error(err.message ?? "Could not validate");
     } finally { setValidating(false); }
   };
 
-  const removeCoupon = () => {
-    setCouponCode(null);
-    setCouponDiscount(0);
-    setCouponInput("");
-    setCouponMsg(null);
-  };
+  const removeCoupon = () => { setCouponCode(null); setCouponDiscount(0); setCouponInput(""); setCouponMsg(null); };
 
-  const placeOrder = async () => {
+  const payFromWallet = async () => {
     if (!user || items.length === 0) return;
     setProcessing(true);
     const orderIds: string[] = [];
@@ -89,10 +87,7 @@ const Checkout = () => {
       for (const it of items) {
         for (let i = 0; i < it.qty; i++) {
           const args: any = { _product_id: it.id };
-          if (couponCode && !appliedOnce) {
-            args._coupon_code = couponCode;
-            appliedOnce = true;
-          }
+          if (couponCode && !appliedOnce) { args._coupon_code = couponCode; appliedOnce = true; }
           if (affSlug) args._affiliate_slug = affSlug;
           const { data, error } = await supabase.rpc("purchase_product", args);
           if (error) throw error;
@@ -100,27 +95,61 @@ const Checkout = () => {
         }
       }
       clear();
-      toast.success(`Order placed! ${orderIds.length} item${orderIds.length > 1 ? "s" : ""} delivered instantly.`);
+      toast.success(`Order placed! ${orderIds.length} item${orderIds.length > 1 ? "s" : ""} delivered.`);
       navigate(`/success?ids=${orderIds.join(",")}`);
     } catch (err: any) {
       toast.error(err.message || "Checkout failed");
-    } finally {
-      setProcessing(false);
-    }
+    } finally { setProcessing(false); }
   };
+
+  const submitManualUpi = async () => {
+    if (!user) return;
+    if (!file) return toast.error("Please upload your payment screenshot");
+    if (file.size > 5 * 1024 * 1024) return toast.error("Screenshot must be under 5 MB");
+    setProcessing(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const up = await supabase.storage.from("payment-screenshots").upload(path, file);
+      if (up.error) throw up.error;
+      const affSlug = (await import("@/lib/refTracking")).getStoredAffSlug();
+      const { data, error } = await supabase.from("pending_orders").insert({
+        buyer_id: user.id,
+        amount: total,
+        upi_reference: upiRef.trim() || null,
+        screenshot_path: path,
+        items: items.map((i) => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: i.display_price })),
+        coupon_code: couponCode,
+        affiliate_slug: affSlug,
+      }).select("id").single();
+      if (error) throw error;
+      clear();
+      toast.success("Payment submitted! We'll verify in 5–10 minutes.");
+      navigate(`/orders/pending/${data.id}`);
+    } catch (err: any) {
+      toast.error(err.message || "Could not submit payment");
+    } finally { setProcessing(false); }
+  };
+
+  const upiId = settings?.upi_id || "streamcart@upi";
+  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("StreamCart")}&am=${total}&cu=INR&tn=${encodeURIComponent(`Order ${user?.id?.slice(0, 8)}`)}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
+
+  const copyUpi = () => { navigator.clipboard.writeText(upiId); toast.success("UPI ID copied"); };
 
   if (!user || items.length === 0) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-1 container py-10 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-6">
-            <section className="card-elevated p-6">
+      <main className="flex-1 container py-8 md:py-10 max-w-5xl">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Checkout</h1>
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Items */}
+            <section className="card-elevated p-5 md:p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2"><ShoppingBag className="h-4 w-4" /> Order items</h2>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {items.map((it) => (
                   <div key={it.id} className="flex justify-between items-center text-sm py-2 border-b border-border last:border-0">
                     <div>
@@ -134,7 +163,7 @@ const Checkout = () => {
             </section>
 
             {/* Coupon */}
-            <section className="card-elevated p-6">
+            <section className="card-elevated p-5 md:p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2"><TicketPercent className="h-4 w-4" /> Have a coupon?</h2>
               {couponCode ? (
                 <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
@@ -142,60 +171,109 @@ const Checkout = () => {
                     <CheckCircle2 className="h-4 w-4 text-primary" />
                     <span><Badge className="mr-2">{couponCode}</Badge>{couponMsg}</span>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={removeCoupon}>
-                    <X className="h-4 w-4 mr-1" /> Remove
-                  </Button>
+                  <Button size="sm" variant="ghost" onClick={removeCoupon}><X className="h-4 w-4 mr-1" />Remove</Button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Label htmlFor="coupon" className="sr-only">Coupon code</Label>
-                    <Input
-                      id="coupon"
-                      placeholder="Enter coupon code"
-                      value={couponInput}
-                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                      maxLength={32}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }}
-                    />
-                    <Button onClick={applyCoupon} disabled={validating || !couponInput.trim()}>
-                      {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
-                    </Button>
-                  </div>
-                  {couponMsg && <p className="text-xs text-destructive">{couponMsg}</p>}
+                <div className="flex gap-2">
+                  <Input placeholder="Enter coupon code" value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())} maxLength={32}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }} />
+                  <Button onClick={applyCoupon} disabled={validating || !couponInput.trim()}>
+                    {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+                  </Button>
                 </div>
               )}
+              {couponMsg && !couponCode && <p className="text-xs text-destructive mt-2">{couponMsg}</p>}
             </section>
 
-            <section className="card-elevated p-6">
+            {/* Payment method */}
+            <section className="card-elevated p-5 md:p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2"><Wallet className="h-4 w-4" /> Payment method</h2>
-              <div className="rounded-lg border border-primary bg-accent/40 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">Wallet balance</div>
-                    <div className="text-xs text-muted-foreground">Funds debited instantly on checkout</div>
+
+              {/* Wallet (if sufficient) */}
+              {canPayWallet && (
+                <div className="rounded-lg border border-primary bg-primary/5 p-4 mb-4">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                      <div className="font-semibold flex items-center gap-2"><Wallet className="h-4 w-4" /> Wallet balance</div>
+                      <div className="text-xs text-muted-foreground">Instant delivery — no verification needed</div>
+                    </div>
+                    <div className="text-2xl font-bold">{inr(balance!)}</div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">{balance === null ? "—" : inr(balance)}</div>
+                  <Button className="w-full mt-3" onClick={payFromWallet} disabled={processing}>
+                    {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing…</> : <>Pay {inr(total)} from wallet <ArrowRight className="ml-2 h-4 w-4" /></>}
+                  </Button>
+                </div>
+              )}
+
+              {/* Manual UPI */}
+              <div className="rounded-lg border border-border p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="h-5 w-5 text-primary" />
+                  <div className="font-semibold">Pay via UPI {canPayWallet && <span className="text-xs text-muted-foreground font-normal">(alternative)</span>}</div>
+                </div>
+
+                {/* Instructions */}
+                <ol className="text-sm space-y-1.5 text-muted-foreground list-decimal pl-5">
+                  <li>Pay <span className="text-foreground font-semibold">{inr(total)}</span> to the UPI ID or scan the QR</li>
+                  <li>Take a screenshot of the successful payment</li>
+                  <li>Upload it below — we verify in <span className="text-foreground font-medium">5–10 minutes</span></li>
+                  <li>Credentials delivered instantly after approval</li>
+                </ol>
+
+                <div className="grid sm:grid-cols-2 gap-4 items-start">
+                  <div className="rounded-lg bg-muted p-4 text-center">
+                    <img src={qrUrl} alt="UPI QR code" className="mx-auto rounded-md bg-background p-2" width={200} height={200} loading="lazy" />
+                    <div className="text-xs text-muted-foreground mt-2">Scan with any UPI app</div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">UPI ID</Label>
+                      <div className="flex gap-2 mt-1">
+                        <code className="flex-1 px-3 py-2 rounded-md bg-muted font-mono text-sm break-all">{upiId}</code>
+                        <Button type="button" size="icon" variant="outline" onClick={copyUpi}><Copy className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Amount</Label>
+                      <div className="px-3 py-2 rounded-md bg-muted font-mono text-base font-bold mt-1">{inr(total)}</div>
+                    </div>
+                    <Button type="button" variant="outline" className="w-full" asChild>
+                      <a href={upiLink}>Open in UPI app</a>
+                    </Button>
                   </div>
                 </div>
-                {insufficient && (
-                  <div className="mt-4 rounded-md bg-destructive/10 text-destructive text-sm p-3 flex items-center justify-between gap-3">
-                    <span>Insufficient balance. You need {inr(total - (balance ?? 0))} more.</span>
-                    <Button size="sm" variant="outline" asChild><Link to="/buyer">Add funds</Link></Button>
+
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div>
+                    <Label htmlFor="ref" className="text-sm">UPI reference / txn ID <span className="text-muted-foreground">(optional)</span></Label>
+                    <Input id="ref" value={upiRef} onChange={(e) => setUpiRef(e.target.value)} maxLength={100} placeholder="e.g. 4123876543210" className="mt-1.5" />
                   </div>
-                )}
+                  <div>
+                    <Label htmlFor="file" className="text-sm">Payment screenshot <span className="text-destructive">*</span></Label>
+                    <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1.5" />
+                    {file && <p className="text-xs text-muted-foreground mt-1">{file.name} ({(file.size / 1024).toFixed(0)} KB)</p>}
+                  </div>
+                  <Button className="w-full" size="lg" onClick={submitManualUpi} disabled={processing || !file || total <= 0}>
+                    {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : <><Upload className="h-4 w-4 mr-2" />Submit payment for verification</>}
+                  </Button>
+                  <div className="rounded-md bg-warning/10 text-foreground text-xs p-3 flex gap-2 items-start">
+                    <Clock className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+                    <span>After payment, please upload the screenshot for verification. It usually takes <strong>5–10 minutes</strong>. You'll receive credentials in your dashboard once approved.</span>
+                  </div>
+                </div>
               </div>
-              {settings?.upi_id && (
-                <p className="text-[11px] text-muted-foreground mt-3 flex items-center gap-1.5">
-                  <CreditCard className="h-3 w-3" /> Top up via UPI: <code className="text-foreground font-mono">{settings.upi_id}</code>
+
+              {!canPayWallet && balance !== null && balance > 0 && (
+                <p className="text-xs text-muted-foreground mt-3">
+                  Wallet balance ({inr(balance)}) is below total. <Link to="/buyer" className="text-primary hover:underline">Top up</Link> or pay via UPI above.
                 </p>
               )}
             </section>
           </div>
 
           <aside>
-            <div className="card-elevated p-6 sticky top-24 space-y-4">
+            <div className="card-elevated p-5 md:p-6 lg:sticky lg:top-24 space-y-4">
               <h2 className="font-semibold">Summary</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{inr(subtotal)}</span></div>
@@ -207,39 +285,8 @@ const Checkout = () => {
                   <span>Total</span><span>{inr(total)}</span>
                 </div>
               </div>
-              <Button className="w-full" size="lg" onClick={placeOrder} disabled={processing || insufficient || balance === null}>
-                {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing…</> : <>Pay {inr(total)} from wallet <ArrowRight className="ml-2 h-4 w-4" /></>}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                size="lg"
-                disabled={processing || total <= 0}
-                onClick={async () => {
-                  setProcessing(true);
-                  try {
-                    const { data, error } = await supabase.functions.invoke("urpay-create", {
-                      body: {
-                        purpose: "checkout",
-                        amount: total,
-                        metadata: { items: items.map((i: any) => ({ id: i.id, qty: i.qty })), coupon: couponCode || null },
-                      },
-                    });
-                    if (error) throw error;
-                    if (!data?.payment_url) throw new Error("No payment URL");
-                    window.location.href = data.payment_url;
-                  } catch (e: any) {
-                    toast.error(e.message || "UrPay failed to start");
-                  } finally {
-                    setProcessing(false);
-                  }
-                }}
-              >
-                Pay {inr(total)} with UrPay
-              </Button>
-              {insufficient && <p className="text-xs text-muted-foreground text-center">Wallet balance too low — pay with UrPay above.</p>}
-              <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
-                <Lock className="h-3 w-3" /> 256-bit secure checkout
+              <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1.5 pt-2 border-t border-border">
+                <ShieldCheck className="h-3.5 w-3.5" /> Manual verification — no fake auto-confirmation
               </p>
             </div>
           </aside>

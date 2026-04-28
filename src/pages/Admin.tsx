@@ -29,6 +29,7 @@ const Admin = () => {
   const [vapps, setVapps] = useState<any[]>([]);
   const [pendingProducts, setPendingProducts] = useState<any[]>([]);
   const [topups, setTopups] = useState<any[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
   const [wds, setWds] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -45,7 +46,7 @@ const Admin = () => {
 
   const loadAll = async () => {
     setLoading(true);
-    const [v, p, t, w, oRes, profs, roles, prods, refs, cps, tks, ans, ffs, st] = await Promise.all([
+    const [v, p, t, w, oRes, profs, roles, prods, refs, cps, tks, ans, ffs, st, po] = await Promise.all([
       supabase.from("vendor_applications").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("*").order("created_at", { ascending: false }),
@@ -60,11 +61,13 @@ const Admin = () => {
       supabase.from("announcements").select("*").order("created_at", { ascending: false }),
       supabase.from("fraud_flags").select("*").eq("resolved", false).order("created_at", { ascending: false }),
       supabase.from("platform_settings").select("*").maybeSingle(),
+      supabase.from("pending_orders").select("*").order("created_at", { ascending: false }),
     ]);
 
     setVapps(v.data ?? []);
     setPendingProducts((p.data ?? []).filter((x: any) => x.status === "hidden"));
     setTopups((t.data ?? []).filter((x: any) => x.status === "pending"));
+    setPendingOrders((po.data ?? []).filter((x: any) => x.status === "pending"));
     setWds((w.data ?? []).filter((x: any) => x.status === "pending"));
     setAllOrders(oRes.data ?? []);
     setAllUsers(profs.data ?? []);
@@ -183,8 +186,23 @@ const Admin = () => {
     const { data } = await supabase.storage.from("topup-screenshots").createSignedUrl(path, 60);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
+  const viewPaymentScreenshot = async (path: string) => {
+    const { data } = await supabase.storage.from("payment-screenshots").createSignedUrl(path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+  const approvePendingOrder = async (id: string) => {
+    const { error } = await supabase.rpc("approve_pending_order", { _id: id, _note: null });
+    if (error) return toast.error(error.message);
+    toast.success("Order approved & credentials delivered"); loadAll();
+  };
+  const rejectPendingOrder = async (id: string) => {
+    const note = window.prompt("Reason for rejection (optional):") || null;
+    const { error } = await supabase.rpc("reject_pending_order", { _id: id, _note: note });
+    if (error) return toast.error(error.message);
+    toast.success("Order rejected"); loadAll();
+  };
 
-  const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length;
+  const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length + pendingOrders.length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -378,6 +396,27 @@ const Admin = () => {
                       <div className="flex gap-2 shrink-0">
                         <Button size="sm" onClick={() => approveWd(w.id)}><ArrowDownToLine className="h-4 w-4 mr-1" />Approve</Button>
                         <Button size="sm" variant="outline" onClick={() => rejectWd(w.id)}><XCircle className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="font-semibold mb-3">Pending UPI orders ({pendingOrders.length})</h3>
+              {pendingOrders.length === 0 ? <Empty msg="No payments awaiting verification." /> : (
+                <div className="space-y-2">
+                  {pendingOrders.map(po => (
+                    <div key={po.id} className="flex items-center justify-between gap-3 p-3 border border-border rounded-lg flex-wrap">
+                      <div className="min-w-0">
+                        <div className="font-semibold">{inr(Number(po.amount))} <span className="text-xs text-muted-foreground font-normal">• {((po.items as any[])?.length ?? 0)} item(s)</span></div>
+                        <div className="text-xs text-muted-foreground">Ref: {po.upi_reference || "—"} • {new Date(po.created_at).toLocaleString()}</div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button size="sm" variant="ghost" onClick={() => viewPaymentScreenshot(po.screenshot_path)}><Eye className="h-4 w-4" /></Button>
+                        <Button size="sm" onClick={() => approvePendingOrder(po.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
+                        <Button size="sm" variant="outline" onClick={() => rejectPendingOrder(po.id)}><XCircle className="h-4 w-4" /></Button>
                       </div>
                     </div>
                   ))}

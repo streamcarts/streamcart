@@ -156,32 +156,8 @@ const Buyer = () => {
                   <Label htmlFor="amt">Amount (₹)</Label>
                   <Input id="amt" type="number" step="1" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
                 </div>
-                <Button
-                  type="button"
-                  className="w-full"
-                  disabled={busy || !amount || Number(amount) <= 0}
-                  onClick={async () => {
-                    setBusy(true);
-                    try {
-                      const { data, error } = await supabase.functions.invoke("urpay-create", {
-                        body: { purpose: "topup", amount: Number(amount) },
-                      });
-                      if (error) throw error;
-                      if (!data?.payment_url) throw new Error("No payment URL returned");
-                      window.location.href = data.payment_url;
-                    } catch (err: any) {
-                      toast.error(err.message || "Could not start UrPay");
-                    } finally {
-                      setBusy(false);
-                    }
-                  }}
-                >
-                  {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Pay instantly with UrPay
-                </Button>
-
-                <div className="relative text-center text-xs text-muted-foreground">
-                  <span className="bg-background px-2 relative z-10">or pay manually via UPI</span>
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+                <div className="rounded-lg bg-accent/40 border border-border p-3 text-xs text-muted-foreground">
+                  Pay manually via UPI to the ID below, then upload the screenshot. Funds are credited within <span className="text-foreground font-medium">5–10 minutes</span> after admin verification.
                 </div>
 
                 <form onSubmit={submitTopup} className="space-y-3">

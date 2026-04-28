@@ -336,51 +336,57 @@ export type Database = {
           },
         ]
       }
-      payment_intents: {
+      pending_orders: {
         Row: {
+          admin_note: string | null
+          affiliate_slug: string | null
           amount: number
+          buyer_id: string
+          coupon_code: string | null
           created_at: string
           id: string
-          metadata: Json
-          paid_at: string | null
-          payment_url: string | null
-          provider: string
-          provider_order_id: string | null
-          provider_payment_id: string | null
-          purpose: string
+          items: Json
+          order_ids: string[] | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          screenshot_path: string
           status: string
           updated_at: string
-          user_id: string
+          upi_reference: string | null
         }
         Insert: {
+          admin_note?: string | null
+          affiliate_slug?: string | null
           amount: number
+          buyer_id: string
+          coupon_code?: string | null
           created_at?: string
           id?: string
-          metadata?: Json
-          paid_at?: string | null
-          payment_url?: string | null
-          provider?: string
-          provider_order_id?: string | null
-          provider_payment_id?: string | null
-          purpose: string
+          items: Json
+          order_ids?: string[] | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_path: string
           status?: string
           updated_at?: string
-          user_id: string
+          upi_reference?: string | null
         }
         Update: {
+          admin_note?: string | null
+          affiliate_slug?: string | null
           amount?: number
+          buyer_id?: string
+          coupon_code?: string | null
           created_at?: string
           id?: string
-          metadata?: Json
-          paid_at?: string | null
-          payment_url?: string | null
-          provider?: string
-          provider_order_id?: string | null
-          provider_payment_id?: string | null
-          purpose?: string
+          items?: Json
+          order_ids?: string[] | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_path?: string
           status?: string
           updated_at?: string
-          user_id?: string
+          upi_reference?: string | null
         }
         Relationships: []
       }
@@ -924,6 +930,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _admin_purchase_for_buyer: {
+        Args: {
+          _affiliate_slug?: string
+          _buyer: string
+          _coupon_code?: string
+          _product_id: string
+        }
+        Returns: string
+      }
       admin_set_affiliate: {
         Args: {
           _commission: number
@@ -932,6 +947,10 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      approve_pending_order: {
+        Args: { _id: string; _note?: string }
+        Returns: string[]
       }
       approve_topup: { Args: { _topup_id: string }; Returns: undefined }
       approve_vendor: { Args: { _app_id: string }; Returns: undefined }
@@ -962,6 +981,10 @@ export type Database = {
             }
             Returns: string
           }
+      reject_pending_order: {
+        Args: { _id: string; _note?: string }
+        Returns: undefined
+      }
       set_user_ban: {
         Args: { _banned: boolean; _reason?: string; _user_id: string }
         Returns: undefined
@@ -974,10 +997,6 @@ export type Database = {
           _slug: string
           _ua: string
         }
-        Returns: undefined
-      }
-      urpay_mark_paid: {
-        Args: { _intent_id: string; _provider_payment_id: string }
         Returns: undefined
       }
       validate_coupon: {

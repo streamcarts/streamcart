@@ -24,7 +24,7 @@ import Affiliate from "./pages/Affiliate.tsx";
 import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Refund from "./pages/Refund.tsx";
-import PaymentReturn from "./pages/PaymentReturn.tsx";
+import PendingOrder from "./pages/PendingOrder.tsx";
 
 const queryClient = new QueryClient();
 
@@ -58,7 +58,7 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/refund" element={<Refund />} />
-              <Route path="/payment-return" element={<PaymentReturn />} />
+              <Route path="/orders/pending/:id" element={<RequireAuth><PendingOrder /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
