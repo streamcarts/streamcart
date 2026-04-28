@@ -35,6 +35,21 @@ type Product = {
   image_url: string | null;
 };
 
+const REVIEWS = [
+  { name: "Aarav Sharma", role: "Bengaluru · Buyer since 2024", text: "Got Netflix Premium for ₹70/month. Credentials worked instantly and the dashboard makes everything super clean." },
+  { name: "Priya Mehta", role: "Mumbai · Power buyer", text: "I've placed 12 orders so far. Whenever something glitched, support refunded me to wallet within an hour. 10/10." },
+  { name: "Rohit Verma", role: "Delhi · Verified seller", text: "Selling on StreamCart is honestly easier than running my own page. Auto-delivery + admin moderation = zero headache." },
+];
+
+const FAQS = [
+  { q: "How does StreamCart work?", a: "Pick a subscription you need (e.g. Netflix, ChatGPT), pay using wallet/UPI, and the seller's verified credentials are revealed instantly in your buyer dashboard." },
+  { q: "Is this legal?", a: "Yes. Many platforms officially allow shared profiles (Prime, Disney+, ChatGPT teams etc.). Sellers list slots they legally own; we never list services that disallow sharing." },
+  { q: "What if my access stops working?", a: "Open the order in your dashboard and click Raise Ticket. Approved refunds are credited back to your StreamCart wallet, usually within a few hours." },
+  { q: "How fast is delivery?", a: "Most orders are delivered in under 5 seconds — the moment payment is confirmed, the credentials appear in your dashboard." },
+  { q: "Can I become a seller?", a: "Absolutely. Click Start Selling, fill the short application, and our team approves verified vendors within 24 hours." },
+  { q: "How are payments secured?", a: "Payments flow through your wallet, which is encrypted at rest. Card and UPI processing happens through PCI-DSS compliant payment gateways." },
+];
+
 const Index = () => {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [searchIndex, setSearchIndex] = useState<Product[]>([]);
