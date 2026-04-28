@@ -12,9 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useCategories } from "@/lib/categories";
 
 const Sell = () => {
   const { user, isSeller, refreshRoles } = useAuth();
+  const { cats } = useCategories({ activeOnly: true });
   const navigate = useNavigate();
   const [biz, setBiz] = useState("");
   const [productType, setProductType] = useState("OTT");
@@ -80,7 +82,7 @@ const Sell = () => {
                   <Select value={productType} onValueChange={setProductType}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {["OTT", "AI Tools", "VPN", "SMM", "Other"].map((c) => (
+                      {(cats.length ? cats.map(c => c.name) : ["OTT", "AI Tools", "VPN", "Other"]).map((c) => (
                         <SelectItem key={c} value={c}>{c}</SelectItem>
                       ))}
                     </SelectContent>
