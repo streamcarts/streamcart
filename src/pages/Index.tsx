@@ -140,41 +140,74 @@ const Index = () => {
 
           {/* Search bar */}
           <form onSubmit={submitSearch} className="relative mt-8 w-full max-w-2xl animate-fade-in">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
               value={q}
               onChange={(e) => { setQ(e.target.value); setShowSuggest(true); }}
               onFocus={() => setShowSuggest(true)}
-              onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
+              onBlur={() => setTimeout(() => setShowSuggest(false), 180)}
+              onKeyDown={onSearchKeyDown}
               placeholder="Search Netflix, ChatGPT, Prime, NordVPN…"
               className="h-14 pl-14 pr-32 rounded-2xl text-base shadow-md border-border bg-card focus-visible:ring-primary"
+              aria-autocomplete="list"
+              aria-expanded={showSuggest}
             />
             <Button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-5 rounded-xl">
               Search
             </Button>
 
-            {showSuggest && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-lg p-2 z-30 text-left">
-                {suggestions.map((s) => (
+            {showSuggest && (
+              <div
+                className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-30 text-left overflow-hidden"
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                <div className="px-4 py-2 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold border-b border-border bg-muted/40">
+                  {q.trim() ? `Results for “${q.trim()}”` : "Popular right now"}
+                </div>
+
+                {suggestions.length > 0 ? (
+                  <ul className="p-2 max-h-80 overflow-y-auto">
+                    {suggestions.map((s, i) => (
+                      <li key={s.id}>
+                        <Link
+                          to={`/product/${s.id}`}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                            i === activeIdx ? "bg-accent" : "hover:bg-muted"
+                          }`}
+                          onMouseEnter={() => setActiveIdx(i)}
+                        >
+                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {s.image_url ? (
+                              <img src={s.image_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="font-bold text-muted-foreground">{s.service_name[0]}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="truncate font-medium">{s.service_name}</div>
+                            <div className="text-xs text-muted-foreground">{s.category}{s.duration ? ` • ${s.duration}` : ""}</div>
+                          </div>
+                          <div className="text-sm font-semibold text-primary flex-shrink-0">{inr(s.display_price)}</div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    No matches for <span className="font-medium text-foreground">"{q}"</span>.
+                    <div className="mt-2 text-xs">Try a different keyword or browse all services.</div>
+                  </div>
+                )}
+
+                {q.trim() && (
                   <Link
-                    key={s.id}
-                    to={`/product/${s.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted text-sm transition-colors"
+                    to={`/browse?q=${encodeURIComponent(q.trim())}`}
+                    className="flex items-center justify-between px-4 py-3 border-t border-border text-sm font-medium text-primary hover:bg-accent transition-colors"
                   >
-                    <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {s.image_url ? (
-                        <img src={s.image_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-bold text-muted-foreground">{s.service_name[0]}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="truncate font-medium">{s.service_name}</div>
-                      <div className="text-xs text-muted-foreground">{s.category}</div>
-                    </div>
-                    <div className="text-sm font-semibold text-primary">{inr(s.display_price)}</div>
+                    <span className="inline-flex items-center gap-2"><Search className="h-4 w-4" /> Search all services for "{q.trim()}"</span>
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
-                ))}
+                )}
               </div>
             )}
           </form>
