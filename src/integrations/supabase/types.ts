@@ -161,6 +161,53 @@ export type Database = {
         }
         Relationships: []
       }
+      category_items: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          category_id: string
+          created_at: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          category_id: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          category_id?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupon_redemptions: {
         Row: {
           coupon_id: string
@@ -1060,6 +1107,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "private" | "shared"
       affiliate_status: "pending" | "approved" | "suspended"
       app_role: "admin" | "seller" | "buyer"
       application_status: "pending" | "approved" | "rejected"
@@ -1199,6 +1247,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["private", "shared"],
       affiliate_status: ["pending", "approved", "suspended"],
       app_role: ["admin", "seller", "buyer"],
       application_status: ["pending", "approved", "rejected"],
