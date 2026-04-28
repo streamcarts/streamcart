@@ -407,6 +407,9 @@ const Admin = () => {
           {/* ANNOUNCEMENTS */}
           <TabsContent value="announce"><AnnouncementsPanel annos={annos} onChange={loadAll} /></TabsContent>
 
+          {/* AFFILIATES */}
+          <TabsContent value="affiliates"><AffiliatesPanel /></TabsContent>
+
           {/* SETTINGS */}
           <TabsContent value="settings"><SettingsPanel settings={settings} onChange={loadAll} /></TabsContent>
         </Tabs>
