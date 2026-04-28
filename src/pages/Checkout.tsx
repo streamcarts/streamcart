@@ -84,6 +84,7 @@ const Checkout = () => {
     setProcessing(true);
     const orderIds: string[] = [];
     let appliedOnce = false;
+    const affSlug = (await import("@/lib/refTracking")).getStoredAffSlug();
     try {
       for (const it of items) {
         for (let i = 0; i < it.qty; i++) {
@@ -92,6 +93,7 @@ const Checkout = () => {
             args._coupon_code = couponCode;
             appliedOnce = true;
           }
+          if (affSlug) args._affiliate_slug = affSlug;
           const { data, error } = await supabase.rpc("purchase_product", args);
           if (error) throw error;
           if (data) orderIds.push(data as string);

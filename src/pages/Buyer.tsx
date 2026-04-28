@@ -18,6 +18,7 @@ import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCh
 import { Link, useNavigate } from "react-router-dom";
 import { ReviewDialog } from "@/components/ReviewDialog";
 import { SupportTickets } from "@/components/SupportTickets";
+import { ReferralPanel } from "@/components/ReferralPanel";
 
 type Order = {
   id: string;
@@ -273,6 +274,10 @@ const Buyer = () => {
             </div>
           )}
         </Card>
+
+        {/* Support */}
+        {/* Refer & earn */}
+        <ReferralPanel />
 
         {/* Support */}
         <SupportTickets />
