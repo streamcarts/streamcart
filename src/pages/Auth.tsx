@@ -11,8 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Gift } from "lucide-react";
 import { z } from "zod";
+import { getStoredRefCode } from "@/lib/refTracking";
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
 const passwordSchema = z.string().min(8, "At least 8 characters").max(72);
@@ -25,8 +26,14 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [refCode, setRefCode] = useState("");
   const [busy, setBusy] = useState(false);
   const next = params.get("next") || "/";
+
+  useEffect(() => {
+    const stored = getStoredRefCode();
+    if (stored) setRefCode(stored);
+  }, []);
 
   useEffect(() => {
     document.title = tab === "signup" ? "Create your StreamCart account" : "Sign in to StreamCart";
@@ -51,11 +58,15 @@ const Auth = () => {
           password: pr.data,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { display_name: name.trim() || er.data.split("@")[0] },
+            data: {
+              display_name: name.trim() || er.data.split("@")[0],
+              ref_code: refCode.trim().toUpperCase() || undefined,
+              user_agent: navigator.userAgent.slice(0, 240),
+            },
           },
         });
         if (error) throw error;
-        toast.success("Account created! Welcome to StreamCart.");
+        toast.success(refCode ? "Account created! Your 5% welcome coupon is ready." : "Account created! Welcome to StreamCart.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: er.data, password: pr.data });
         if (error) throw error;
