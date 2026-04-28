@@ -125,7 +125,10 @@ const Browse = () => {
                     <div className="h-8 w-8 rounded bg-muted flex items-center justify-center text-xs font-bold flex-shrink-0">
                       {s.service_name[0]}
                     </div>
-                    <div className="flex-1 min-w-0 truncate">{s.service_name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate">{s.service_name}</div>
+                      <div className="text-[10px] text-muted-foreground">{s.category}</div>
+                    </div>
                     <div className="text-xs text-primary font-semibold">{inr(s.display_price)}</div>
                   </Link>
                 ))}
@@ -136,20 +139,30 @@ const Browse = () => {
 
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {CATS.map((c) => (
-            <Button
-              key={c}
-              size="sm"
-              variant={cat === c ? "default" : "outline"}
-              onClick={() => {
-                const next = new URLSearchParams(params);
-                if (c === "All") next.delete("cat"); else next.set("cat", c);
-                setParams(next);
-              }}
-            >
-              {c}
-            </Button>
-          ))}
+          <Button
+            size="sm"
+            variant={cat === "All" ? "default" : "outline"}
+            onClick={() => { const next = new URLSearchParams(params); next.delete("cat"); setParams(next); }}
+          >
+            <LayoutGrid className="h-3.5 w-3.5 mr-1.5" /> All
+          </Button>
+          {dbCats.map((c) => {
+            const Icon = getCategoryIcon(c.icon);
+            return (
+              <Button
+                key={c.id}
+                size="sm"
+                variant={cat === c.name ? "default" : "outline"}
+                onClick={() => {
+                  const next = new URLSearchParams(params);
+                  next.set("cat", c.name);
+                  setParams(next);
+                }}
+              >
+                <Icon className="h-3.5 w-3.5 mr-1.5" /> {c.name}
+              </Button>
+            );
+          })}
         </div>
 
         {/* Sort + filter toggle */}
