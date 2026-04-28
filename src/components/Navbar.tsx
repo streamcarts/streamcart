@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield } from "lucide-react";
+import { CartIcon } from "./CartIcon";
 
 export const Navbar = () => {
   const { user, isAdmin, isSeller, signOut } = useAuth();
@@ -29,6 +30,7 @@ export const Navbar = () => {
           <Link to="/sell" className="hover:text-foreground transition-colors">Become a seller</Link>
         </nav>
         <div className="flex items-center gap-2">
+          <CartIcon />
           {!user ? (
             <>
               <Button variant="ghost" onClick={() => navigate("/auth")}>Sign in</Button>

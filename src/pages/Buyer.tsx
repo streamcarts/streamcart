@@ -3,18 +3,23 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useCart } from "@/lib/cart";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { inr } from "@/lib/format";
+import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Plus, Wallet } from "lucide-react";
+import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 type Order = {
   id: string;
+  product_id: string;
   service_name: string;
   total_paid: number;
   credentials_email: string;
@@ -27,8 +32,10 @@ type Topup = { id: string; amount: number; status: string; created_at: string };
 
 const Buyer = () => {
   const { user } = useAuth();
-  const [balance, setBalance] = useState(0);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const { add } = useCart();
+  const navigate = useNavigate();
+  const [balance, setBalance] = useState<number | null>(null);
+  const [orders, setOrders] = useState<Order[] | null>(null);
   const [topups, setTopups] = useState<Topup[]>([]);
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [amount, setAmount] = useState("");
@@ -73,6 +80,34 @@ const Buyer = () => {
     } catch (err: any) { toast.error(err.message); } finally { setBusy(false); }
   };
 
+  const copy = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Could not copy");
+    }
+  };
+
+  const mask = (s: string) => (s.length <= 2 ? "••" : s[0] + "•".repeat(Math.max(4, s.length - 2)) + s[s.length - 1]);
+
+  const reorder = async (o: Order) => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id,service_name,category,display_price,duration,image_url,stock,status")
+      .eq("id", o.product_id)
+      .maybeSingle();
+    if (error || !data) return toast.error("Product no longer available");
+    if (data.status !== "approved" || data.stock <= 0) return toast.error("Out of stock");
+    add({
+      id: data.id, service_name: data.service_name, category: data.category,
+      display_price: Number(data.display_price), duration: data.duration,
+      image_url: data.image_url, stock: data.stock,
+    });
+    toast.success("Added to cart");
+    navigate("/cart");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -90,7 +125,7 @@ const Buyer = () => {
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Wallet balance</div>
-              <div className="text-3xl font-bold">{inr(balance)}</div>
+              <div className="text-3xl font-bold">{balance === null ? <Skeleton className="h-8 w-32" /> : inr(balance)}</div>
             </div>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
@@ -143,35 +178,74 @@ const Buyer = () => {
 
         {/* Orders */}
         <Card className="p-6">
-          <h2 className="font-semibold mb-4">Order history</h2>
-          {orders.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8 text-sm">No orders yet.</div>
+          <h2 className="font-semibold mb-4 flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-primary" /> Order history
+          </h2>
+          {orders === null ? (
+            <div className="space-y-3">
+              {[1,2,3].map((i) => <Skeleton key={i} className="h-32 w-full rounded-lg" />)}
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground text-sm mb-4">No orders yet.</p>
+              <Button asChild><Link to="/browse">Start browsing</Link></Button>
+            </div>
           ) : (
             <div className="space-y-3">
-              {orders.map((o) => (
-                <div key={o.id} className="border border-border rounded-lg p-4">
-                  <div className="flex items-start justify-between gap-4 flex-wrap">
-                    <div>
-                      <div className="font-semibold">{o.service_name}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
-                    </div>
-                    <div className="font-bold text-primary">{inr(o.total_paid)}</div>
-                  </div>
-                  <div className="mt-3 rounded-md bg-muted p-3">
-                    {revealed[o.id] ? (
-                      <div className="font-mono text-sm space-y-1">
-                        <div><span className="text-muted-foreground">Email: </span>{o.credentials_email}</div>
-                        <div><span className="text-muted-foreground">Password: </span>{o.credentials_password}</div>
+              {orders.map((o) => {
+                const isOpen = revealed[o.id];
+                return (
+                  <div key={o.id} className="border border-border rounded-lg p-4">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
+                      <div>
+                        <div className="font-semibold">{o.service_name}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()} • #{o.id.slice(0, 8).toUpperCase()}</div>
                       </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground">Credentials hidden</div>
-                    )}
-                    <Button size="sm" variant="ghost" className="mt-2" onClick={() => setRevealed({ ...revealed, [o.id]: !revealed[o.id] })}>
-                      {revealed[o.id] ? <><EyeOff className="h-4 w-4 mr-1.5" />Hide</> : <><Eye className="h-4 w-4 mr-1.5" />Reveal credentials</>}
-                    </Button>
+                      <div className="text-right">
+                        <div className="font-bold text-primary">{inr(o.total_paid)}</div>
+                        <Badge variant="secondary" className="text-[10px] mt-1">Delivered</Badge>
+                      </div>
+                    </div>
+
+                    {/* Credentials */}
+                    <div className="mt-3 rounded-md bg-muted/60 p-3 font-mono text-sm space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0 truncate">
+                          <span className="text-muted-foreground text-xs not-italic font-sans">Email: </span>
+                          <span>{isOpen ? o.credentials_email : mask(o.credentials_email)}</span>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!isOpen} onClick={() => copy(o.credentials_email, "Email")} aria-label="Copy email">
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0 truncate">
+                          <span className="text-muted-foreground text-xs not-italic font-sans">Password: </span>
+                          <span>{isOpen ? o.credentials_password : mask(o.credentials_password)}</span>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!isOpen} onClick={() => copy(o.credentials_password, "Password")} aria-label="Copy password">
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                      <Button size="sm" variant={isOpen ? "outline" : "default"} onClick={() => setRevealed({ ...revealed, [o.id]: !isOpen })}>
+                        {isOpen ? <><EyeOff className="h-3.5 w-3.5 mr-1.5" />Hide</> : <><Eye className="h-3.5 w-3.5 mr-1.5" />Reveal credentials</>}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => reorder(o)}>
+                        <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Reorder
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => downloadInvoice({
+                        orderId: o.id, serviceName: o.service_name, totalPaid: Number(o.total_paid),
+                        buyerEmail: user?.email ?? "", createdAt: o.created_at,
+                      })}>
+                        <FileText className="h-3.5 w-3.5 mr-1.5" /> Invoice
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </Card>
