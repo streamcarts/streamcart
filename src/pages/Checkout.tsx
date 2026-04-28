@@ -115,6 +115,7 @@ const Checkout = () => {
 
   const submitManualUpi = async () => {
     if (!user) return;
+    if (!txnId.trim() || txnId.trim().length < 6) return toast.error("Enter the UPI transaction ID (min 6 characters)");
     if (!file) return toast.error("Please upload your payment screenshot");
     if (file.size > 5 * 1024 * 1024) return toast.error("Screenshot must be under 5 MB");
     setProcessing(true);
@@ -124,26 +125,26 @@ const Checkout = () => {
       const up = await supabase.storage.from("payment-screenshots").upload(path, file);
       if (up.error) throw up.error;
       const affSlug = (await import("@/lib/refTracking")).getStoredAffSlug();
-      const { data, error } = await supabase.from("pending_orders").insert({
-        buyer_id: user.id,
-        amount: total,
-        upi_reference: upiRef.trim() || null,
-        screenshot_path: path,
-        items: items.map((i) => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: i.display_price })),
-        coupon_code: couponCode,
-        affiliate_slug: affSlug,
-      }).select("id").single();
+      const { data, error } = await supabase.rpc("submit_pending_order", {
+        _amount: uniqueAmount,
+        _txn_id: txnId.trim(),
+        _screenshot_path: path,
+        _items: items.map((i) => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: i.display_price })),
+        _coupon_code: couponCode,
+        _affiliate_slug: affSlug,
+        _upi_reference: null,
+      });
       if (error) throw error;
       clear();
       toast.success("Payment submitted! We'll verify in 5–10 minutes.");
-      navigate(`/orders/pending/${data.id}`);
+      navigate(`/orders/pending/${data}`);
     } catch (err: any) {
       toast.error(err.message || "Could not submit payment");
     } finally { setProcessing(false); }
   };
 
   const upiId = settings?.upi_id || "streamcart@upi";
-  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("StreamCart")}&am=${total}&cu=INR&tn=${encodeURIComponent(`Order ${user?.id?.slice(0, 8)}`)}`;
+  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("StreamCart")}&am=${uniqueAmount}&cu=INR&tn=${encodeURIComponent(`Order ${user?.id?.slice(0, 8)}`)}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
 
   const copyUpi = () => { navigator.clipboard.writeText(upiId); toast.success("UPI ID copied"); };
