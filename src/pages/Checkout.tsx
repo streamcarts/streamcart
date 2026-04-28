@@ -32,8 +32,14 @@ const Checkout = () => {
   const [validating, setValidating] = useState(false);
 
   // Manual UPI
-  const [upiRef, setUpiRef] = useState("");
+  const [txnId, setTxnId] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
+  // Unique amount with random paise (0.01–0.99) — generated once per checkout session
+  const [amountSuffix] = useState<number>(() => {
+    // 1..99 paise → 0.01..0.99
+    return Math.floor(Math.random() * 99) + 1;
+  });
 
   useEffect(() => {
     document.title = "Checkout — StreamCart";
@@ -48,7 +54,12 @@ const Checkout = () => {
     });
   }, [user, items.length, navigate]);
 
-  const total = Math.max(0, subtotal - couponDiscount);
+  const baseTotal = Math.max(0, subtotal - couponDiscount);
+  // Unique payable: base + paise suffix (only when base > 0)
+  const uniqueAmount = baseTotal > 0
+    ? Math.round((baseTotal + amountSuffix / 100) * 100) / 100
+    : 0;
+  const total = baseTotal;
   const canPayWallet = balance !== null && balance >= total;
 
   const applyCoupon = async () => {
