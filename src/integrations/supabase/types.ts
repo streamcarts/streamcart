@@ -429,6 +429,39 @@ export type Database = {
         }
         Relationships: []
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          is_active: boolean
+          min_price: number
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          min_price?: number
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          min_price?: number
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_credentials: {
         Row: {
           access_link: string | null
@@ -1033,7 +1066,7 @@ export type Database = {
       credential_status: "available" | "assigned"
       discount_type: "percent" | "fixed"
       order_status: "completed" | "refunded"
-      product_category: "OTT" | "AI Tools" | "VPN" | "SMM" | "Other"
+      product_category: "OTT" | "AI Tools" | "VPN" | "SMM" | "Other" | "Bundles"
       product_status: "hidden" | "approved" | "rejected"
       refund_status: "pending" | "processed" | "rejected"
       ticket_status: "open" | "pending_user" | "closed"
@@ -1172,7 +1205,7 @@ export const Constants = {
       credential_status: ["available", "assigned"],
       discount_type: ["percent", "fixed"],
       order_status: ["completed", "refunded"],
-      product_category: ["OTT", "AI Tools", "VPN", "SMM", "Other"],
+      product_category: ["OTT", "AI Tools", "VPN", "SMM", "Other", "Bundles"],
       product_status: ["hidden", "approved", "rejected"],
       refund_status: ["pending", "processed", "rejected"],
       ticket_status: ["open", "pending_user", "closed"],
