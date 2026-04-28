@@ -100,4 +100,12 @@
     box-shadow: var(--shadow-lg);
     transform: translateY(-2px);
   }
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-[1.03];
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
