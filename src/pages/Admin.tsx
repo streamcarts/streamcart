@@ -404,22 +404,55 @@ const Admin = () => {
             </Card>
 
             <Card className="p-6">
-              <h3 className="font-semibold mb-3">Pending UPI orders ({pendingOrders.length})</h3>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                Pending UPI orders ({pendingOrders.length})
+                <span className="text-xs font-normal text-muted-foreground">• auto-flagged where txn ID looks valid</span>
+              </h3>
               {pendingOrders.length === 0 ? <Empty msg="No payments awaiting verification." /> : (
                 <div className="space-y-2">
-                  {pendingOrders.map(po => (
-                    <div key={po.id} className="flex items-center justify-between gap-3 p-3 border border-border rounded-lg flex-wrap">
-                      <div className="min-w-0">
-                        <div className="font-semibold">{inr(Number(po.amount))} <span className="text-xs text-muted-foreground font-normal">• {((po.items as any[])?.length ?? 0)} item(s)</span></div>
-                        <div className="text-xs text-muted-foreground">Ref: {po.upi_reference || "—"} • {new Date(po.created_at).toLocaleString()}</div>
+                  {pendingOrders.map(po => {
+                    const buyer = allUsers.find((u: any) => u.id === po.buyer_id);
+                    const itemsCount = (po.items as any[])?.length ?? 0;
+                    const txnLooksValid = po.txn_id && /^[A-Za-z0-9]{10,}$/.test(po.txn_id);
+                    const amountUnique = Number(po.amount) % 1 !== 0; // has paise → unique
+                    const likelyValid = txnLooksValid && amountUnique;
+                    const expiresIn = po.expires_at ? Math.max(0, Math.round((new Date(po.expires_at).getTime() - Date.now()) / 60000)) : null;
+                    return (
+                      <div key={po.id} className={`p-3 border rounded-lg space-y-2 ${likelyValid ? "border-primary/40 bg-primary/5" : "border-border"}`}>
+                        <div className="flex items-start justify-between flex-wrap gap-3">
+                          <div className="min-w-0">
+                            <div className="font-semibold flex items-center gap-2 flex-wrap">
+                              {inr(Number(po.amount))}
+                              <span className="text-xs text-muted-foreground font-normal">• {itemsCount} item(s)</span>
+                              {likelyValid && <Badge className="bg-primary/15 text-primary hover:bg-primary/20"><CheckCircle2 className="h-3 w-3 mr-1" />Likely Valid</Badge>}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {buyer?.display_name || buyer?.email || po.buyer_id.slice(0, 8)} • {new Date(po.created_at).toLocaleString()}
+                              {expiresIn !== null && expiresIn > 0 && <span className="ml-1">• expires in {expiresIn}m</span>}
+                            </div>
+                          </div>
+                          <div className="flex gap-2 shrink-0">
+                            <Button size="sm" variant="ghost" onClick={() => viewPaymentScreenshot(po.screenshot_path)}><Eye className="h-4 w-4 mr-1" />Proof</Button>
+                            <Button size="sm" onClick={() => approvePendingOrder(po.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
+                            <Button size="sm" variant="outline" onClick={() => rejectPendingOrder(po.id)}><XCircle className="h-4 w-4" /></Button>
+                          </div>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                          <div className="bg-muted/50 rounded px-2 py-1.5">
+                            <span className="text-muted-foreground">Txn ID:</span>{" "}
+                            <code className="font-mono">{po.txn_id || "—"}</code>
+                            {po.txn_id && (
+                              <button className="ml-2 text-primary hover:underline" onClick={() => { navigator.clipboard.writeText(po.txn_id); toast.success("Copied"); }}>copy</button>
+                            )}
+                          </div>
+                          <div className="bg-muted/50 rounded px-2 py-1.5">
+                            <span className="text-muted-foreground">Items:</span>{" "}
+                            {((po.items as any[]) ?? []).map((it: any) => `${it.service_name}×${it.qty}`).join(", ")}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button size="sm" variant="ghost" onClick={() => viewPaymentScreenshot(po.screenshot_path)}><Eye className="h-4 w-4" /></Button>
-                        <Button size="sm" onClick={() => approvePendingOrder(po.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
-                        <Button size="sm" variant="outline" onClick={() => rejectPendingOrder(po.id)}><XCircle className="h-4 w-4" /></Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </Card>
