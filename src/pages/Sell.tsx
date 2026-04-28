@@ -74,6 +74,23 @@ const Sell = () => {
                 <Label htmlFor="biz">Business / vendor name</Label>
                 <Input id="biz" value={biz} onChange={(e) => setBiz(e.target.value)} maxLength={100} required />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Product type</Label>
+                  <Select value={productType} onValueChange={setProductType}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["OTT", "AI Tools", "VPN", "SMM", "Other"].map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="exp">Experience (optional)</Label>
+                  <Input id="exp" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="e.g. 2 years reselling" maxLength={100} />
+                </div>
+              </div>
               <div className="space-y-1.5">
                 <Label htmlFor="desc">What will you sell?</Label>
                 <Textarea id="desc" value={desc} onChange={(e) => setDesc(e.target.value)} maxLength={500} rows={4} />
