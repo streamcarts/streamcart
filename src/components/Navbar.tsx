@@ -11,14 +11,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield } from "lucide-react";
+import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp } from "lucide-react";
 import { CartIcon } from "./CartIcon";
 import { AnnouncementBanner } from "./AnnouncementBanner";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navbar = () => {
   const { user, isAdmin, isSeller, signOut } = useAuth();
   const navigate = useNavigate();
   const initials = (user?.email ?? "?").slice(0, 2).toUpperCase();
+  const [isAffiliate, setIsAffiliate] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAffiliate(false); return; }
+    supabase.from("affiliates").select("status").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => setIsAffiliate(data?.status === "approved"));
+  }, [user]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
