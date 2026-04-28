@@ -16,10 +16,12 @@ import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { ReviewDialog } from "@/components/ReviewDialog";
 
 type Order = {
   id: string;
   product_id: string;
+  seller_id: string;
   service_name: string;
   total_paid: number;
   credentials_email: string;
@@ -27,6 +29,8 @@ type Order = {
   status: string;
   created_at: string;
 };
+
+type Review = { order_id: string; rating: number; comment: string | null };
 
 type Topup = { id: string; amount: number; status: string; created_at: string };
 
