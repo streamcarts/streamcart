@@ -12,7 +12,8 @@ import { ProductCard, ratingFor } from "@/components/ProductCard";
 import { inr } from "@/lib/format";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Search, Star, Filter, X } from "lucide-react";
+import { Search, Star, Filter, X, LayoutGrid } from "lucide-react";
+import { useCategories, getCategoryIcon } from "@/lib/categories";
 
 type Product = {
   id: string;
@@ -25,11 +26,12 @@ type Product = {
   stock: number;
 };
 
-const CATS = ["All", "OTT", "AI Tools", "VPN", "SMM", "Other"];
+// Categories are now loaded dynamically from product_categories table
 type SortKey = "newest" | "price_asc" | "price_desc" | "popular";
 
 const Browse = () => {
   const [params, setParams] = useSearchParams();
+  const { cats: dbCats } = useCategories({ activeOnly: true });
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
