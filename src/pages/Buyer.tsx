@@ -254,6 +254,14 @@ const Buyer = () => {
                       })}>
                         <FileText className="h-3.5 w-3.5 mr-1.5" /> Invoice
                       </Button>
+                      <ReviewDialog
+                        orderId={o.id}
+                        productId={o.product_id}
+                        sellerId={o.seller_id}
+                        serviceName={o.service_name}
+                        existing={reviews[o.id] ?? null}
+                        onDone={load}
+                      />
                     </div>
                   </div>
                 );
