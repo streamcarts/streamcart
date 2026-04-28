@@ -260,6 +260,17 @@ const Index = () => {
       </section>
 
       <Footer />
+
+      {/* Mobile sticky CTA */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border p-3 flex gap-2 shadow-lg">
+        <Button variant="outline" asChild className="flex-1 h-12 rounded-xl font-semibold">
+          <Link to="/sell">Sell</Link>
+        </Button>
+        <Button asChild className="flex-[2] h-12 rounded-xl font-bold shadow-md shadow-primary/30">
+          <Link to="/browse">Browse Subscriptions <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+        </Button>
+      </div>
+      <div className="md:hidden h-20" aria-hidden />
     </div>
   );
 };
