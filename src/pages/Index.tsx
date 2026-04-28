@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Tv, Brain, Shield, Share2, ArrowRight, CheckCircle2, Lock, Zap, Star,
-  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette,
+  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette, Rocket,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,14 +15,14 @@ import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 
 const categories = [
-  { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700" },
-  { name: "OTT", icon: Tv, color: "bg-rose-100 text-rose-700" },
-  { name: "Design", icon: Palette, color: "bg-pink-100 text-pink-700" },
-  { name: "Games", icon: Gamepad2, color: "bg-amber-100 text-amber-700" },
-  { name: "VPN", icon: Shield, color: "bg-sky-100 text-sky-700" },
-  { name: "Cloud", icon: Cloud, color: "bg-indigo-100 text-indigo-700" },
-  { name: "Education", icon: GraduationCap, color: "bg-emerald-100 text-emerald-700" },
-  { name: "SMM", icon: Share2, color: "bg-orange-100 text-orange-700" },
+  { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700", desc: "ChatGPT, Claude, Midjourney" },
+  { name: "OTT", icon: Tv, color: "bg-rose-100 text-rose-700", desc: "Netflix, Prime, Hotstar" },
+  { name: "Design", icon: Palette, color: "bg-pink-100 text-pink-700", desc: "Adobe, Figma, Canva" },
+  { name: "Games", icon: Gamepad2, color: "bg-amber-100 text-amber-700", desc: "Game Pass, PSN, Steam" },
+  { name: "VPN", icon: Shield, color: "bg-sky-100 text-sky-700", desc: "Nord, Express, Surfshark" },
+  { name: "Cloud", icon: Cloud, color: "bg-indigo-100 text-indigo-700", desc: "Drive, iCloud, Dropbox" },
+  { name: "Education", icon: GraduationCap, color: "bg-emerald-100 text-emerald-700", desc: "Coursera, Udemy, LinkedIn" },
+  { name: "SMM", icon: Share2, color: "bg-orange-100 text-orange-700", desc: "Followers, panels, analytics" },
 ];
 
 type Product = {
@@ -72,17 +72,27 @@ const Index = () => {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border" style={{ background: "var(--gradient-hero)" }}>
         <div className="container py-16 md:py-24 flex flex-col items-center text-center max-w-4xl">
-          <Badge variant="secondary" className="bg-card border border-border mb-6 animate-fade-in">
+          {/* Highlight badge */}
+          <Badge variant="secondary" className="bg-card border border-primary/20 text-primary mb-6 px-3.5 py-1.5 animate-fade-in shadow-sm">
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse mr-1.5" />
-            19,000+ orders delivered · 4.9★ trusted marketplace
+            Trusted by 19,000+ users
           </Badge>
 
           <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight animate-fade-in">
-            Get short-term access to your <span className="text-primary">favorite subscriptions</span>
+            Get Premium Subscriptions at <span className="text-primary">70% Lower Cost</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-2xl animate-fade-in">
-            Netflix, ChatGPT, Adobe, VPNs and more — shared legally at up to 70% off, delivered instantly.
+            Netflix, ChatGPT, Adobe, VPNs and more — shared legally, delivered instantly to your dashboard.
           </p>
+
+          {/* Urgency line */}
+          <div className="mt-4 inline-flex flex-wrap justify-center items-center gap-x-3 gap-y-1 text-sm font-medium text-foreground/80 animate-fade-in">
+            <span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" /> Limited slots</span>
+            <span className="text-border">•</span>
+            <span className="inline-flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-primary" /> Instant access</span>
+            <span className="text-border">•</span>
+            <span className="inline-flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5 text-primary" /> Verified sellers</span>
+          </div>
 
           {/* Search bar */}
           <form onSubmit={submitSearch} className="relative mt-8 w-full max-w-2xl animate-fade-in">
@@ -125,41 +135,72 @@ const Index = () => {
             )}
           </form>
 
+          {/* Primary CTAs — bigger, higher contrast */}
+          <div className="mt-7 flex flex-col sm:flex-row gap-3 w-full sm:w-auto animate-fade-in">
+            <Button
+              size="lg"
+              asChild
+              className="h-14 px-8 text-base font-bold rounded-2xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
+            >
+              <Link to="/browse">Browse Subscriptions <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              asChild
+              className="h-14 px-8 text-base font-semibold rounded-2xl border-2 hover:bg-accent hover:-translate-y-0.5 transition-all"
+            >
+              <Link to="/sell">Start Selling</Link>
+            </Button>
+          </div>
+
           {/* Stat bar */}
-          <div className="mt-8 flex flex-wrap justify-center items-center gap-6 md:gap-10 animate-fade-in">
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-6 md:gap-10 animate-fade-in">
             <Stat icon={Users} label="Happy buyers" value="19,000+" />
             <div className="hidden sm:block h-8 w-px bg-border" />
             <Stat icon={Star} label="Avg. rating" value="4.9 / 5" />
             <div className="hidden sm:block h-8 w-px bg-border" />
             <Stat icon={IndianRupee} label="Saved by users" value="₹38L+" />
           </div>
+        </div>
+      </section>
 
-          {/* Trust pills */}
-          <div className="mt-6 flex flex-wrap justify-center gap-2 text-xs">
-            <TrustPill icon={Lock} label="Secure wallet" />
-            <TrustPill icon={Zap} label="Instant delivery" />
-            <TrustPill icon={BadgeCheck} label="Vetted vendors" />
+      {/* TRUST STRIP */}
+      <section className="border-b border-border bg-card">
+        <div className="container py-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+            <TrustBadge icon={Star} label="4.9 Rating" sub="From 5,200+ reviews" tone="amber" />
+            <TrustBadge icon={Lock} label="Secure Payments" sub="UPI · Wallet · Cards" tone="primary" />
+            <TrustBadge icon={Zap} label="Instant Delivery" sub="Credentials in 5s" tone="primary" />
+            <TrustBadge icon={BadgeCheck} label="Verified Sellers" sub="Manually approved" tone="primary" />
           </div>
         </div>
       </section>
 
-      {/* CATEGORY ICON BAR */}
-      <section className="border-b border-border bg-card/50">
-        <div className="container py-6">
-          <div className="flex gap-3 md:gap-5 overflow-x-auto no-scrollbar pb-1">
-            {categories.map((c) => (
-              <Link
-                key={c.name}
-                to={`/browse?cat=${encodeURIComponent(c.name)}`}
-                className="group flex flex-col items-center gap-2 min-w-[88px] flex-shrink-0"
-              >
-                <div className={`h-16 w-16 rounded-full ${c.color} flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-hover:shadow-md`}>
-                  <c.icon className="h-7 w-7" />
-                </div>
-                <span className="text-xs font-medium text-foreground/80 group-hover:text-primary transition-colors">{c.name}</span>
-              </Link>
-            ))}
+      {/* CATEGORY SECTION (bigger cards with descriptions) */}
+      <section className="container py-12">
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold">Shop by category</h2>
+            <p className="text-muted-foreground mt-1">Premium services across every digital need.</p>
           </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {categories.map((c) => (
+            <Link
+              key={c.name}
+              to={`/browse?cat=${encodeURIComponent(c.name)}`}
+              className="group bg-card border border-border rounded-2xl p-5 flex items-center gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+            >
+              <div className={`h-12 w-12 rounded-xl ${c.color} flex items-center justify-center transition-transform duration-200 group-hover:scale-110 flex-shrink-0`}>
+                <c.icon className="h-6 w-6" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold leading-tight truncate group-hover:text-primary transition-colors">{c.name}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{c.desc}</div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -177,8 +218,17 @@ const Index = () => {
         {products === null ? (
           <ProductGridSkeleton count={8} />
         ) : products.length === 0 ? (
-          <div className="card-elevated p-12 text-center text-muted-foreground">
-            No products yet — be the first vendor!
+          <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
+            <div className="h-14 w-14 mx-auto rounded-2xl bg-accent text-accent-foreground flex items-center justify-center mb-4">
+              <Rocket className="h-6 w-6" />
+            </div>
+            <h3 className="text-lg font-semibold">No listings yet. Start selling and earn now 🚀</h3>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-md mx-auto">
+              Be one of the first verified vendors on StreamCart and reach 19,000+ ready buyers.
+            </p>
+            <Button asChild size="lg" className="mt-5 rounded-xl font-semibold">
+              <Link to="/sell">Become a Seller</Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -187,16 +237,19 @@ const Index = () => {
         )}
       </section>
 
-      {/* TRUST */}
+      {/* TRUST / WHY US */}
       <section className="container pb-16">
         <div className="grid md:grid-cols-3 gap-5">
           {[
-            { icon: Zap, title: "Instant delivery", desc: "Credentials revealed in your dashboard the moment you pay." },
-            { icon: Lock, title: "Wallet protected", desc: "Funds stay in your wallet until you choose what to buy." },
-            { icon: CheckCircle2, title: "Vetted vendors", desc: "Every seller and listing is reviewed by our admin team." },
+            { icon: Zap, title: "Instant delivery", desc: "Credentials revealed in your dashboard the moment you pay.", tone: "bg-amber-100 text-amber-700" },
+            { icon: Lock, title: "Wallet protected", desc: "Funds stay in your wallet until you choose what to buy.", tone: "bg-sky-100 text-sky-700" },
+            { icon: CheckCircle2, title: "Vetted vendors", desc: "Every seller and listing is reviewed by our admin team.", tone: "bg-emerald-100 text-emerald-700" },
           ].map((f) => (
-            <div key={f.title} className="bg-card border border-border rounded-2xl p-6 transition-all hover:shadow-md hover:border-primary/30">
-              <div className="h-11 w-11 rounded-xl bg-accent text-accent-foreground flex items-center justify-center mb-4">
+            <div
+              key={f.title}
+              className="bg-card border border-border rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+            >
+              <div className={`h-12 w-12 rounded-2xl ${f.tone} flex items-center justify-center mb-4 transition-transform duration-200 hover:scale-110`}>
                 <f.icon className="h-5 w-5" />
               </div>
               <div className="font-semibold mb-1">{f.title}</div>
@@ -207,6 +260,17 @@ const Index = () => {
       </section>
 
       <Footer />
+
+      {/* Mobile sticky CTA */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border p-3 flex gap-2 shadow-lg">
+        <Button variant="outline" asChild className="flex-1 h-12 rounded-xl font-semibold">
+          <Link to="/sell">Sell</Link>
+        </Button>
+        <Button asChild className="flex-[2] h-12 rounded-xl font-bold shadow-md shadow-primary/30">
+          <Link to="/browse">Browse Subscriptions <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+        </Button>
+      </div>
+      <div className="md:hidden h-20" aria-hidden />
     </div>
   );
 };
@@ -223,10 +287,18 @@ const Stat = ({ icon: Icon, label, value }: { icon: any; label: string; value: s
   </div>
 );
 
-const TrustPill = ({ icon: Icon, label }: { icon: any; label: string }) => (
-  <div className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-3 py-1.5">
-    <Icon className="h-3.5 w-3.5 text-primary" /> {label}
-  </div>
-);
-
+const TrustBadge = ({ icon: Icon, label, sub, tone }: { icon: any; label: string; sub: string; tone: "primary" | "amber" }) => {
+  const toneClass = tone === "amber" ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary";
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`h-10 w-10 rounded-xl ${toneClass} flex items-center justify-center flex-shrink-0`}>
+        <Icon className={`h-5 w-5 ${tone === "amber" ? "fill-amber-400" : ""}`} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-semibold leading-tight truncate">{label}</div>
+        <div className="text-[11px] text-muted-foreground truncate">{sub}</div>
+      </div>
+    </div>
+  );
+};
 export default Index;
