@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { ReviewDialog } from "@/components/ReviewDialog";
+import { SupportTickets } from "@/components/SupportTickets";
 
 type Order = {
   id: string;
@@ -48,16 +49,19 @@ const Buyer = () => {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const [upiId, setUpiId] = useState<string>("streamcart@upi");
 
   useEffect(() => { document.title = "Buyer dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
 
   const load = async () => {
-    const [w, o, t] = await Promise.all([
+    const [w, o, t, s] = await Promise.all([
       supabase.from("wallets").select("balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("orders").select("*").eq("buyer_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("id,amount,status,created_at").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(10),
+      supabase.from("platform_settings").select("upi_id").eq("id", 1).maybeSingle(),
     ]);
+    if (s.data?.upi_id) setUpiId(s.data.upi_id);
     setBalance(Number(w.data?.balance ?? 0));
     const orderList = (o.data as Order[]) ?? [];
     setOrders(orderList);
@@ -149,7 +153,7 @@ const Buyer = () => {
               <form onSubmit={submitTopup} className="space-y-4">
                 <div className="rounded-lg bg-muted p-4 text-sm">
                   <div className="font-semibold mb-1">Pay to UPI:</div>
-                  <code className="text-primary font-mono">streamcart@upi</code>
+                  <code className="text-primary font-mono">{upiId}</code>
                   <p className="text-muted-foreground mt-2 text-xs">After paying, upload the screenshot below. Admin will credit your wallet within minutes.</p>
                 </div>
                 <div className="space-y-1.5">
@@ -269,6 +273,9 @@ const Buyer = () => {
             </div>
           )}
         </Card>
+
+        {/* Support */}
+        <SupportTickets />
       </main>
       <Footer />
     </div>

@@ -13,6 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield } from "lucide-react";
 import { CartIcon } from "./CartIcon";
+import { AnnouncementBanner } from "./AnnouncementBanner";
 
 export const Navbar = () => {
   const { user, isAdmin, isSeller, signOut } = useAuth();
@@ -21,6 +22,7 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md">
+      <AnnouncementBanner />
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" aria-label="StreamCart home">
           <Logo />
