@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
+import { ProductCard, ratingFor } from "@/components/ProductCard";
 import { inr } from "@/lib/format";
-import { useCart } from "@/lib/cart";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ShoppingCart, Search, Star, Filter, X, BadgeCheck } from "lucide-react";
+import { Search, Star, Filter, X } from "lucide-react";
 
 type Product = {
   id: string;
@@ -30,7 +30,6 @@ type SortKey = "newest" | "price_asc" | "price_desc" | "popular";
 
 const Browse = () => {
   const [params, setParams] = useSearchParams();
-  const { add } = useCart();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,11 +64,8 @@ const Browse = () => {
     setLoading(false);
   };
 
-  // Deterministic synthetic rating per product
-  const ratingFor = (id: string) => {
-    const seed = Array.from(id).reduce((s, c) => s + c.charCodeAt(0), 0);
-    return 4.6 + ((seed % 35) / 100);
-  };
+  // Deterministic synthetic rating per product (shared with ProductCard)
+  // ratingFor imported from ProductCard
 
   const filtered = useMemo(() => {
     let list = products
@@ -89,16 +85,7 @@ const Browse = () => {
     return products.filter((p) => p.service_name.toLowerCase().includes(t)).slice(0, 5);
   }, [q, products]);
 
-  const handleAddToCart = (p: Product, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    add({
-      id: p.id, service_name: p.service_name, category: p.category,
-      display_price: Number(p.display_price), duration: p.duration,
-      image_url: p.image_url, stock: p.stock,
-    });
-    toast.success(`${p.service_name} added to cart`);
-  };
+  // Add-to-cart logic now lives in the shared <ProductCard />
 
   const activeFilters = (cat !== "All" ? 1 : 0) + (priceRange[0] > 0 || priceRange[1] < 5000 ? 1 : 0) + (minRating > 0 ? 1 : 0);
 
@@ -226,45 +213,8 @@ const Browse = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filtered.map((p) => {
-              const r = ratingFor(p.id).toFixed(2);
-              return (
-                <Link key={p.id} to={`/product/${p.id}`} className="card-elevated p-5 flex flex-col gap-4 group">
-                  <div className="aspect-video rounded-lg bg-muted overflow-hidden flex items-center justify-center relative">
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={p.service_name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                    ) : (
-                      <span className="text-4xl font-bold text-muted-foreground">{p.service_name.slice(0, 1)}</span>
-                    )}
-                    {p.stock <= 3 && (
-                      <Badge className="absolute top-2 right-2 bg-warning text-warning-foreground">Only {p.stock} left</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold truncate">{p.service_name}</h3>
-                      <div className="flex gap-1.5 mt-1 items-center">
-                        <Badge variant="secondary" className="text-xs">{p.category}</Badge>
-                        {p.duration && <span className="text-xs text-muted-foreground">{p.duration}</span>}
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-lg font-bold text-primary">{inr(p.display_price)}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-0.5 justify-end">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {r}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <BadgeCheck className="h-3 w-3 text-primary" /> Verified seller
-                  </div>
-                  <Button onClick={(e) => handleAddToCart(p, e)} variant="outline" className="mt-auto">
-                    <ShoppingCart className="h-4 w-4 mr-2" /> Add to cart
-                  </Button>
-                </Link>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
       </main>
