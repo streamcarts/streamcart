@@ -14,6 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_clicks: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          ip: string | null
+          landing_path: string | null
+          referrer_url: string | null
+          slug: string
+          user_agent: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          ip?: string | null
+          landing_path?: string | null
+          referrer_url?: string | null
+          slug: string
+          user_agent?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          ip?: string | null
+          landing_path?: string | null
+          referrer_url?: string | null
+          slug?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      affiliate_conversions: {
+        Row: {
+          affiliate_id: string
+          buyer_id: string
+          commission_amount: number
+          commission_percent: number
+          created_at: string
+          id: string
+          order_id: string
+          order_total: number
+          status: string
+        }
+        Insert: {
+          affiliate_id: string
+          buyer_id: string
+          commission_amount: number
+          commission_percent: number
+          created_at?: string
+          id?: string
+          order_id: string
+          order_total: number
+          status?: string
+        }
+        Update: {
+          affiliate_id?: string
+          buyer_id?: string
+          commission_amount?: number
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          order_id?: string
+          order_total?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      affiliates: {
+        Row: {
+          approved_at: string | null
+          commission_percent: number
+          created_at: string
+          id: string
+          notes: string | null
+          slug: string
+          status: Database["public"]["Enums"]["affiliate_status"]
+          total_clicks: number
+          total_conversions: number
+          total_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          total_clicks?: number
+          total_conversions?: number
+          total_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          commission_percent?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          total_clicks?: number
+          total_conversions?: number
+          total_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           audience: string
@@ -84,39 +198,54 @@ export type Database = {
       }
       coupons: {
         Row: {
+          auto_issue: boolean
           code: string
           created_at: string
           discount_type: Database["public"]["Enums"]["discount_type"]
           discount_value: number
           expires_at: string | null
+          first_order_only: boolean
           id: string
           is_active: boolean
           max_uses: number | null
           min_order_value: number
+          one_per_user: boolean
+          owner_user_id: string | null
+          scope: string
           used_count: number
         }
         Insert: {
+          auto_issue?: boolean
           code: string
           created_at?: string
           discount_type: Database["public"]["Enums"]["discount_type"]
           discount_value: number
           expires_at?: string | null
+          first_order_only?: boolean
           id?: string
           is_active?: boolean
           max_uses?: number | null
           min_order_value?: number
+          one_per_user?: boolean
+          owner_user_id?: string | null
+          scope?: string
           used_count?: number
         }
         Update: {
+          auto_issue?: boolean
           code?: string
           created_at?: string
           discount_type?: Database["public"]["Enums"]["discount_type"]
           discount_value?: number
           expires_at?: string | null
+          first_order_only?: boolean
           id?: string
           is_active?: boolean
           max_uses?: number | null
           min_order_value?: number
+          one_per_user?: boolean
+          owner_user_id?: string | null
+          scope?: string
           used_count?: number
         }
         Relationships: []
@@ -365,6 +494,8 @@ export type Database = {
           id: string
           is_banned: boolean
           phone: string | null
+          referred_by: string | null
+          signup_ip: string | null
           updated_at: string
         }
         Insert: {
@@ -375,6 +506,8 @@ export type Database = {
           id: string
           is_banned?: boolean
           phone?: string | null
+          referred_by?: string | null
+          signup_ip?: string | null
           updated_at?: string
         }
         Update: {
@@ -385,7 +518,69 @@ export type Database = {
           id?: string
           is_banned?: boolean
           phone?: string | null
+          referred_by?: string | null
+          signup_ip?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code: string
+          converted_at: string | null
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_id: string
+          reward_amount: number
+          rewarded_at: string | null
+          signup_ip: string | null
+          status: string
+          user_agent: string | null
+        }
+        Insert: {
+          code: string
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+          reward_amount?: number
+          rewarded_at?: string | null
+          signup_ip?: string | null
+          status?: string
+          user_agent?: string | null
+        }
+        Update: {
+          code?: string
+          converted_at?: string | null
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
+          reward_amount?: number
+          rewarded_at?: string | null
+          signup_ip?: string | null
+          status?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -681,9 +876,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_affiliate: {
+        Args: {
+          _commission: number
+          _slug: string
+          _status?: Database["public"]["Enums"]["affiliate_status"]
+          _user_id: string
+        }
+        Returns: string
+      }
       approve_topup: { Args: { _topup_id: string }; Returns: undefined }
       approve_vendor: { Args: { _app_id: string }; Returns: undefined }
       approve_withdrawal: { Args: { _wd_id: string }; Returns: undefined }
+      gen_referral_code: { Args: { _seed: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -696,12 +901,31 @@ export type Database = {
         Args: { _order_id: string; _reason?: string }
         Returns: string
       }
-      purchase_product: {
-        Args: { _coupon_code?: string; _product_id: string }
-        Returns: string
-      }
+      purchase_product:
+        | {
+            Args: { _coupon_code?: string; _product_id: string }
+            Returns: string
+          }
+        | {
+            Args: {
+              _affiliate_slug?: string
+              _coupon_code?: string
+              _product_id: string
+            }
+            Returns: string
+          }
       set_user_ban: {
         Args: { _banned: boolean; _reason?: string; _user_id: string }
+        Returns: undefined
+      }
+      track_affiliate_click: {
+        Args: {
+          _ip: string
+          _path: string
+          _ref: string
+          _slug: string
+          _ua: string
+        }
         Returns: undefined
       }
       validate_coupon: {
@@ -714,6 +938,7 @@ export type Database = {
       }
     }
     Enums: {
+      affiliate_status: "pending" | "approved" | "suspended"
       app_role: "admin" | "seller" | "buyer"
       application_status: "pending" | "approved" | "rejected"
       credential_status: "available" | "assigned"
@@ -852,6 +1077,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      affiliate_status: ["pending", "approved", "suspended"],
       app_role: ["admin", "seller", "buyer"],
       application_status: ["pending", "approved", "rejected"],
       credential_status: ["available", "assigned"],
