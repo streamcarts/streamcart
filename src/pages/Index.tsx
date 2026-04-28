@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Tv, Brain, Shield, Share2, ArrowRight, CheckCircle2, Lock, Zap, Star,
-  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette, Rocket,
+  Users, IndianRupee, BadgeCheck, Search, Gamepad2, Cloud, GraduationCap, Palette, Rocket, Quote, HelpCircle,
 } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/format";
@@ -333,6 +334,77 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* REVIEWS */}
+      <section className="bg-muted/40 border-y border-border">
+        <div className="container py-16">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <Badge variant="secondary" className="bg-card border border-border mb-3">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" /> 4.9 average from 5,200+ buyers
+            </Badge>
+            <h2 className="text-2xl md:text-3xl font-bold">Loved by users across India</h2>
+            <p className="text-muted-foreground mt-2">Real reviews from verified StreamCart buyers.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {REVIEWS.map((rv) => (
+              <div
+                key={rv.name}
+                className="bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+              >
+                <Quote className="h-6 w-6 text-primary/40" />
+                <div className="flex items-center gap-1">
+                  {[0,1,2,3,4].map((i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-foreground/90 leading-relaxed flex-1">"{rv.text}"</p>
+                <div className="flex items-center gap-3 pt-2 border-t border-border">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                    {rv.name.split(" ").map((s) => s[0]).join("").slice(0,2)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold leading-tight truncate">{rv.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">{rv.role}</div>
+                  </div>
+                  <BadgeCheck className="h-4 w-4 text-primary ml-auto flex-shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="container py-16">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="h-12 w-12 mx-auto rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+              <HelpCircle className="h-6 w-6" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold">Frequently asked questions</h2>
+            <p className="text-muted-foreground mt-2">Everything you need to know before your first order.</p>
+          </div>
+
+          <Accordion type="single" collapsible className="bg-card border border-border rounded-2xl overflow-hidden divide-y divide-border">
+            {FAQS.map((faq, idx) => (
+              <AccordionItem key={idx} value={`q${idx}`} className="border-0 px-5">
+                <AccordionTrigger className="py-4 text-left text-base font-semibold hover:no-underline">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            Still have questions?{" "}
+            <Link to="/buyer" className="text-primary font-medium hover:underline">Raise a support ticket</Link>
+          </div>
         </div>
       </section>
 
