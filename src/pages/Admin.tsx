@@ -17,8 +17,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { inr } from "@/lib/format";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Eye, Search, Ban, ShieldAlert, Star, Flame, Megaphone, Ticket, Tag, BarChart3, RotateCcw, Settings as SettingsIcon, AlertTriangle, Loader2, Plus, MessageSquare, ShieldCheck } from "lucide-react";
+import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Eye, Search, Ban, ShieldAlert, Star, Flame, Megaphone, Ticket, Tag, BarChart3, RotateCcw, Settings as SettingsIcon, AlertTriangle, Loader2, Plus, MessageSquare, ShieldCheck, TrendingUp } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AffiliatesPanel } from "@/components/AffiliatesPanel";
 
 const Admin = () => {
   const { user } = useAuth();
@@ -218,6 +219,7 @@ const Admin = () => {
             <TabsTrigger value="coupons"><Tag className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Coupons</span></TabsTrigger>
             <TabsTrigger value="tickets"><Ticket className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Tickets</span></TabsTrigger>
             <TabsTrigger value="announce"><Megaphone className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Announce</span></TabsTrigger>
+            <TabsTrigger value="affiliates"><TrendingUp className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Affiliates</span></TabsTrigger>
             <TabsTrigger value="settings"><SettingsIcon className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Settings</span></TabsTrigger>
           </TabsList>
 
