@@ -402,6 +402,27 @@ const Admin = () => {
                 </div>
               )}
             </Card>
+
+            <Card className="p-6">
+              <h3 className="font-semibold mb-3">Pending UPI orders ({pendingOrders.length})</h3>
+              {pendingOrders.length === 0 ? <Empty msg="No payments awaiting verification." /> : (
+                <div className="space-y-2">
+                  {pendingOrders.map(po => (
+                    <div key={po.id} className="flex items-center justify-between gap-3 p-3 border border-border rounded-lg flex-wrap">
+                      <div className="min-w-0">
+                        <div className="font-semibold">{inr(Number(po.amount))} <span className="text-xs text-muted-foreground font-normal">• {((po.items as any[])?.length ?? 0)} item(s)</span></div>
+                        <div className="text-xs text-muted-foreground">Ref: {po.upi_reference || "—"} • {new Date(po.created_at).toLocaleString()}</div>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button size="sm" variant="ghost" onClick={() => viewPaymentScreenshot(po.screenshot_path)}><Eye className="h-4 w-4" /></Button>
+                        <Button size="sm" onClick={() => approvePendingOrder(po.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
+                        <Button size="sm" variant="outline" onClick={() => rejectPendingOrder(po.id)}><XCircle className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
           </TabsContent>
 
           {/* USERS */}
