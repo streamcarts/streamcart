@@ -290,11 +290,4 @@ const TrustBadge = ({ icon: Icon, label, sub, tone }: { icon: any; label: string
     </div>
   );
 };
-
-const TrustPill = ({ icon: Icon, label }: { icon: any; label: string }) => (
-  <div className="inline-flex items-center gap-1.5 rounded-full bg-card border border-border px-3 py-1.5">
-    <Icon className="h-3.5 w-3.5 text-primary" /> {label}
-  </div>
-);
-
 export default Index;
