@@ -336,6 +336,54 @@ export type Database = {
           },
         ]
       }
+      payment_intents: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          metadata: Json
+          paid_at: string | null
+          payment_url: string | null
+          provider: string
+          provider_order_id: string | null
+          provider_payment_id: string | null
+          purpose: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          payment_url?: string | null
+          provider?: string
+          provider_order_id?: string | null
+          provider_payment_id?: string | null
+          purpose: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          payment_url?: string | null
+          provider?: string
+          provider_order_id?: string | null
+          provider_payment_id?: string | null
+          purpose?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           commission_percent: number
@@ -926,6 +974,10 @@ export type Database = {
           _slug: string
           _ua: string
         }
+        Returns: undefined
+      }
+      urpay_mark_paid: {
+        Args: { _intent_id: string; _provider_payment_id: string }
         Returns: undefined
       }
       validate_coupon: {
