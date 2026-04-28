@@ -273,6 +273,9 @@ const Buyer = () => {
             </div>
           )}
         </Card>
+
+        {/* Support */}
+        <SupportTickets />
       </main>
       <Footer />
     </div>
