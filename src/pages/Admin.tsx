@@ -579,7 +579,8 @@ const ProductsPanel = ({ products, onChange }: any) => {
   });
 
   const toggle = async (p: any, field: "is_featured" | "is_trending" | "is_active", v: boolean) => {
-    const { error } = await supabase.from("products").update({ [field]: v }).eq("id", p.id);
+    const update: any = { [field]: v };
+    const { error } = await supabase.from("products").update(update).eq("id", p.id);
     if (error) return toast.error(error.message);
     toast.success("Updated");
     onChange();
