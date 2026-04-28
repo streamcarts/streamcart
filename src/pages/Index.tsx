@@ -37,6 +37,7 @@ const Index = () => {
       .from("products")
       .select("id, service_name, category, display_price, duration, image_url")
       .eq("status", "approved")
+      .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(6)
       .then(({ data }) => setProducts((data as Product[]) ?? []));

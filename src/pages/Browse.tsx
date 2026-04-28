@@ -55,6 +55,7 @@ const Browse = () => {
       .from("products")
       .select("id,service_name,category,description,display_price,duration,image_url,stock")
       .eq("status", "approved")
+      .eq("is_active", true)
       .gt("stock", 0)
       .order("created_at", { ascending: false });
     if (cat !== "All") query = query.eq("category", cat as any);
