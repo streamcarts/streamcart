@@ -132,6 +132,13 @@ const Auth = () => {
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
               </div>
+              {tab === "signup" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="ref" className="flex items-center gap-1.5"><Gift className="h-3.5 w-3.5 text-primary" /> Referral code <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                  <Input id="ref" value={refCode} onChange={(e) => setRefCode(e.target.value.toUpperCase())} maxLength={32} placeholder="e.g. SKM123" className="font-mono uppercase" />
+                  {refCode && <p className="text-[11px] text-primary">You'll get a 5% off coupon on your first order.</p>}
+                </div>
+              )}
               <Button type="submit" className="w-full" disabled={busy}>
                 {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {tab === "signup" ? "Create account" : "Sign in"}
