@@ -149,30 +149,59 @@ const Buyer = () => {
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-2" /> Add funds</Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Add funds via UPI</DialogTitle></DialogHeader>
-              <form onSubmit={submitTopup} className="space-y-4">
-                <div className="rounded-lg bg-muted p-4 text-sm">
-                  <div className="font-semibold mb-1">Pay to UPI:</div>
-                  <code className="text-primary font-mono">{upiId}</code>
-                  <p className="text-muted-foreground mt-2 text-xs">After paying, upload the screenshot below. Admin will credit your wallet within minutes.</p>
-                </div>
+             <DialogContent>
+              <DialogHeader><DialogTitle>Add funds</DialogTitle></DialogHeader>
+              <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="amt">Amount (₹)</Label>
-                  <Input id="amt" type="number" step="0.01" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                  <Input id="amt" type="number" step="1" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="ref">UPI reference / txn ID (optional)</Label>
-                  <Input id="ref" value={upiRef} onChange={(e) => setUpiRef(e.target.value)} maxLength={100} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="file">Payment screenshot</Label>
-                  <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
-                </div>
-                <Button type="submit" className="w-full" disabled={busy}>
-                  {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Submit top-up
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={busy || !amount || Number(amount) <= 0}
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      const { data, error } = await supabase.functions.invoke("urpay-create", {
+                        body: { purpose: "topup", amount: Number(amount) },
+                      });
+                      if (error) throw error;
+                      if (!data?.payment_url) throw new Error("No payment URL returned");
+                      window.location.href = data.payment_url;
+                    } catch (err: any) {
+                      toast.error(err.message || "Could not start UrPay");
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Pay instantly with UrPay
                 </Button>
-              </form>
+
+                <div className="relative text-center text-xs text-muted-foreground">
+                  <span className="bg-background px-2 relative z-10">or pay manually via UPI</span>
+                  <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
+                </div>
+
+                <form onSubmit={submitTopup} className="space-y-3">
+                  <div className="rounded-lg bg-muted p-3 text-sm">
+                    <div className="font-semibold mb-1">UPI ID:</div>
+                    <code className="text-primary font-mono">{upiId}</code>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="ref">UPI reference / txn ID (optional)</Label>
+                    <Input id="ref" value={upiRef} onChange={(e) => setUpiRef(e.target.value)} maxLength={100} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="file">Payment screenshot</Label>
+                    <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
+                  </div>
+                  <Button type="submit" variant="outline" className="w-full" disabled={busy}>
+                    {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Submit manual top-up
+                  </Button>
+                </form>
+              </div>
             </DialogContent>
           </Dialog>
         </Card>
