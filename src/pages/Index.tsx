@@ -266,7 +266,7 @@ const Index = () => {
       <section className="border-b border-border bg-card">
         <div className="container py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-            <TrustBadge icon={Star} label="4.9 Rating" sub="From 5,200+ reviews" tone="amber" />
+            <TrustBadge icon={Star} label="Quality-checked" sub="Approved listings only" tone="amber" />
             <TrustBadge icon={Lock} label="Secure Payments" sub="UPI · Wallet · Cards" tone="primary" />
             <TrustBadge icon={Zap} label="Instant Delivery" sub="Credentials in 5s" tone="primary" />
             <TrustBadge icon={BadgeCheck} label="Verified Sellers" sub="Manually approved" tone="primary" />
