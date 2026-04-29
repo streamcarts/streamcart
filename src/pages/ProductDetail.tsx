@@ -80,9 +80,9 @@ const ProductDetail = () => {
         setLoading(false);
         return;
       }
-      // Redirect /product/:id → /p/:slug for canonical clean URL
+      // Redirect /product/:id and /p/:uuid → /p/:slug for canonical clean URL
       const dataSlug = (data as any).slug as string | null | undefined;
-      if (id && dataSlug) {
+      if ((id || slugIsUuid) && dataSlug) {
         navigate(`/p/${dataSlug}`, { replace: true });
         return;
       }
