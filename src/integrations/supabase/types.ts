@@ -55,7 +55,7 @@ export type Database = {
           commission_percent: number
           created_at: string
           id: string
-          order_id: string
+          order_id: string | null
           order_total: number
           status: string
         }
@@ -66,7 +66,7 @@ export type Database = {
           commission_percent: number
           created_at?: string
           id?: string
-          order_id: string
+          order_id?: string | null
           order_total: number
           status?: string
         }
@@ -77,11 +77,19 @@ export type Database = {
           commission_percent?: number
           created_at?: string
           id?: string
-          order_id?: string
+          order_id?: string | null
           order_total?: number
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_conversions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       affiliates: {
         Row: {
@@ -375,7 +383,7 @@ export type Database = {
           credentials_email: string
           credentials_password: string
           id: string
-          product_id: string
+          product_id: string | null
           seller_earning: number
           seller_id: string
           service_name: string
@@ -390,7 +398,7 @@ export type Database = {
           credentials_email: string
           credentials_password: string
           id?: string
-          product_id: string
+          product_id?: string | null
           seller_earning: number
           seller_id: string
           service_name: string
@@ -405,7 +413,7 @@ export type Database = {
           credentials_email?: string
           credentials_password?: string
           id?: string
-          product_id?: string
+          product_id?: string | null
           seller_earning?: number
           seller_id?: string
           service_name?: string
@@ -413,6 +421,13 @@ export type Database = {
           total_paid?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "product_credentials"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_product_id_fkey"
             columns: ["product_id"]
@@ -815,7 +830,15 @@ export type Database = {
           seller_id?: string
           status?: Database["public"]["Enums"]["refund_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -848,7 +871,15 @@ export type Database = {
           rating?: number
           seller_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_tickets: {
         Row: {
