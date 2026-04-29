@@ -38,6 +38,12 @@ export const Navbar = () => {
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
           <Link to="/browse" className="hover:text-foreground transition-colors">Browse</Link>
+          {!user && (
+            <>
+              <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
+              <Link to="/refund" className="hover:text-foreground transition-colors">Refund Policy</Link>
+            </>
+          )}
           {!isSeller && (
             <Link to="/sell" className="hover:text-foreground transition-colors">Become a seller</Link>
           )}
