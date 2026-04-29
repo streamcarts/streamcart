@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Logo } from "./Logo";
-import { Mail, Twitter, Instagram, Shield, Headphones, RefreshCw, Zap } from "lucide-react";
+import { Mail, Twitter, Instagram, Shield, Headphones, RefreshCw, Zap, MessageCircle } from "lucide-react";
 
 export const Footer = () => {
   const year = new Date().getFullYear();
@@ -29,12 +29,15 @@ export const Footer = () => {
           <div className="flex items-center gap-3 pt-1">
             <a href="#" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Twitter"><Twitter className="h-4 w-4" /></a>
             <a href="#" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Instagram"><Instagram className="h-4 w-4" /></a>
-            <a href="mailto:hello@streamcart.app" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Email"><Mail className="h-4 w-4" /></a>
+            <a href="https://wa.me/919473937978" target="_blank" rel="noreferrer" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="WhatsApp"><MessageCircle className="h-4 w-4" /></a>
+            <a href="mailto:support.streamcart@gmail.com" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Email"><Mail className="h-4 w-4" /></a>
           </div>
         </div>
 
         <FooterCol title="Marketplace" links={[
+          { label: "Browse", to: "/browse" },
           { label: "Affiliate program", to: "/affiliate" },
+          { label: "About us", to: "/about" },
         ]} />
 
         <FooterCol title="Account" links={[
@@ -44,7 +47,7 @@ export const Footer = () => {
         ]} />
 
         <FooterCol title="Legal" links={[
-          { label: "Terms of service", to: "/terms" },
+          { label: "Terms & Conditions", to: "/terms" },
           { label: "Privacy policy", to: "/privacy" },
           { label: "Refund policy", to: "/refund" },
         ]} />
