@@ -41,19 +41,37 @@ const ProductDetail = () => {
   const [p, setP] = useState<Product | null>(null);
   const [seller, setSeller] = useState<SellerInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFoundReason, setNotFoundReason] = useState<null | "missing" | "unavailable">(null);
   const [buying, setBuying] = useState(false);
 
   useEffect(() => {
     if (!id && !slug) return;
     setLoading(true);
+    setNotFoundReason(null);
     (async () => {
-      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform";
+      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform,status";
       const sb = supabase as any;
-      const q = sb.from("products").select(cols).eq("status", "approved");
-      const { data, error } = await (slug ? q.eq("slug", slug) : q.eq("id", id!)).maybeSingle();
+      // Try approved first
+      let { data, error } = await (slug
+        ? sb.from("products").select(cols).eq("slug", slug).eq("status", "approved").maybeSingle()
+        : sb.from("products").select(cols).eq("id", id!).eq("status", "approved").maybeSingle());
+
+      if (!data && !error) {
+        // Approved row not found — check if it exists at all (any status) to give a better reason
+        const probe = await (slug
+          ? sb.from("products").select("id,status").eq("slug", slug).maybeSingle()
+          : sb.from("products").select("id,status").eq("id", id!).maybeSingle());
+        if (probe.data) {
+          setNotFoundReason("unavailable");
+        } else {
+          setNotFoundReason("missing");
+        }
+        setLoading(false);
+        return;
+      }
       if (error || !data) {
-        toast.error("Product not found");
-        navigate("/browse");
+        setNotFoundReason("missing");
+        setLoading(false);
         return;
       }
       // Redirect /product/:id → /p/:slug for canonical clean URL
@@ -104,6 +122,31 @@ const ProductDetail = () => {
     });
     toast.success(`${p.service_name} added to cart`);
   };
+
+  if (notFoundReason) {
+    const isUnavailable = notFoundReason === "unavailable";
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 container py-16 flex flex-col items-center text-center max-w-lg mx-auto">
+          <Package className="h-12 w-12 text-muted-foreground mb-4" />
+          <h1 className="text-2xl font-bold mb-2">
+            {isUnavailable ? "This listing is currently unavailable" : "Product not found"}
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            {isUnavailable
+              ? "The seller has paused this listing or it's awaiting review. Please check back later or browse similar products."
+              : "This product may have been removed or the link is incorrect."}
+          </p>
+          <div className="flex gap-3">
+            <Button asChild><Link to="/browse">Browse products</Link></Button>
+            <Button variant="outline" onClick={() => navigate(-1)}>Go back</Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (loading || !p) {
     return (
