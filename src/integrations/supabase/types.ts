@@ -1444,6 +1444,69 @@ export type Database = {
           },
         ]
       }
+      uropay_orders: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          merchant_order_id: string
+          payload: Json | null
+          purpose: Database["public"]["Enums"]["uropay_purpose"]
+          qr_code: string | null
+          reference_number: string | null
+          result_ids: Json | null
+          status: Database["public"]["Enums"]["uropay_status"]
+          updated_at: string
+          upi_string: string | null
+          uropay_order_id: string
+          user_id: string
+          webhook_amount: number | null
+          webhook_received_at: string | null
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          merchant_order_id: string
+          payload?: Json | null
+          purpose: Database["public"]["Enums"]["uropay_purpose"]
+          qr_code?: string | null
+          reference_number?: string | null
+          result_ids?: Json | null
+          status?: Database["public"]["Enums"]["uropay_status"]
+          updated_at?: string
+          upi_string?: string | null
+          uropay_order_id: string
+          user_id: string
+          webhook_amount?: number | null
+          webhook_received_at?: string | null
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          merchant_order_id?: string
+          payload?: Json | null
+          purpose?: Database["public"]["Enums"]["uropay_purpose"]
+          qr_code?: string | null
+          reference_number?: string | null
+          result_ids?: Json | null
+          status?: Database["public"]["Enums"]["uropay_status"]
+          updated_at?: string
+          upi_string?: string | null
+          uropay_order_id?: string
+          user_id?: string
+          webhook_amount?: number | null
+          webhook_received_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1728,6 +1791,27 @@ export type Database = {
       can_manage_payments: { Args: { _uid: string }; Returns: boolean }
       cancel_expired_pending_orders: { Args: never; Returns: number }
       cancel_my_pending_order: { Args: { _id: string }; Returns: undefined }
+      complete_uropay_checkout: {
+        Args: { _uropay_order_id: string }
+        Returns: Json
+      }
+      complete_uropay_topup: {
+        Args: { _uropay_order_id: string }
+        Returns: boolean
+      }
+      create_uropay_intent: {
+        Args: {
+          _amount: number
+          _merchant_order_id: string
+          _payload?: Json
+          _purpose: Database["public"]["Enums"]["uropay_purpose"]
+          _qr_code: string
+          _upi_string: string
+          _uropay_order_id: string
+          _user_id: string
+        }
+        Returns: string
+      }
       detect_contact_info: {
         Args: { _text: string }
         Returns: {
@@ -1822,6 +1906,15 @@ export type Database = {
           _affiliate_slug?: string
           _coupon_code?: string
           _product_id: string
+        }
+        Returns: string
+      }
+      purchase_product_as: {
+        Args: {
+          _affiliate_slug?: string
+          _coupon_code?: string
+          _product_id: string
+          _user_id: string
         }
         Returns: string
       }
@@ -1942,6 +2035,8 @@ export type Database = {
       refund_status: "pending" | "processed" | "rejected"
       ticket_status: "open" | "pending_user" | "closed"
       topup_status: "pending" | "approved" | "rejected"
+      uropay_purpose: "checkout" | "topup"
+      uropay_status: "created" | "paid" | "completed" | "failed" | "expired"
       withdrawal_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -2090,6 +2185,8 @@ export const Constants = {
       refund_status: ["pending", "processed", "rejected"],
       ticket_status: ["open", "pending_user", "closed"],
       topup_status: ["pending", "approved", "rejected"],
+      uropay_purpose: ["checkout", "topup"],
+      uropay_status: ["created", "paid", "completed", "failed", "expired"],
       withdrawal_status: ["pending", "approved", "rejected"],
     },
   },
