@@ -324,7 +324,7 @@ const Index = () => {
             </div>
             <h3 className="text-lg font-semibold">No listings yet. Start selling and earn now 🚀</h3>
             <p className="text-sm text-muted-foreground mt-1.5 max-w-md mx-auto">
-              Be one of the first verified vendors on StreamCart and reach 19,000+ ready buyers.
+              Be one of the first verified vendors on StreamCart and start earning today.
             </p>
             <Button asChild size="lg" className="mt-5 rounded-xl font-semibold">
               <Link to="/sell">Become a Seller</Link>
