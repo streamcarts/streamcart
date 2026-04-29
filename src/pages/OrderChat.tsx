@@ -31,9 +31,10 @@ type Chat = {
 };
 type Msg = {
   id: string; chat_id: string; sender_id: string | null;
-  kind: "text" | "credentials" | "system";
+  kind: "text" | "credentials" | "system" | "image";
   body: string | null; cred_email: string | null; cred_password: string | null; cred_notes: string | null;
   is_flagged: boolean; flag_reason: string | null; is_blocked: boolean;
+  chat_image_path: string | null;
   created_at: string;
 };
 
