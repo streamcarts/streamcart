@@ -33,12 +33,12 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
-    const { data: claims, error: cErr } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (cErr || !claims?.claims) {
+    const { data: userData, error: cErr } = await supabase.auth.getUser();
+    if (cErr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const userId: string = claims.claims.sub;
-    const userEmail: string = claims.claims.email || "buyer@streamcart.app";
+    const userId: string = userData.user.id;
+    const userEmail: string = userData.user.email || "buyer@streamcart.app";
 
     const body = await req.json();
     const purpose: "checkout" | "topup" = body.purpose;
