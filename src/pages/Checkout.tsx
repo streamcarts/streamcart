@@ -204,8 +204,24 @@ const Checkout = () => {
             <section className="card-elevated p-5 md:p-6">
               <h2 className="font-semibold mb-4 flex items-center gap-2"><Wallet className="h-4 w-4" /> Payment method</h2>
 
+              {/* 100% off — free checkout */}
+              {total === 0 && (
+                <div className="rounded-lg border border-primary bg-primary/5 p-4 mb-4">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                      <div className="font-semibold flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> 100% off applied</div>
+                      <div className="text-xs text-muted-foreground">No payment required — confirm to place order instantly</div>
+                    </div>
+                    <div className="text-2xl font-bold text-primary">{inr(0)}</div>
+                  </div>
+                  <Button className="w-full mt-3" onClick={payFromWallet} disabled={processing}>
+                    {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Confirming…</> : <>Confirm free order <ArrowRight className="ml-2 h-4 w-4" /></>}
+                  </Button>
+                </div>
+              )}
+
               {/* Wallet (if sufficient) */}
-              {canPayWallet && (
+              {total > 0 && canPayWallet && (
                 <div className="rounded-lg border border-primary bg-primary/5 p-4 mb-4">
                   <div className="flex items-center justify-between flex-wrap gap-3">
                     <div>
@@ -220,7 +236,8 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Premium UPI payment card */}
+              {/* Premium UPI payment card — hidden when total is 0 */}
+              {total > 0 && (
               <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center justify-between flex-wrap gap-2">
@@ -327,6 +344,7 @@ const Checkout = () => {
                   </div>
                 </div>
               </div>
+              )}
 
               {!canPayWallet && balance !== null && balance > 0 && (
                 <p className="text-xs text-muted-foreground mt-3">

@@ -28,8 +28,8 @@ type Order = {
   seller_id: string;
   service_name: string;
   total_paid: number;
-  credentials_email: string;
-  credentials_password: string;
+  credentials_email: string | null;
+  credentials_password: string | null;
   status: string;
   created_at: string;
 };
@@ -110,7 +110,10 @@ const Buyer = () => {
     }
   };
 
-  const mask = (s: string) => (s.length <= 2 ? "••" : s[0] + "•".repeat(Math.max(4, s.length - 2)) + s[s.length - 1]);
+  const mask = (s: string | null | undefined) => {
+    if (!s) return "••••";
+    return s.length <= 2 ? "••" : s[0] + "•".repeat(Math.max(4, s.length - 2)) + s[s.length - 1];
+  };
 
   const reorder = async (o: Order) => {
     const { data, error } = await supabase
@@ -241,27 +244,29 @@ const Buyer = () => {
                       </div>
                     </div>
 
-                    {/* Credentials */}
-                    <div className="mt-3 rounded-md bg-muted/60 p-3 font-mono text-sm space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex-1 min-w-0 truncate">
-                          <span className="text-muted-foreground text-xs not-italic font-sans">Email: </span>
-                          <span>{isOpen ? o.credentials_email : mask(o.credentials_email)}</span>
+                    {/* Credentials (instant delivery only) */}
+                    {(o as any).delivery_mode !== "chat" && o.credentials_email && (
+                      <div className="mt-3 rounded-md bg-muted/60 p-3 font-mono text-sm space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0 truncate">
+                            <span className="text-muted-foreground text-xs not-italic font-sans">Email: </span>
+                            <span>{isOpen ? o.credentials_email : mask(o.credentials_email)}</span>
+                          </div>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!isOpen} onClick={() => copy(o.credentials_email ?? "", "Email")} aria-label="Copy email">
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!isOpen} onClick={() => copy(o.credentials_email, "Email")} aria-label="Copy email">
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex-1 min-w-0 truncate">
-                          <span className="text-muted-foreground text-xs not-italic font-sans">Password: </span>
-                          <span>{isOpen ? o.credentials_password : mask(o.credentials_password)}</span>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex-1 min-w-0 truncate">
+                            <span className="text-muted-foreground text-xs not-italic font-sans">Password: </span>
+                            <span>{isOpen ? o.credentials_password : mask(o.credentials_password)}</span>
+                          </div>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!isOpen} onClick={() => copy(o.credentials_password ?? "", "Password")} aria-label="Copy password">
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!isOpen} onClick={() => copy(o.credentials_password, "Password")} aria-label="Copy password">
-                          <Copy className="h-3.5 w-3.5" />
-                        </Button>
                       </div>
-                    </div>
+                    )}
 
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
                       {(o as any).delivery_mode === "chat" && (
@@ -269,9 +274,11 @@ const Buyer = () => {
                           <Link to={`/orders/chat/${o.id}`}>Open chat</Link>
                         </Button>
                       )}
-                      <Button size="sm" variant={isOpen ? "outline" : "default"} onClick={() => setRevealed({ ...revealed, [o.id]: !isOpen })}>
-                        {isOpen ? <><EyeOff className="h-3.5 w-3.5 mr-1.5" />Hide</> : <><Eye className="h-3.5 w-3.5 mr-1.5" />Reveal credentials</>}
-                      </Button>
+                      {(o as any).delivery_mode !== "chat" && o.credentials_email && (
+                        <Button size="sm" variant={isOpen ? "outline" : "default"} onClick={() => setRevealed({ ...revealed, [o.id]: !isOpen })}>
+                          {isOpen ? <><EyeOff className="h-3.5 w-3.5 mr-1.5" />Hide</> : <><Eye className="h-3.5 w-3.5 mr-1.5" />Reveal credentials</>}
+                        </Button>
+                      )}
                       <Button size="sm" variant="ghost" onClick={() => reorder(o)}>
                         <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Reorder
                       </Button>
