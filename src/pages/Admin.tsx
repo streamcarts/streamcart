@@ -224,6 +224,40 @@ const Admin = () => {
 
   const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length + pendingOrders.length;
 
+  // Lazy-load signed preview URLs for pending order screenshots
+  useEffect(() => {
+    const missing = pendingOrders.filter(po => po.screenshot_path && !poPreviews[po.id]);
+    if (missing.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const updates: Record<string, string> = {};
+      for (const po of missing) {
+        const { data } = await supabase.storage.from("payment-screenshots").createSignedUrl(po.screenshot_path, 600);
+        if (data?.signedUrl) updates[po.id] = data.signedUrl;
+      }
+      if (!cancelled && Object.keys(updates).length) setPoPreviews(prev => ({ ...prev, ...updates }));
+    })();
+    return () => { cancelled = true; };
+  }, [pendingOrders, poPreviews]);
+
+  // Keyboard shortcuts: A=approve, R=reject on focused/last-selected row
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tgt = e.target as HTMLElement | null;
+      if (tgt && (tgt.tagName === "INPUT" || tgt.tagName === "TEXTAREA" || tgt.isContentEditable)) return;
+      const id = focusedPoId ?? (selectedPo.size === 1 ? Array.from(selectedPo)[0] : null);
+      if (!id) return;
+      const exists = pendingOrders.some(p => p.id === id);
+      if (!exists) return;
+      const k = e.key.toLowerCase();
+      if (k === "a") { e.preventDefault(); approvePendingOrder(id); }
+      else if (k === "r") { e.preventDefault(); rejectPendingOrder(id); }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusedPoId, selectedPo, pendingOrders]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
