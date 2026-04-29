@@ -110,7 +110,10 @@ const Buyer = () => {
     }
   };
 
-  const mask = (s: string) => (s.length <= 2 ? "••" : s[0] + "•".repeat(Math.max(4, s.length - 2)) + s[s.length - 1]);
+  const mask = (s: string | null | undefined) => {
+    if (!s) return "••••";
+    return s.length <= 2 ? "••" : s[0] + "•".repeat(Math.max(4, s.length - 2)) + s[s.length - 1];
+  };
 
   const reorder = async (o: Order) => {
     const { data, error } = await supabase
