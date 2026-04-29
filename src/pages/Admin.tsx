@@ -184,9 +184,10 @@ const Admin = () => {
     toast.success("Withdrawal approved"); loadAll();
   };
   const rejectWd = async (id: string) => {
-    const { error } = await supabase.from("withdrawals").update({ status: "rejected", reviewed_at: new Date().toISOString() }).eq("id", id);
+    const note = window.prompt("Reason for rejection (optional):") ?? null;
+    const { error } = await supabase.rpc("reject_withdrawal" as any, { _wd_id: id, _note: note });
     if (error) return toast.error(error.message);
-    toast.success("Withdrawal rejected"); loadAll();
+    toast.success("Withdrawal rejected & balance refunded"); loadAll();
   };
   const viewScreenshot = async (path: string) => {
     const { data } = await supabase.storage.from("topup-screenshots").createSignedUrl(path, 60);
