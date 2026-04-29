@@ -14,6 +14,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Search, Star, Filter, X, LayoutGrid } from "lucide-react";
 import { useCategories, getCategoryIcon } from "@/lib/categories";
+import { SEO } from "@/components/SEO";
 
 type Product = {
   id: string;
