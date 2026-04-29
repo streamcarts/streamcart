@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp } from "lucide-react";
+import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp, MessageSquareText } from "lucide-react";
 import { CartIcon } from "./CartIcon";
 import { AnnouncementBanner } from "./AnnouncementBanner";
 import { useEffect, useState } from "react";
