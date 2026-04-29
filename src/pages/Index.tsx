@@ -139,7 +139,7 @@ const Index = () => {
           {/* Highlight badge */}
           <Badge variant="secondary" className="bg-card border border-primary/20 text-primary mb-6 px-3.5 py-1.5 animate-fade-in shadow-sm">
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse mr-1.5" />
-            Trusted by 19,000+ users
+            New on StreamCart — verified sellers only
           </Badge>
 
           <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight animate-fade-in">
