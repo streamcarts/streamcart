@@ -509,6 +509,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean
+          link: string | null
+          push_sent: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          push_sent?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          push_sent?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_chats: {
         Row: {
           auto_complete_at: string | null
@@ -1083,6 +1122,36 @@ export type Database = {
           signup_ip?: string | null
           updated_at?: string
           whatsapp_number?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1664,6 +1733,16 @@ export type Database = {
       }
       mark_chat_read: { Args: { _chat_id: string }; Returns: undefined }
       mark_order_received: { Args: { _order_id: string }; Returns: undefined }
+      notify_admins: {
+        Args: {
+          _body: string
+          _data: Json
+          _link: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
       process_refund: {
         Args: { _order_id: string; _reason?: string }
         Returns: string
