@@ -630,6 +630,7 @@ const Admin = () => {
           <TabsContent value="products"><ProductsPanel products={allProducts} onChange={loadAll} /></TabsContent>
 
           <TabsContent value="categories"><CategoriesPanel /></TabsContent>
+          <TabsContent value="platforms"><PlatformsPanel /></TabsContent>
 
           {/* FINANCE */}
           <TabsContent value="finance"><FinancePanel orders={allOrders} refunds={refunds} users={allUsers} onChange={loadAll} /></TabsContent>
