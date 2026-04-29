@@ -38,7 +38,20 @@ export const Navbar = () => {
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
           <Link to="/browse" className="hover:text-foreground transition-colors">Browse</Link>
-          <Link to="/sell" className="hover:text-foreground transition-colors">Become a seller</Link>
+          {!isSeller && (
+            <Link to="/sell" className="hover:text-foreground transition-colors">Become a seller</Link>
+          )}
+          {user && (
+            <>
+              <Link to="/messages" className="hover:text-foreground transition-colors">Messages</Link>
+              <Link to="/buyer?tab=refer" className="hover:text-foreground transition-colors">Refer & Earn</Link>
+              {isSeller ? (
+                <Link to="/seller?tab=listings" className="hover:text-foreground transition-colors">My Listings</Link>
+              ) : (
+                <Link to="/buyer?tab=orders" className="hover:text-foreground transition-colors">Orders</Link>
+              )}
+            </>
+          )}
         </nav>
         <div className="flex items-center gap-2">
           <CartIcon />
