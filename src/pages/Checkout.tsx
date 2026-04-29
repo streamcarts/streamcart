@@ -16,8 +16,6 @@ import { Link } from "react-router-dom";
 import payGpay from "@/assets/pay-gpay.png";
 import payPhonepe from "@/assets/pay-phonepe.png";
 import payPaytm from "@/assets/pay-paytm.png";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { UroPayPanel } from "@/components/UroPayPanel";
 
 type Settings = { upi_id: string; commission_percent: number };
 
@@ -241,34 +239,9 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* UPI payment options — UroPay (auto) + Manual UPI */}
+              {/* UPI payment */}
               {total > 0 && (
-              <Tabs defaultValue="uropay" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="uropay" className="gap-1.5">
-                    <Zap className="h-3.5 w-3.5" /> UroPay <span className="hidden sm:inline text-[10px] opacity-70">(auto)</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="manual" className="gap-1.5">
-                    <Smartphone className="h-3.5 w-3.5" /> Manual UPI
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="uropay" className="mt-0">
-                  <UroPayPanel
-                    purpose="checkout"
-                    amount={total}
-                    customerName={user?.email?.split("@")[0]}
-                    items={items.map(i => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: Number(i.display_price) }))}
-                    couponCode={couponCode}
-                    onCompleted={(res) => {
-                      clear();
-                      const ids = Array.isArray(res.result_ids) ? res.result_ids.join(",") : "";
-                      navigate(`/success?ids=${ids}`);
-                    }}
-                  />
-                </TabsContent>
-
-                <TabsContent value="manual" className="mt-0">
+              <div className="w-full">
               <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center justify-between flex-wrap gap-2">
@@ -375,8 +348,7 @@ const Checkout = () => {
                   </div>
                 </div>
               </div>
-                </TabsContent>
-              </Tabs>
+              </div>
               )}
 
               {!canPayWallet && balance !== null && balance > 0 && (
