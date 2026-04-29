@@ -156,9 +156,14 @@ const Seller = () => {
 
           {/* ============== PRODUCTS ============== */}
           <TabsContent value="products" className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-semibold">Your listings</h2>
-              <ProductDialog onDone={load} userId={user!.id} />
+              <div className="flex gap-2">
+                <Button variant="outline" asChild>
+                  <a href="/seller/list-chat"><Plus className="h-4 w-4 mr-1" />List via chat delivery</a>
+                </Button>
+                <ProductDialog onDone={load} userId={user!.id} />
+              </div>
             </div>
             <ProductsTable products={products} loading={loading} creds={creds} onRefresh={load} userId={user!.id} />
           </TabsContent>
