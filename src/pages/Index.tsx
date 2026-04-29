@@ -301,9 +301,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* POPULAR PLATFORMS */}
-      <PopularPlatforms />
-
       {/* FEATURED PRODUCTS */}
       <section className="container py-14">
         <div className="flex items-end justify-between mb-8">
