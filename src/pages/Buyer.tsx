@@ -28,8 +28,8 @@ type Order = {
   seller_id: string;
   service_name: string;
   total_paid: number;
-  credentials_email: string;
-  credentials_password: string;
+  credentials_email: string | null;
+  credentials_password: string | null;
   status: string;
   created_at: string;
 };
