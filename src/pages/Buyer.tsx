@@ -149,10 +149,12 @@ const Buyer = () => {
               <div className="text-3xl font-bold">{balance === null ? <Skeleton className="h-8 w-32" /> : inr(balance)}</div>
             </div>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> Add funds</Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap gap-2">
+            <WithdrawDialog balance={balance ?? 0} userId={user!.id} onDone={load} />
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" /> Add funds</Button>
+              </DialogTrigger>
              <DialogContent>
               <DialogHeader><DialogTitle>Add funds</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -183,8 +185,15 @@ const Buyer = () => {
                 </form>
               </div>
             </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </Card>
+
+        {/* Earnings on hold (referral / rewards) */}
+        {(pendingBalance > 0) && (
+          <EarningsHoldsCard userId={user!.id} pendingBalance={pendingBalance} />
+        )}
 
         {/* Recent topups */}
         {topups.length > 0 && (
