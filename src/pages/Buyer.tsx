@@ -14,17 +14,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { inr } from "@/lib/format";
 import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck, Smartphone, Lock, QrCode, Zap, Upload, Clock, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck, CheckCircle2, Zap } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import payGpay from "@/assets/pay-gpay.png";
-import payPhonepe from "@/assets/pay-phonepe.png";
-import payPaytm from "@/assets/pay-paytm.png";
 import { ReviewDialog } from "@/components/ReviewDialog";
 import { SupportTickets } from "@/components/SupportTickets";
 import { ReferralPanel } from "@/components/ReferralPanel";
 import { WithdrawDialog } from "@/components/WithdrawDialog";
 import { EarningsHoldsCard } from "@/components/EarningsHoldsCard";
 import { ProfileCard } from "@/components/ProfileCard";
+import { RazorpayButton } from "@/components/RazorpayButton";
 
 type Order = {
   id: string;
