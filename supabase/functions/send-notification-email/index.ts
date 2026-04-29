@@ -28,8 +28,8 @@ const TYPE_MAP: Record<string, Mapping> = {
   complaint_new: { subject: "New Complaint 🚨", cta: "Review Complaint", tagline: "A buyer has filed a new complaint." },
 };
 
-// Reusable email sender
-async function sendEmail(opts: { to: string; subject: string; html: string }) {
+// Reusable email sender with retries (max 3 attempts = 1 + 2 retries)
+async function sendEmailOnce(opts: { to: string; subject: string; html: string }) {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? `${BRAND} <onboarding@resend.dev>`;
@@ -47,7 +47,44 @@ async function sendEmail(opts: { to: string; subject: string; html: string }) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(`Resend error [${res.status}]: ${JSON.stringify(data)}`);
-  return data;
+  return data as { id?: string };
+}
+
+async function sendEmailWithRetry(
+  admin: ReturnType<typeof createClient>,
+  opts: { to: string; subject: string; html: string; type: string | null; notificationId: string },
+) {
+  let lastErr: unknown = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const result = await sendEmailOnce(opts);
+      await admin.from("email_logs").insert({
+        notification_id: opts.notificationId,
+        recipient: opts.to,
+        subject: opts.subject,
+        type: opts.type,
+        status: "sent",
+        attempt,
+        provider_id: result.id ?? null,
+      });
+      return result;
+    } catch (e) {
+      lastErr = e;
+      const errMsg = e instanceof Error ? e.message : String(e);
+      const isFinal = attempt === 3;
+      await admin.from("email_logs").insert({
+        notification_id: opts.notificationId,
+        recipient: opts.to,
+        subject: opts.subject,
+        type: opts.type,
+        status: isFinal ? "failed" : "retry",
+        attempt,
+        error: errMsg.slice(0, 500),
+      });
+      if (!isFinal) await new Promise((r) => setTimeout(r, 400 * attempt));
+    }
+  }
+  throw lastErr;
 }
 
 Deno.serve(async (req) => {
