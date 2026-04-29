@@ -1,0 +1,441 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Loader2, Send, ShieldAlert, KeyRound, CheckCircle2, AlertTriangle, Clock, MessageSquareText, Copy, Eye, EyeOff, Flag, ChevronLeft,
+} from "lucide-react";
+import { toast } from "sonner";
+import { inr } from "@/lib/format";
+
+type Order = {
+  id: string; buyer_id: string; seller_id: string; service_name: string;
+  total_paid: number; status: string; delivery_mode: string; chat_id: string | null;
+  credentials_email: string | null; credentials_password: string | null;
+  credentials_sent_at: string | null; received_at: string | null;
+  created_at: string;
+};
+type Chat = {
+  id: string; order_id: string; buyer_id: string; seller_id: string; status: string;
+  response_due_at: string; delivered_at: string | null; auto_complete_at: string | null;
+};
+type Msg = {
+  id: string; chat_id: string; sender_id: string | null;
+  kind: "text" | "credentials" | "system";
+  body: string | null; cred_email: string | null; cred_password: string | null; cred_notes: string | null;
+  is_flagged: boolean; flag_reason: string | null; is_blocked: boolean;
+  created_at: string;
+};
+
+const OrderChat = () => {
+  const { orderId } = useParams<{ orderId: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [chat, setChat] = useState<Chat | null>(null);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [revealCred, setRevealCred] = useState<Record<string, boolean>>({});
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const isSeller = user && order && order.seller_id === user.id;
+  const isBuyer = user && order && order.buyer_id === user.id;
+
+  useEffect(() => { document.title = "Order chat — StreamCart"; }, []);
+
+  const load = async () => {
+    if (!orderId || !user) return;
+    setLoading(true);
+    const { data: o, error: oerr } = await supabase
+      .from("orders").select("*").eq("id", orderId).maybeSingle();
+    if (oerr || !o) { toast.error("Order not found"); navigate("/buyer"); return; }
+    setOrder(o as Order);
+
+    let chatId = (o as Order).chat_id;
+    if (!chatId) {
+      const { data: cid, error: cerr } = await supabase.rpc("ensure_order_chat", { _order_id: orderId });
+      if (cerr) { toast.error(cerr.message); setLoading(false); return; }
+      chatId = cid as string;
+    }
+    const [{ data: c }, { data: m }] = await Promise.all([
+      supabase.from("order_chats").select("*").eq("id", chatId!).maybeSingle(),
+      supabase.from("chat_messages").select("*").eq("chat_id", chatId!).order("created_at", { ascending: true }),
+    ]);
+    setChat(c as Chat);
+    setMsgs((m as Msg[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [orderId, user?.id]);
+
+  // Realtime
+  useEffect(() => {
+    if (!chat?.id) return;
+    const channel = supabase
+      .channel(`chat-${chat.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `chat_id=eq.${chat.id}` },
+        (payload) => setMsgs((cur) => [...cur, payload.new as Msg]))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "order_chats", filter: `id=eq.${chat.id}` },
+        (payload) => setChat(payload.new as Chat))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [chat?.id]);
+
+  // Auto-scroll
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [msgs.length]);
+
+  const send = async () => {
+    if (!chat || !body.trim()) return;
+    setSending(true);
+    const { error } = await supabase.rpc("send_chat_message", { _chat_id: chat.id, _body: body.trim() });
+    setSending(false);
+    if (error) return toast.error(error.message);
+    setBody("");
+  };
+
+  const markReceived = async () => {
+    if (!order) return;
+    const { error } = await supabase.rpc("mark_order_received", { _order_id: order.id });
+    if (error) return toast.error(error.message);
+    toast.success("Order marked as received. Seller payment released.");
+    load();
+  };
+
+  const copy = (txt: string, label: string) => {
+    navigator.clipboard.writeText(txt);
+    toast.success(`${label} copied`);
+  };
+
+  const responseTimer = useResponseTimer(chat);
+
+  if (loading || !order || !chat) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+        <main className="flex-1 container py-8 max-w-3xl space-y-4">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-[400px] w-full" />
+          <Skeleton className="h-12 w-full" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <main className="flex-1 container py-6 max-w-3xl">
+        <Button variant="ghost" size="sm" onClick={() => navigate(isSeller ? "/seller" : "/buyer")} className="mb-3 -ml-2">
+          <ChevronLeft className="h-4 w-4 mr-1" /> Back
+        </Button>
+
+        {/* Header */}
+        <Card className="p-4 mb-3">
+          <div className="flex items-start justify-between flex-wrap gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/15">
+                  <MessageSquareText className="h-3 w-3 mr-1" /> Chat delivery
+                </Badge>
+                <StatusBadge status={chat.status} />
+              </div>
+              <div className="font-semibold">{order.service_name}</div>
+              <div className="text-xs text-muted-foreground">#{order.id.slice(0, 8).toUpperCase()} • {inr(order.total_paid)}</div>
+            </div>
+            {chat.status === "pending_delivery" && (
+              <div className="text-right">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Seller must respond in</div>
+                <div className={`font-bold ${responseTimer.expired ? "text-destructive" : "text-primary"} flex items-center gap-1 justify-end`}>
+                  <Clock className="h-4 w-4" /> {responseTimer.label}
+                </div>
+              </div>
+            )}
+            {chat.status === "delivered" && chat.auto_complete_at && (
+              <div className="text-right">
+                <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Auto-complete in</div>
+                <div className="font-semibold text-muted-foreground flex items-center gap-1 justify-end">
+                  <Clock className="h-4 w-4" /> {timeUntil(chat.auto_complete_at)}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* Trust banner */}
+        <div className="rounded-lg border border-warning/40 bg-warning/5 p-3 mb-3 text-xs flex gap-2 items-start">
+          <ShieldAlert className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+          <div>
+            <strong>No external contact.</strong> Phone, WhatsApp, Telegram, email or external links are auto-blocked. Sellers caught sharing contact info are flagged and may be banned.
+          </div>
+        </div>
+
+        {/* Messages */}
+        <Card className="p-0 overflow-hidden flex flex-col">
+          <div ref={scrollRef} className="h-[420px] overflow-y-auto p-4 space-y-3 bg-muted/20">
+            {msgs.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No messages yet.</p>}
+            {msgs.map((m) => (
+              <MessageBubble
+                key={m.id}
+                m={m}
+                isMine={!!user && m.sender_id === user.id}
+                revealed={!!revealCred[m.id]}
+                toggleReveal={() => setRevealCred((r) => ({ ...r, [m.id]: !r[m.id] }))}
+                onCopy={copy}
+              />
+            ))}
+          </div>
+
+          {/* Composer / actions */}
+          <div className="border-t border-border bg-card p-3 space-y-2">
+            {chat.status === "completed" ? (
+              <div className="text-center text-sm text-muted-foreground py-2 flex items-center justify-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-primary" /> Order completed
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Write a message…"
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    rows={2}
+                    maxLength={2000}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); }
+                    }}
+                    className="resize-none"
+                  />
+                  <div className="flex flex-col gap-2">
+                    <Button onClick={send} disabled={sending || !body.trim()} size="icon">
+                      {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
+                    {isSeller && <SendCredentialsDialog chatId={chat.id} onDone={load} />}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] text-muted-foreground">⌘/Ctrl + Enter to send</p>
+                  <div className="flex items-center gap-2">
+                    {isBuyer && chat.status === "delivered" && (
+                      <Button size="sm" onClick={markReceived}>
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Mark as Received
+                      </Button>
+                    )}
+                    {isBuyer && (
+                      <Button size="sm" variant="outline" onClick={() => navigate("/buyer")}>
+                        <Flag className="h-3.5 w-3.5 mr-1.5" /> Report
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+// ============== Sub-components ==============
+
+const MessageBubble = ({
+  m, isMine, revealed, toggleReveal, onCopy,
+}: {
+  m: Msg; isMine: boolean; revealed: boolean;
+  toggleReveal: () => void; onCopy: (s: string, label: string) => void;
+}) => {
+  if (m.kind === "system") {
+    return (
+      <div className="text-center">
+        <span className="inline-block text-[11px] text-muted-foreground bg-background border border-border rounded-full px-3 py-1">
+          {m.body}
+        </span>
+      </div>
+    );
+  }
+  if (m.kind === "credentials") {
+    return (
+      <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+        <div className="max-w-[85%] rounded-2xl border-2 border-primary bg-primary/5 p-3 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <KeyRound className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold text-primary uppercase tracking-wide">Credentials delivered</span>
+          </div>
+          <div className="space-y-2 font-mono text-sm">
+            <CredRow label="Email / Username" value={m.cred_email ?? ""} revealed={revealed} onCopy={() => onCopy(m.cred_email!, "Email")} />
+            <CredRow label="Password" value={m.cred_password ?? ""} revealed={revealed} onCopy={() => onCopy(m.cred_password!, "Password")} />
+            {m.cred_notes && (
+              <div className="text-xs text-muted-foreground font-sans border-t border-border pt-2 mt-2 whitespace-pre-line">
+                {m.cred_notes}
+              </div>
+            )}
+          </div>
+          <Button size="sm" variant="ghost" className="mt-2 w-full" onClick={toggleReveal}>
+            {revealed ? <><EyeOff className="h-3.5 w-3.5 mr-1.5" />Hide</> : <><Eye className="h-3.5 w-3.5 mr-1.5" />Reveal</>}
+          </Button>
+          <div className="text-[10px] text-muted-foreground text-right mt-1">{new Date(m.created_at).toLocaleTimeString()}</div>
+        </div>
+      </div>
+    );
+  }
+  if (m.is_blocked) {
+    return (
+      <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+        <div className="max-w-[85%] rounded-2xl bg-destructive/10 border border-destructive/40 p-3">
+          <div className="flex items-center gap-2 text-destructive text-xs font-semibold mb-1">
+            <AlertTriangle className="h-3.5 w-3.5" /> Blocked ({m.flag_reason?.replace(/_/g, " ")})
+          </div>
+          <div className="text-sm text-foreground">{m.body}</div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+      <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
+        isMine ? "bg-primary text-primary-foreground" : "bg-card border border-border"
+      }`}>
+        <div className="text-sm whitespace-pre-line">{m.body}</div>
+        <div className={`text-[10px] mt-1 ${isMine ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+          {new Date(m.created_at).toLocaleTimeString()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CredRow = ({ label, value, revealed, onCopy }: { label: string; value: string; revealed: boolean; onCopy: () => void }) => {
+  const masked = value.length > 2 ? value[0] + "•".repeat(Math.max(4, value.length - 2)) + value[value.length - 1] : "••";
+  return (
+    <div className="flex items-center justify-between gap-2 bg-background/60 rounded px-2 py-1.5">
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] text-muted-foreground font-sans uppercase tracking-wide">{label}</div>
+        <div className="truncate">{revealed ? value : masked}</div>
+      </div>
+      <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!revealed} onClick={onCopy}>
+        <Copy className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+};
+
+const StatusBadge = ({ status }: { status: string }) => {
+  const map: Record<string, { label: string; cls: string }> = {
+    pending_delivery: { label: "Awaiting credentials", cls: "bg-warning/15 text-warning border-warning/30" },
+    delivered: { label: "Delivered", cls: "bg-primary/15 text-primary border-primary/30" },
+    completed: { label: "Completed", cls: "bg-primary text-primary-foreground" },
+    disputed: { label: "Disputed", cls: "bg-destructive/15 text-destructive border-destructive/40" },
+    cancelled: { label: "Cancelled", cls: "bg-muted text-muted-foreground" },
+  };
+  const v = map[status] ?? { label: status, cls: "bg-muted text-muted-foreground" };
+  return <Badge className={v.cls} variant="outline">{v.label}</Badge>;
+};
+
+const SendCredentialsDialog = ({ chatId, onDone }: { chatId: string; onDone: () => void }) => {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [notes, setNotes] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (!email.trim() || !password.trim()) return toast.error("Email and password required");
+    setBusy(true);
+    const { error } = await supabase.rpc("send_chat_credentials", {
+      _chat_id: chatId, _email: email.trim(), _password: password.trim(), _notes: notes.trim() || null,
+    });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Credentials sent securely");
+    setOpen(false); setEmail(""); setPassword(""); setNotes("");
+    onDone();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="icon" variant="outline" title="Send credentials">
+          <KeyRound className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" /> Send credentials</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>Email / Username</Label>
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} maxLength={200} autoComplete="off" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Password</Label>
+            <Input value={password} onChange={(e) => setPassword(e.target.value)} maxLength={200} autoComplete="off" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Notes (optional)</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} maxLength={500}
+              placeholder="Profile name, PIN, etc. — no contact info." />
+          </div>
+          <div className="rounded-md bg-warning/10 border border-warning/30 p-2 text-xs text-warning flex gap-2 items-start">
+            <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            <span>Notes me phone, email ya social handle mat likhna — auto-detect ho jayega.</span>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit} disabled={busy}>
+            {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Send credentials
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// ============== timer hooks ==============
+
+const useResponseTimer = (chat: Chat | null) => {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return useMemo(() => {
+    if (!chat) return { label: "—", expired: false };
+    return computeRemaining(chat.response_due_at);
+    // eslint-disable-next-line
+  }, [chat?.response_due_at, tick]);
+};
+
+const computeRemaining = (iso: string) => {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return { label: "Overdue", expired: true };
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return { label: `${m}m ${s.toString().padStart(2, "0")}s`, expired: false };
+};
+
+const timeUntil = (iso: string) => {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return "soon";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+};
+
+export default OrderChat;

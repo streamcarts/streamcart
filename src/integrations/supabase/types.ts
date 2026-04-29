@@ -216,6 +216,59 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          body: string | null
+          chat_id: string
+          created_at: string
+          cred_email: string | null
+          cred_notes: string | null
+          cred_password: string | null
+          flag_reason: string | null
+          id: string
+          is_blocked: boolean
+          is_flagged: boolean
+          kind: string
+          sender_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          chat_id: string
+          created_at?: string
+          cred_email?: string | null
+          cred_notes?: string | null
+          cred_password?: string | null
+          flag_reason?: string | null
+          id?: string
+          is_blocked?: boolean
+          is_flagged?: boolean
+          kind?: string
+          sender_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          chat_id?: string
+          created_at?: string
+          cred_email?: string | null
+          cred_notes?: string | null
+          cred_password?: string | null
+          flag_reason?: string | null
+          id?: string
+          is_blocked?: boolean
+          is_flagged?: boolean
+          kind?: string
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "order_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupon_redemptions: {
         Row: {
           coupon_id: string
@@ -374,50 +427,107 @@ export type Database = {
         }
         Relationships: []
       }
+      order_chats: {
+        Row: {
+          auto_complete_at: string | null
+          buyer_id: string
+          completed_at: string | null
+          created_at: string
+          delivered_at: string | null
+          id: string
+          order_id: string
+          response_due_at: string
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auto_complete_at?: string | null
+          buyer_id: string
+          completed_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          order_id: string
+          response_due_at?: string
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_complete_at?: string | null
+          buyer_id?: string
+          completed_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          order_id?: string
+          response_due_at?: string
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           admin_commission: number
           buyer_id: string
+          chat_id: string | null
           created_at: string
           credential_id: string | null
-          credentials_email: string
-          credentials_password: string
+          credentials_email: string | null
+          credentials_password: string | null
+          credentials_sent_at: string | null
+          delivery_mode: Database["public"]["Enums"]["delivery_mode"]
           id: string
           product_id: string | null
+          received_at: string | null
           seller_earning: number
           seller_id: string
           service_name: string
           status: Database["public"]["Enums"]["order_status"]
+          tier_label: string | null
           total_paid: number
         }
         Insert: {
           admin_commission: number
           buyer_id: string
+          chat_id?: string | null
           created_at?: string
           credential_id?: string | null
-          credentials_email: string
-          credentials_password: string
+          credentials_email?: string | null
+          credentials_password?: string | null
+          credentials_sent_at?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
           id?: string
           product_id?: string | null
+          received_at?: string | null
           seller_earning: number
           seller_id: string
           service_name: string
           status?: Database["public"]["Enums"]["order_status"]
+          tier_label?: string | null
           total_paid: number
         }
         Update: {
           admin_commission?: number
           buyer_id?: string
+          chat_id?: string | null
           created_at?: string
           credential_id?: string | null
-          credentials_email?: string
-          credentials_password?: string
+          credentials_email?: string | null
+          credentials_password?: string | null
+          credentials_sent_at?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
           id?: string
           product_id?: string | null
+          received_at?: string | null
           seller_earning?: number
           seller_id?: string
           service_name?: string
           status?: Database["public"]["Enums"]["order_status"]
+          tier_label?: string | null
           total_paid?: number
         }
         Relationships: [
@@ -634,16 +744,23 @@ export type Database = {
           base_price: number
           category: Database["public"]["Enums"]["product_category"]
           created_at: string
-          credentials_email: string
-          credentials_password: string
+          credentials_email: string | null
+          credentials_password: string | null
+          delivery_mode: Database["public"]["Enums"]["delivery_mode"]
           description: string | null
+          device_logins: number | null
+          device_types: string[]
           display_price: number
           duration: string | null
           id: string
           image_url: string | null
           is_active: boolean
           is_featured: boolean
+          is_private_account: boolean
           is_trending: boolean
+          plan_name: string | null
+          platform: string | null
+          price_tiers: Json
           rating_count: number
           seller_id: string
           service_name: string
@@ -656,16 +773,23 @@ export type Database = {
           base_price: number
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string
-          credentials_email: string
-          credentials_password: string
+          credentials_email?: string | null
+          credentials_password?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
           description?: string | null
+          device_logins?: number | null
+          device_types?: string[]
           display_price: number
           duration?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean
+          is_private_account?: boolean
           is_trending?: boolean
+          plan_name?: string | null
+          platform?: string | null
+          price_tiers?: Json
           rating_count?: number
           seller_id: string
           service_name: string
@@ -678,16 +802,23 @@ export type Database = {
           base_price?: number
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string
-          credentials_email?: string
-          credentials_password?: string
+          credentials_email?: string | null
+          credentials_password?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
           description?: string | null
+          device_logins?: number | null
+          device_types?: string[]
           display_price?: number
           duration?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean
+          is_private_account?: boolean
           is_trending?: boolean
+          plan_name?: string | null
+          platform?: string | null
+          price_tiers?: Json
           rating_count?: number
           seller_id?: string
           service_name?: string
@@ -880,6 +1011,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seller_flags: {
+        Row: {
+          chat_id: string | null
+          created_at: string
+          id: string
+          message_id: string | null
+          message_preview: string | null
+          reason: string
+          resolved: boolean
+          seller_id: string
+          severity: string
+        }
+        Insert: {
+          chat_id?: string | null
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          message_preview?: string | null
+          reason: string
+          resolved?: boolean
+          seller_id: string
+          severity?: string
+        }
+        Update: {
+          chat_id?: string | null
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          message_preview?: string | null
+          reason?: string
+          resolved?: boolean
+          seller_id?: string
+          severity?: string
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {
@@ -1130,6 +1297,10 @@ export type Database = {
       }
       admin_release_hold: { Args: { _hold_id: string }; Returns: undefined }
       admin_release_user_holds: { Args: { _user_id: string }; Returns: number }
+      admin_resolve_seller_flag: {
+        Args: { _flag_id: string }
+        Returns: undefined
+      }
       admin_set_affiliate: {
         Args: {
           _commission: number
@@ -1146,8 +1317,17 @@ export type Database = {
       approve_topup: { Args: { _topup_id: string }; Returns: undefined }
       approve_vendor: { Args: { _app_id: string }; Returns: undefined }
       approve_withdrawal: { Args: { _wd_id: string }; Returns: undefined }
+      auto_complete_chat_orders: { Args: never; Returns: number }
       cancel_expired_pending_orders: { Args: never; Returns: number }
       cancel_my_pending_order: { Args: { _id: string }; Returns: undefined }
+      detect_contact_info: {
+        Args: { _text: string }
+        Returns: {
+          found: boolean
+          reason: string
+        }[]
+      }
+      ensure_order_chat: { Args: { _order_id: string }; Returns: string }
       flag_repeated_fraud: { Args: { _user_id: string }; Returns: undefined }
       gen_referral_code: { Args: { _seed: string }; Returns: string }
       has_role: {
@@ -1160,6 +1340,17 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       issue_refund: {
         Args: { _order_id: string; _reason?: string }
+        Returns: string
+      }
+      mark_order_received: { Args: { _order_id: string }; Returns: undefined }
+      purchase_chat_product: {
+        Args: {
+          _affiliate_slug?: string
+          _coupon_code?: string
+          _product_id: string
+          _tier_label: string
+          _tier_price: number
+        }
         Returns: string
       }
       purchase_product: {
@@ -1190,6 +1381,19 @@ export type Database = {
           should_auto_approve: boolean
           tag: string
         }[]
+      }
+      send_chat_credentials: {
+        Args: {
+          _chat_id: string
+          _email: string
+          _notes?: string
+          _password: string
+        }
+        Returns: string
+      }
+      send_chat_message: {
+        Args: { _body: string; _chat_id: string }
+        Returns: string
       }
       set_user_ban: {
         Args: { _banned: boolean; _reason?: string; _user_id: string }
@@ -1232,8 +1436,9 @@ export type Database = {
       app_role: "admin" | "seller" | "buyer"
       application_status: "pending" | "approved" | "rejected"
       credential_status: "available" | "assigned"
+      delivery_mode: "instant" | "chat"
       discount_type: "percent" | "fixed"
-      order_status: "completed" | "refunded"
+      order_status: "completed" | "refunded" | "pending"
       product_category: "OTT" | "AI Tools" | "VPN" | "SMM" | "Other" | "Bundles"
       product_status: "hidden" | "approved" | "rejected"
       refund_status: "pending" | "processed" | "rejected"
@@ -1372,8 +1577,9 @@ export const Constants = {
       app_role: ["admin", "seller", "buyer"],
       application_status: ["pending", "approved", "rejected"],
       credential_status: ["available", "assigned"],
+      delivery_mode: ["instant", "chat"],
       discount_type: ["percent", "fixed"],
-      order_status: ["completed", "refunded"],
+      order_status: ["completed", "refunded", "pending"],
       product_category: ["OTT", "AI Tools", "VPN", "SMM", "Other", "Bundles"],
       product_status: ["hidden", "approved", "rejected"],
       refund_status: ["pending", "processed", "rejected"],
