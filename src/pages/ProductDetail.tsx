@@ -12,9 +12,11 @@ import { inr } from "@/lib/format";
 import { toast } from "sonner";
 import { Loader2, ShoppingCart, Zap, Lock, BadgeCheck, Star, Users, Clock, Package, ChevronLeft, ShieldCheck } from "lucide-react";
 import { ProductReviews } from "@/components/ProductReviews";
+import { SEO } from "@/components/SEO";
 
 type Product = {
   id: string;
+  slug: string | null;
   service_name: string;
   category: string;
   description: string | null;
@@ -26,6 +28,7 @@ type Product = {
   created_at: string;
   avg_rating: number;
   rating_count: number;
+  platform?: string | null;
 };
 
 type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
