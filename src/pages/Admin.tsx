@@ -447,9 +447,16 @@ const Admin = () => {
                 <div className="space-y-2">
                   {wds.map(w => (
                     <div key={w.id} className="flex items-center justify-between gap-3 p-3 border border-border rounded-lg">
-                      <div><div className="font-semibold">{inr(w.amount)}</div><div className="text-xs text-muted-foreground">UPI: <code>{w.upi_id}</code></div></div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <SignedThumbnail bucket="withdrawal-qrs" path={w.qr_screenshot_path} />
+                        <div className="min-w-0">
+                          <div className="font-semibold">{inr(w.amount)}</div>
+                          <div className="text-xs text-muted-foreground truncate">UPI: <code>{w.upi_id}</code></div>
+                          <div className="text-[10px] text-muted-foreground">{new Date(w.created_at).toLocaleString()}</div>
+                        </div>
+                      </div>
                       <div className="flex gap-2 shrink-0">
-                        <Button size="sm" onClick={() => approveWd(w.id)}><ArrowDownToLine className="h-4 w-4 mr-1" />Approve</Button>
+                        <Button size="sm" onClick={() => approveWd(w.id)}><ArrowDownToLine className="h-4 w-4 mr-1" />Pay</Button>
                         <Button size="sm" variant="outline" onClick={() => rejectWd(w.id)}><XCircle className="h-4 w-4" /></Button>
                       </div>
                     </div>
