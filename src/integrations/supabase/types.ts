@@ -1106,6 +1106,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           ban_reason: string | null
           created_at: string
           display_name: string | null
@@ -1123,6 +1124,7 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          avatar_url?: string | null
           ban_reason?: string | null
           created_at?: string
           display_name?: string | null
@@ -1140,6 +1142,7 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          avatar_url?: string | null
           ban_reason?: string | null
           created_at?: string
           display_name?: string | null
