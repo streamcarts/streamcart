@@ -86,6 +86,13 @@ export type Database = {
             foreignKeyName: "affiliate_conversions_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: true
+            referencedRelation: "admin_orders_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_conversions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -400,6 +407,36 @@ export type Database = {
           owner_user_id?: string | null
           scope?: string
           used_count?: number
+        }
+        Relationships: []
+      }
+      device_sessions: {
+        Row: {
+          created_at: string
+          device_fp: string | null
+          event: string
+          id: string
+          ip: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fp?: string | null
+          event?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fp?: string | null
+          event?: string
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1004,6 +1041,7 @@ export type Database = {
           id: string
           is_banned: boolean
           is_restricted: boolean
+          is_verified_seller: boolean
           last_seen_at: string | null
           phone: string | null
           referred_by: string | null
@@ -1020,6 +1058,7 @@ export type Database = {
           id: string
           is_banned?: boolean
           is_restricted?: boolean
+          is_verified_seller?: boolean
           last_seen_at?: string | null
           phone?: string | null
           referred_by?: string | null
@@ -1036,6 +1075,7 @@ export type Database = {
           id?: string
           is_banned?: boolean
           is_restricted?: boolean
+          is_verified_seller?: boolean
           last_seen_at?: string | null
           phone?: string | null
           referred_by?: string | null
@@ -1141,6 +1181,13 @@ export type Database = {
           status?: Database["public"]["Enums"]["refund_status"]
         }
         Relationships: [
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "admin_orders_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "refunds_order_id_fkey"
             columns: ["order_id"]
@@ -1456,7 +1503,74 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_orders_safe: {
+        Row: {
+          admin_commission: number | null
+          buyer_id: string | null
+          chat_id: string | null
+          created_at: string | null
+          credentials_email_masked: string | null
+          credentials_password_masked: string | null
+          credentials_sent_at: string | null
+          delivery_mode: Database["public"]["Enums"]["delivery_mode"] | null
+          id: string | null
+          product_id: string | null
+          received_at: string | null
+          seller_earning: number | null
+          seller_id: string | null
+          service_name: string | null
+          status: Database["public"]["Enums"]["order_status"] | null
+          tier_label: string | null
+          total_paid: number | null
+        }
+        Insert: {
+          admin_commission?: number | null
+          buyer_id?: string | null
+          chat_id?: string | null
+          created_at?: string | null
+          credentials_email_masked?: never
+          credentials_password_masked?: never
+          credentials_sent_at?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"] | null
+          id?: string | null
+          product_id?: string | null
+          received_at?: string | null
+          seller_earning?: number | null
+          seller_id?: string | null
+          service_name?: string | null
+          status?: Database["public"]["Enums"]["order_status"] | null
+          tier_label?: string | null
+          total_paid?: number | null
+        }
+        Update: {
+          admin_commission?: number | null
+          buyer_id?: string | null
+          chat_id?: string | null
+          created_at?: string | null
+          credentials_email_masked?: never
+          credentials_password_masked?: never
+          credentials_sent_at?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"] | null
+          id?: string | null
+          product_id?: string | null
+          received_at?: string | null
+          seller_earning?: number | null
+          seller_id?: string | null
+          service_name?: string | null
+          status?: Database["public"]["Enums"]["order_status"] | null
+          tier_label?: string | null
+          total_paid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _admin_purchase_for_buyer: {
@@ -1533,9 +1647,19 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_seller_verified: { Args: { _seller_id: string }; Returns: boolean }
       is_user_online: { Args: { _user_id: string }; Returns: boolean }
       issue_refund: {
         Args: { _order_id: string; _reason?: string }
+        Returns: string
+      }
+      log_device_session: {
+        Args: {
+          _device_fp: string
+          _event?: string
+          _ip: string
+          _user_agent: string
+        }
         Returns: string
       }
       mark_chat_read: { Args: { _chat_id: string }; Returns: undefined }
@@ -1562,6 +1686,7 @@ export type Database = {
         }
         Returns: string
       }
+      redact_secret: { Args: { _v: string }; Returns: string }
       reject_pending_order: {
         Args: { _id: string; _note?: string }
         Returns: undefined
@@ -1633,6 +1758,14 @@ export type Database = {
         Returns: undefined
       }
       update_my_presence: { Args: never; Returns: undefined }
+      user_risk_score: {
+        Args: { _user_id: string }
+        Returns: {
+          level: string
+          reasons: Json
+          score: number
+        }[]
+      }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: {

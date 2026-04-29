@@ -57,7 +57,7 @@ const Admin = () => {
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("*").order("created_at", { ascending: false }),
       supabase.from("withdrawals").select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("orders").select("id,buyer_id,seller_id,product_id,service_name,tier_label,total_paid,seller_earning,admin_commission,delivery_mode,status,chat_id,created_at,received_at,credentials_sent_at").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id,role"),
       supabase.from("products").select("id,seller_id,service_name,category,base_price,display_price,status,stock,is_active,is_featured,is_trending,avg_rating,rating_count").order("created_at", { ascending: false }),
@@ -892,7 +892,9 @@ const FinancePanel = ({ orders, refunds, users, onChange }: any) => {
   const [q, setQ] = useState("");
   const filtered = orders.filter((o: any) => {
     if (!q) return true;
-    return o.id.includes(q) || o.service_name.toLowerCase().includes(q.toLowerCase()) || (o.credentials_email || "").toLowerCase().includes(q.toLowerCase());
+    const buyer = users.find((u: any) => u.id === o.buyer_id);
+    const ql = q.toLowerCase();
+    return o.id.includes(q) || o.service_name.toLowerCase().includes(ql) || (buyer?.email || "").toLowerCase().includes(ql);
   });
 
   const refundOrder = async (orderId: string, reason: string) => {
@@ -909,7 +911,7 @@ const FinancePanel = ({ orders, refunds, users, onChange }: any) => {
           <h3 className="font-semibold">All transactions ({orders.length})</h3>
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search by order ID, service, email…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <Input className="pl-9" placeholder="Search by order ID, service, buyer email…" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
         </div>
         <div className="space-y-2">

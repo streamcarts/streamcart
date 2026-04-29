@@ -28,7 +28,7 @@ type Product = {
   rating_count: number;
 };
 
-type SellerInfo = { display_name: string | null; created_at: string; orders_count: number };
+type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,14 +58,16 @@ const ProductDetail = () => {
       setP(data as Product);
       document.title = `${data.service_name} — StreamCart`;
 
-      const [{ data: prof }, { count }] = await Promise.all([
+      const [{ data: prof }, { count }, { data: verified }] = await Promise.all([
         supabase.from("profiles").select("display_name, created_at").eq("id", data.seller_id).maybeSingle(),
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", data.seller_id),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", data.seller_id).eq("status", "completed"),
+        supabase.rpc("is_seller_verified", { _seller_id: data.seller_id }),
       ]);
       setSeller({
         display_name: prof?.display_name ?? "Verified seller",
         created_at: prof?.created_at ?? data.created_at,
         orders_count: count ?? 0,
+        verified: !!verified,
       });
       setLoading(false);
     })();
@@ -188,6 +190,14 @@ const ProductDetail = () => {
               </div>
             )}
 
+            {/* Money-secured banner */}
+            <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs">
+              <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-foreground/90">
+                <strong className="text-primary">Money secured by StreamCart.</strong> Your payment is held safely until you confirm the credentials work.
+              </span>
+            </div>
+
             {/* CTAs */}
             <div className="flex gap-3 pt-2">
               <Button size="lg" className="flex-1" onClick={handleBuyNow} disabled={buying || p.stock === 0}>
@@ -207,13 +217,17 @@ const ProductDetail = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="font-semibold text-sm">{seller?.display_name}</span>
-                  <BadgeCheck className="h-4 w-4 text-primary" />
+                  {seller?.verified && <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified seller" />}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   Member since {sellerYear} • {seller?.orders_count ?? 0} sales
                 </div>
               </div>
-              <Badge variant="outline" className="text-primary border-primary/30">Trusted</Badge>
+              {seller?.verified ? (
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/30">Verified</Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">New seller</Badge>
+              )}
             </div>
 
             {/* Trust badges */}
