@@ -224,7 +224,13 @@ const OrderChat = () => {
                 </Badge>
                 <StatusBadge status={chat.status} />
               </div>
-              <div className="font-semibold">{order.service_name}</div>
+              <div className="font-semibold flex items-center gap-2">
+                {order.service_name}
+                <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded-full border ${otherOnline ? "bg-primary/10 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border"}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${otherOnline ? "bg-primary animate-pulse" : "bg-muted-foreground/50"}`} />
+                  {isSeller ? "Buyer" : "Seller"} {otherOnline ? "online" : "offline"}
+                </span>
+              </div>
               <div className="text-xs text-muted-foreground">#{order.id.slice(0, 8).toUpperCase()} • {inr(order.total_paid)}</div>
             </div>
             {chat.status === "pending_delivery" && (
