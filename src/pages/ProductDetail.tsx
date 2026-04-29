@@ -34,7 +34,7 @@ type Product = {
 type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { add } = useCart();
@@ -44,22 +44,27 @@ const ProductDetail = () => {
   const [buying, setBuying] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id && !slug) return;
     setLoading(true);
     (async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode")
-        .eq("id", id)
-        .eq("status", "approved")
-        .maybeSingle();
+      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform";
+      const base = supabase.from("products").select(cols).eq("status", "approved" as any);
+      const { data, error } = slug
+        ? await base.eq("slug" as any, slug).maybeSingle()
+        : await base.eq("id", id!).maybeSingle();
       if (error || !data) {
         toast.error("Product not found");
         navigate("/browse");
         return;
       }
+      // Redirect /product/:id → /p/:slug for canonical clean URL
+      const dataSlug = (data as any).slug as string | null | undefined;
+      if (id && dataSlug) {
+        navigate(`/p/${dataSlug}`, { replace: true });
+        return;
+      }
       setP(data as unknown as Product);
-      document.title = `${data.service_name} — StreamCart`;
+      document.title = `${(data as any).service_name} — StreamCart`;
 
       const [{ data: prof }, { count }, { data: verified }] = await Promise.all([
         supabase.from("profiles").select("display_name, created_at").eq("id", data.seller_id).maybeSingle(),
