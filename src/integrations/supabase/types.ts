@@ -1861,7 +1861,13 @@ export type Database = {
     Enums: {
       account_type: "private" | "shared"
       affiliate_status: "pending" | "approved" | "suspended"
-      app_role: "admin" | "seller" | "buyer"
+      app_role:
+        | "admin"
+        | "seller"
+        | "buyer"
+        | "super_admin"
+        | "admin_staff"
+        | "support"
       application_status: "pending" | "approved" | "rejected"
       credential_status: "available" | "assigned"
       delivery_mode: "instant" | "chat"
@@ -2002,7 +2008,14 @@ export const Constants = {
     Enums: {
       account_type: ["private", "shared"],
       affiliate_status: ["pending", "approved", "suspended"],
-      app_role: ["admin", "seller", "buyer"],
+      app_role: [
+        "admin",
+        "seller",
+        "buyer",
+        "super_admin",
+        "admin_staff",
+        "support",
+      ],
       application_status: ["pending", "approved", "rejected"],
       credential_status: ["available", "assigned"],
       delivery_mode: ["instant", "chat"],
