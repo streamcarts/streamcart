@@ -58,7 +58,7 @@ const ProductDetail = () => {
         navigate("/browse");
         return;
       }
-      setP(data as Product);
+      setP(data as unknown as Product);
       document.title = `${data.service_name} — StreamCart`;
 
       const [{ data: prof }, { count }, { data: verified }] = await Promise.all([
@@ -74,11 +74,11 @@ const ProductDetail = () => {
       });
       setLoading(false);
     })();
-  }, [id, navigate]);
+  }, [id, slug, navigate]);
 
   const handleBuyNow = () => {
     if (!p) return;
-    if (!user) return navigate(`/auth?next=/product/${p.id}`);
+    if (!user) return navigate(`/auth?next=/p/${p.slug ?? p.id}`);
     if ((p as any).delivery_mode === "chat") {
       navigate(`/chat-buy/${p.id}`);
       return;
