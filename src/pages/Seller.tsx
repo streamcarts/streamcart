@@ -181,9 +181,9 @@ const Seller = () => {
           <TabsContent value="products" className="space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-semibold">Your listings</h2>
-              <div className="flex gap-2">
-                <Button variant="outline" asChild>
-                  <a href="/seller/list-chat"><Plus className="h-4 w-4 mr-1" />List via chat delivery</a>
+              <div className="flex gap-2 flex-wrap">
+                <Button asChild className="bg-gradient-to-r from-primary to-primary/80 shadow-md">
+                  <a href="/seller/list-chat"><Plus className="h-4 w-4 mr-1" />Add product (chat delivery)</a>
                 </Button>
                 <ProductDialog onDone={load} userId={user!.id} />
               </div>
