@@ -183,8 +183,8 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Razorpay payment (only when wallet is short / not used) */}
-              {total > 0 && !canPayWallet && (
+              {/* Razorpay payment — always available as alternative */}
+              {total > 0 && (
                 <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                   <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center gap-2.5">
                     <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center">
