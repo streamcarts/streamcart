@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_activity_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       affiliate_clicks: {
         Row: {
           affiliate_id: string
@@ -1663,6 +1693,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      add_team_member: {
+        Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
+        Returns: Json
+      }
       admin_clear_seller_restriction: {
         Args: { _note?: string; _seller_id: string }
         Returns: undefined
@@ -1690,6 +1724,8 @@ export type Database = {
       approve_vendor: { Args: { _app_id: string }; Returns: undefined }
       approve_withdrawal: { Args: { _wd_id: string }; Returns: undefined }
       auto_complete_chat_orders: { Args: never; Returns: number }
+      can_handle_support: { Args: { _uid: string }; Returns: boolean }
+      can_manage_payments: { Args: { _uid: string }; Returns: boolean }
       cancel_expired_pending_orders: { Args: never; Returns: number }
       cancel_my_pending_order: { Args: { _id: string }; Returns: undefined }
       detect_contact_info: {
@@ -1718,11 +1754,32 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_team_role: { Args: { _uid: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_seller_verified: { Args: { _seller_id: string }; Returns: boolean }
+      is_super_admin: { Args: { _uid: string }; Returns: boolean }
       is_user_online: { Args: { _user_id: string }; Returns: boolean }
       issue_refund: {
         Args: { _order_id: string; _reason?: string }
+        Returns: string
+      }
+      list_team_members: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _target_id?: string
+          _target_type?: string
+        }
         Returns: string
       }
       log_device_session: {
@@ -1778,6 +1835,13 @@ export type Database = {
         Returns: undefined
       }
       release_due_earnings: { Args: never; Returns: number }
+      remove_team_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: Json
+      }
       request_withdrawal: {
         Args: { _amount: number; _qr_path: string; _upi_id: string }
         Returns: string
