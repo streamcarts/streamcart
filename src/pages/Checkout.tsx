@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { inr } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, Smartphone, Upload, Clock, ShieldCheck, Copy } from "lucide-react";
+import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, Smartphone, Upload, Clock, ShieldCheck, Copy, QrCode, Zap, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Settings = { upi_id: string; commission_percent: number };
