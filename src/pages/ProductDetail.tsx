@@ -46,7 +46,7 @@ const ProductDetail = () => {
     (async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count")
+        .select("id,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode")
         .eq("id", id)
         .eq("status", "approved")
         .maybeSingle();
@@ -74,6 +74,10 @@ const ProductDetail = () => {
   const handleBuyNow = () => {
     if (!p) return;
     if (!user) return navigate(`/auth?next=/product/${p.id}`);
+    if ((p as any).delivery_mode === "chat") {
+      navigate(`/chat-buy/${p.id}`);
+      return;
+    }
     add({
       id: p.id, service_name: p.service_name, category: p.category,
       display_price: Number(p.display_price), duration: p.duration,
