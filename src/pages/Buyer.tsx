@@ -14,8 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { inr } from "@/lib/format";
 import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck, Smartphone, Lock, QrCode, Zap, Upload, Clock, CheckCircle2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import payGpay from "@/assets/pay-gpay.png";
+import payPhonepe from "@/assets/pay-phonepe.png";
+import payPaytm from "@/assets/pay-paytm.png";
 import { ReviewDialog } from "@/components/ReviewDialog";
 import { SupportTickets } from "@/components/SupportTickets";
 import { ReferralPanel } from "@/components/ReferralPanel";
@@ -83,6 +86,9 @@ const Buyer = () => {
     e.preventDefault();
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
+    const ref = upiRef.trim();
+    if (!ref) return toast.error("UPI reference / Transaction ID is required");
+    if (ref.length < 6) return toast.error("Transaction ID looks too short");
     if (!file) return toast.error("Please attach a UPI screenshot");
     if (file.size > 5 * 1024 * 1024) return toast.error("File too large (max 5MB)");
     setBusy(true);
@@ -92,7 +98,7 @@ const Buyer = () => {
       const up = await supabase.storage.from("topup-screenshots").upload(path, file);
       if (up.error) throw up.error;
       const { error } = await supabase.from("wallet_topups").insert({
-        user_id: user!.id, amount: amt, upi_reference: upiRef.trim() || null, screenshot_path: path,
+        user_id: user!.id, amount: amt, upi_reference: ref, screenshot_path: path,
       });
       if (error) throw error;
       toast.success("Top-up submitted! Admin will approve shortly.");
@@ -158,35 +164,144 @@ const Buyer = () => {
               <DialogTrigger asChild>
                 <Button><Plus className="h-4 w-4 mr-2" /> Add funds</Button>
               </DialogTrigger>
-             <DialogContent>
-              <DialogHeader><DialogTitle>Add funds</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="amt">Amount (₹)</Label>
-                  <Input id="amt" type="number" step="1" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-                </div>
-                <div className="rounded-lg bg-accent/40 border border-border p-3 text-xs text-muted-foreground">
-                  Pay manually via UPI to the ID below, then upload the screenshot. Funds are credited within <span className="text-foreground font-medium">5–10 minutes</span> after admin verification.
-                </div>
+              <DialogContent className="max-w-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="px-5 pt-5">
+                  <DialogTitle>Add funds to wallet</DialogTitle>
+                </DialogHeader>
 
-                <form onSubmit={submitTopup} className="space-y-3">
-                  <div className="rounded-lg bg-muted p-3 text-sm">
-                    <div className="font-semibold mb-1">UPI ID:</div>
-                    <code className="text-primary font-mono">{upiId}</code>
+                <form onSubmit={submitTopup} className="px-5 pb-5">
+                  {/* Amount input */}
+                  <div className="mb-4">
+                    <Label htmlFor="amt" className="text-sm font-medium">Amount (₹) <span className="text-destructive">*</span></Label>
+                    <Input id="amt" type="number" step="1" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required placeholder="e.g. 500" className="mt-1.5" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="ref">UPI reference / txn ID (optional)</Label>
-                    <Input id="ref" value={upiRef} onChange={(e) => setUpiRef(e.target.value)} maxLength={100} />
+
+                  {/* Premium UPI card (Checkout-style) */}
+                  <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                          <Smartphone className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-semibold leading-tight">Pay via UPI</div>
+                          <div className="text-[11px] text-muted-foreground">Manual verification • Secure</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted/60 rounded-full px-2.5 py-1">
+                        <Lock className="h-3 w-3" /> 256-bit secured
+                      </div>
+                    </div>
+
+                    {/* Split layout */}
+                    <div className="grid md:grid-cols-2 gap-0">
+                      {/* LEFT — QR */}
+                      <div className="p-5 bg-gradient-to-b from-background to-muted/30 md:border-r border-border space-y-4">
+                        {(() => {
+                          const amt = parseFloat(amount);
+                          const validAmt = !isNaN(amt) && amt > 0;
+                          const upiLink = validAmt
+                            ? `upi://pay?pa=${encodeURIComponent(upiId)}&pn=StreamCart&am=${amt.toFixed(2)}&cu=INR&tn=${encodeURIComponent("Wallet topup")}`
+                            : `upi://pay?pa=${encodeURIComponent(upiId)}&pn=StreamCart&cu=INR`;
+                          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
+                          return (
+                            <>
+                              <div className="rounded-xl bg-white border-2 border-primary/20 p-4 shadow-md">
+                                <div className="flex items-center justify-center mb-3">
+                                  <img src={qrUrl} alt="UPI QR code" className="rounded-md" width={200} height={200} loading="lazy" />
+                                </div>
+                                <div className="text-center border-t border-border pt-3">
+                                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                                    {validAmt ? "Scan & pay exactly" : "Enter amount above"}
+                                  </div>
+                                  <div className="text-2xl font-bold text-primary font-mono mt-0.5">
+                                    {validAmt ? inr(amt) : "—"}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">UPI ID</Label>
+                                <div className="flex gap-2 mt-1.5">
+                                  <code className="flex-1 px-3 py-2.5 rounded-lg bg-muted border border-border font-mono text-sm break-all">{upiId}</code>
+                                  <Button type="button" size="icon" variant="outline" onClick={() => copy(upiId, "UPI ID")} title="Copy UPI ID"><Copy className="h-4 w-4" /></Button>
+                                </div>
+                              </div>
+
+                              <div>
+                                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Pay with any UPI app</div>
+                                <div className="grid grid-cols-3 gap-2">
+                                  {[
+                                    { name: "GPay", logo: payGpay },
+                                    { name: "PhonePe", logo: payPhonepe },
+                                    { name: "Paytm", logo: payPaytm },
+                                  ].map((app) => (
+                                    <div key={app.name} className="rounded-lg border border-border bg-background px-2 py-2 flex items-center gap-2">
+                                      <img src={app.logo} alt={`${app.name} logo`} loading="lazy" className="h-7 w-7 rounded-md object-contain shrink-0" />
+                                      <span className="text-xs font-medium truncate">{app.name}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <Button type="button" variant="outline" className="w-full" disabled={!validAmt} asChild={validAmt}>
+                                {validAmt ? (
+                                  <a href={upiLink}><Zap className="h-4 w-4 mr-2" />Open in UPI app</a>
+                                ) : (
+                                  <span><Zap className="h-4 w-4 mr-2" />Enter amount first</span>
+                                )}
+                              </Button>
+                            </>
+                          );
+                        })()}
+                      </div>
+
+                      {/* RIGHT — Steps + proof */}
+                      <div className="p-5 space-y-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <QrCode className="h-4 w-4 text-primary" />
+                            <h3 className="font-semibold text-sm">How to top up</h3>
+                          </div>
+                          <ol className="space-y-2.5">
+                            {[
+                              "Enter the amount you want to add",
+                              "Scan QR using any UPI app & pay exact amount",
+                              "Copy the Transaction ID (UTR) from the receipt",
+                              "Paste txn ID + upload screenshot below",
+                            ].map((step, i) => (
+                              <li key={i} className="flex gap-2.5 text-sm">
+                                <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
+                                <span className="text-muted-foreground">{step}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+
+                        <div className="border-t border-border pt-4 space-y-3">
+                          <div>
+                            <Label htmlFor="ref" className="text-sm font-medium">UPI Reference / Transaction ID <span className="text-destructive">*</span></Label>
+                            <Input id="ref" value={upiRef} onChange={(e) => setUpiRef(e.target.value)} maxLength={50} placeholder="e.g. 412387654321" className="mt-1.5 font-mono" required />
+                            <p className="text-[11px] text-muted-foreground mt-1">12-digit UTR from your UPI receipt. Required for verification.</p>
+                          </div>
+                          <div>
+                            <Label htmlFor="file" className="text-sm font-medium">Payment screenshot <span className="text-destructive">*</span></Label>
+                            <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1.5" required />
+                            {file && <p className="text-xs text-primary mt-1 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />{file.name} ({(file.size / 1024).toFixed(0)} KB)</p>}
+                          </div>
+                          <Button type="submit" className="w-full" size="lg" disabled={busy || !file || !upiRef.trim() || !amount}>
+                            {busy ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : <><Upload className="h-4 w-4 mr-2" />Submit for verification</>}
+                          </Button>
+                          <div className="rounded-lg bg-primary/5 border border-primary/20 text-xs p-3 flex gap-2 items-start">
+                            <Clock className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                            <span>Funds credited within <strong>5–10 minutes</strong> after admin verification.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="file">Payment screenshot</Label>
-                    <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required />
-                  </div>
-                  <Button type="submit" variant="outline" className="w-full" disabled={busy}>
-                    {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Submit manual top-up
-                  </Button>
                 </form>
-              </div>
               </DialogContent>
             </Dialog>
           </div>
