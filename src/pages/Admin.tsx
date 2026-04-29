@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { inr } from "@/lib/format";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Eye, Search, Ban, ShieldAlert, Star, Flame, Megaphone, Ticket, Tag, BarChart3, RotateCcw, Settings as SettingsIcon, AlertTriangle, Loader2, Plus, MessageSquare, ShieldCheck, TrendingUp, LayoutGrid } from "lucide-react";
+import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Eye, Search, Ban, ShieldAlert, Star, Flame, Megaphone, Ticket, Tag, BarChart3, RotateCcw, Settings as SettingsIcon, AlertTriangle, Loader2, Plus, MessageSquare, ShieldCheck, TrendingUp, LayoutGrid, Smartphone } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AffiliatesPanel } from "@/components/AffiliatesPanel";
 import { CategoriesPanel } from "@/components/CategoriesPanel";
