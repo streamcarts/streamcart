@@ -344,6 +344,7 @@ const Checkout = () => {
                   </div>
                 </div>
               </div>
+              )}
 
               {!canPayWallet && balance !== null && balance > 0 && (
                 <p className="text-xs text-muted-foreground mt-3">
