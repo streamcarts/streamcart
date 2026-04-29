@@ -195,13 +195,29 @@ const Admin = () => {
   const approvePendingOrder = async (id: string) => {
     const { error } = await supabase.rpc("approve_pending_order", { _id: id, _note: null });
     if (error) return toast.error(error.message);
-    toast.success("Order approved & credentials delivered"); loadAll();
+    toast.success("Order approved & credentials delivered");
+    setSelectedPo(prev => { const n = new Set(prev); n.delete(id); return n; });
+    loadAll();
   };
   const rejectPendingOrder = async (id: string) => {
     const note = window.prompt("Reason for rejection (optional):") || null;
     const { error } = await supabase.rpc("reject_pending_order", { _id: id, _note: note });
     if (error) return toast.error(error.message);
-    toast.success("Order rejected"); loadAll();
+    toast.success("Order rejected");
+    setSelectedPo(prev => { const n = new Set(prev); n.delete(id); return n; });
+    loadAll();
+  };
+  const bulkApprovePending = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    if (!confirm(`Approve ${ids.length} order(s)? Credentials will be delivered immediately.`)) return;
+    let ok = 0, fail = 0;
+    for (const id of ids) {
+      const { error } = await supabase.rpc("approve_pending_order", { _id: id, _note: "bulk approved" });
+      if (error) fail++; else ok++;
+    }
+    toast.success(`Approved ${ok}${fail ? ` • ${fail} failed` : ""}`);
+    setSelectedPo(new Set());
+    loadAll();
   };
 
   const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length + pendingOrders.length;
