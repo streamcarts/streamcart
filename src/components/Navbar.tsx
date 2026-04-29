@@ -64,6 +64,9 @@ export const Navbar = () => {
                 <DropdownMenuItem onClick={() => navigate("/buyer")}>
                   <ShoppingBag className="mr-2 h-4 w-4" /> Buyer dashboard
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/messages")}>
+                  <MessageSquareText className="mr-2 h-4 w-4" /> Messages
+                </DropdownMenuItem>
                 {isSeller && (
                   <DropdownMenuItem onClick={() => navigate("/seller")}>
                     <Store className="mr-2 h-4 w-4" /> Seller dashboard
