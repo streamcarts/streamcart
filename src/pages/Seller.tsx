@@ -50,12 +50,13 @@ const Seller = () => {
 
   const load = async () => {
     setLoading(true);
-    const [w, p, o, wd, c] = await Promise.all([
+    const [w, p, o, wd, c, prof] = await Promise.all([
       supabase.from("wallets").select("balance,pending_balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("products").select("*").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("orders").select("id,service_name,seller_earning,total_paid,created_at,buyer_id,credentials_email").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("withdrawals").select("id,amount,status,created_at,upi_id").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("product_credentials").select("id,product_id,cred_email,cred_password,status,created_at,assigned_at").eq("seller_id", user!.id).order("created_at", { ascending: false }),
+      supabase.from("profiles").select("is_restricted,restriction_reason").eq("id", user!.id).maybeSingle(),
     ]);
     setBalance(Number(w.data?.balance ?? 0));
     setPendingBalance(Number((w.data as any)?.pending_balance ?? 0));
@@ -63,6 +64,7 @@ const Seller = () => {
     setSales((o.data as Order[]) ?? []);
     setWds((wd.data as Withdrawal[]) ?? []);
     setCreds((c.data as Credential[]) ?? []);
+    setRestricted({ is: !!(prof.data as any)?.is_restricted, reason: (prof.data as any)?.restriction_reason ?? null });
     setLoading(false);
   };
 
