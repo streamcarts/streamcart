@@ -14,8 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { inr } from "@/lib/format";
 import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck, Smartphone, Lock, QrCode, Zap, Upload, Clock, CheckCircle2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import payGpay from "@/assets/pay-gpay.png";
+import payPhonepe from "@/assets/pay-phonepe.png";
+import payPaytm from "@/assets/pay-paytm.png";
 import { ReviewDialog } from "@/components/ReviewDialog";
 import { SupportTickets } from "@/components/SupportTickets";
 import { ReferralPanel } from "@/components/ReferralPanel";
@@ -83,6 +86,9 @@ const Buyer = () => {
     e.preventDefault();
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return toast.error("Enter a valid amount");
+    const ref = upiRef.trim();
+    if (!ref) return toast.error("UPI reference / Transaction ID is required");
+    if (ref.length < 6) return toast.error("Transaction ID looks too short");
     if (!file) return toast.error("Please attach a UPI screenshot");
     if (file.size > 5 * 1024 * 1024) return toast.error("File too large (max 5MB)");
     setBusy(true);
@@ -92,7 +98,7 @@ const Buyer = () => {
       const up = await supabase.storage.from("topup-screenshots").upload(path, file);
       if (up.error) throw up.error;
       const { error } = await supabase.from("wallet_topups").insert({
-        user_id: user!.id, amount: amt, upi_reference: upiRef.trim() || null, screenshot_path: path,
+        user_id: user!.id, amount: amt, upi_reference: ref, screenshot_path: path,
       });
       if (error) throw error;
       toast.success("Top-up submitted! Admin will approve shortly.");
