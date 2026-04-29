@@ -892,7 +892,9 @@ const FinancePanel = ({ orders, refunds, users, onChange }: any) => {
   const [q, setQ] = useState("");
   const filtered = orders.filter((o: any) => {
     if (!q) return true;
-    return o.id.includes(q) || o.service_name.toLowerCase().includes(q.toLowerCase()) || (o.credentials_email || "").toLowerCase().includes(q.toLowerCase());
+    const buyer = users.find((u: any) => u.id === o.buyer_id);
+    const ql = q.toLowerCase();
+    return o.id.includes(q) || o.service_name.toLowerCase().includes(ql) || (buyer?.email || "").toLowerCase().includes(ql);
   });
 
   const refundOrder = async (orderId: string, reason: string) => {
