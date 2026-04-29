@@ -43,6 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Online presence heartbeat — pings every 60s while logged in & tab visible
+  useEffect(() => {
+    const uid = session?.user?.id;
+    if (!uid) return;
+    const ping = () => {
+      if (document.visibilityState === "visible") {
+        supabase.rpc("update_my_presence").then(() => {});
+      }
+    };
+    ping();
+    const i = setInterval(ping, 60_000);
+    const onVis = () => ping();
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(i); document.removeEventListener("visibilitychange", onVis); };
+  }, [session?.user?.id]);
+
   const value: AuthCtx = {
     session,
     user: session?.user ?? null,
