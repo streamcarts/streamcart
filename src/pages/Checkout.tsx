@@ -136,7 +136,9 @@ const Checkout = () => {
       });
       if (error) throw error;
       clear();
-      toast.success("Payment submitted! We'll verify in 5–10 minutes.");
+      // Fire OCR in background — trigger re-scores when done
+      supabase.functions.invoke("ocr-payment", { body: { pending_order_id: data } }).catch((e) => console.error("OCR invoke failed", e));
+      toast.success("Payment submitted! Verifying — this is usually instant.");
       navigate(`/orders/pending/${data}`);
     } catch (err: any) {
       toast.error(err.message || "Could not submit payment");

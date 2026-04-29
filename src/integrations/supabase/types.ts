@@ -395,6 +395,11 @@ export type Database = {
           expires_at: string
           id: string
           items: Json
+          ocr_amount: number | null
+          ocr_processed_at: string | null
+          ocr_raw: string | null
+          ocr_reference: string | null
+          ocr_status: string
           order_ids: string[] | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -415,6 +420,11 @@ export type Database = {
           expires_at?: string
           id?: string
           items: Json
+          ocr_amount?: number | null
+          ocr_processed_at?: string | null
+          ocr_raw?: string | null
+          ocr_reference?: string | null
+          ocr_status?: string
           order_ids?: string[] | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -435,6 +445,11 @@ export type Database = {
           expires_at?: string
           id?: string
           items?: Json
+          ocr_amount?: number | null
+          ocr_processed_at?: string | null
+          ocr_raw?: string | null
+          ocr_reference?: string | null
+          ocr_status?: string
           order_ids?: string[] | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1046,6 +1061,7 @@ export type Database = {
       approve_withdrawal: { Args: { _wd_id: string }; Returns: undefined }
       cancel_expired_pending_orders: { Args: never; Returns: number }
       cancel_my_pending_order: { Args: { _id: string }; Returns: undefined }
+      flag_repeated_fraud: { Args: { _user_id: string }; Returns: undefined }
       gen_referral_code: { Args: { _seed: string }; Returns: string }
       has_role: {
         Args: {
