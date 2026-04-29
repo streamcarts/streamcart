@@ -21,6 +21,7 @@ import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Ey
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AffiliatesPanel } from "@/components/AffiliatesPanel";
 import { CategoriesPanel } from "@/components/CategoriesPanel";
+import PlatformsPanel from "@/components/PlatformsPanel";
 import { SignedThumbnail } from "@/components/SignedThumbnail";
 
 const Admin = () => {
