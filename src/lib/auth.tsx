@@ -116,6 +116,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
+  if (!ctx) {
+    // Safe fallback (prevents blank screen during HMR remounts).
+    return {
+      session: null,
+      user: null,
+      roles: [] as AppRole[],
+      isAdmin: false,
+      isSeller: false,
+      loading: true,
+      signOut: async () => {},
+      refreshRoles: async () => {},
+    } as AuthCtx;
+  }
   return ctx;
 };
