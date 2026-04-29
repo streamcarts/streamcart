@@ -178,6 +178,33 @@ const Buyer = () => {
                     <Input id="amt" type="number" step="1" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} required placeholder="e.g. 500" className="mt-1.5" />
                   </div>
 
+                  <Tabs defaultValue="uropay" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsTrigger value="uropay" className="gap-1.5"><Zap className="h-3.5 w-3.5" />UroPay <span className="hidden sm:inline text-[10px] opacity-70">(auto)</span></TabsTrigger>
+                      <TabsTrigger value="manual" className="gap-1.5"><Smartphone className="h-3.5 w-3.5" />Manual UPI</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="uropay" className="mt-0">
+                      {Number(amount) >= 1 ? (
+                        <UroPayPanel
+                          purpose="topup"
+                          amount={Number(amount)}
+                          customerName={user?.email?.split("@")[0]}
+                          onCompleted={(res) => {
+                            if (res.status === "completed") {
+                              setOpen(false);
+                              load();
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                          Enter an amount above to generate a UroPay QR code.
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="manual" className="mt-0">
                   {/* Premium UPI card (Checkout-style) */}
                   <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                     {/* Header */}
