@@ -96,6 +96,16 @@ const Seller = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="flex-1 container py-10 space-y-8">
+        {restricted.is && (
+          <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-4 flex gap-3 items-start">
+            <Package className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <div className="font-bold text-destructive mb-1">Account restricted</div>
+              <p className="text-foreground">A buyer has filed a complaint. Your listings are deactivated, and you cannot create new listings or request withdrawals until an admin reviews and clears the issue.</p>
+              {restricted.reason && <p className="text-muted-foreground mt-1">Reason: {restricted.reason}</p>}
+            </div>
+          </div>
+        )}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">Seller dashboard</h1>
