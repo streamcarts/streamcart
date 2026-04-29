@@ -217,13 +217,17 @@ const ProductDetail = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="font-semibold text-sm">{seller?.display_name}</span>
-                  <BadgeCheck className="h-4 w-4 text-primary" />
+                  {seller?.verified && <BadgeCheck className="h-4 w-4 text-primary" aria-label="Verified seller" />}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   Member since {sellerYear} • {seller?.orders_count ?? 0} sales
                 </div>
               </div>
-              <Badge variant="outline" className="text-primary border-primary/30">Trusted</Badge>
+              {seller?.verified ? (
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/30">Verified</Badge>
+              ) : (
+                <Badge variant="outline" className="text-muted-foreground">New seller</Badge>
+              )}
             </div>
 
             {/* Trust badges */}
