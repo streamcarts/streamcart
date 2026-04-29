@@ -625,6 +625,75 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_durations: {
+        Row: {
+          created_at: string
+          days: number
+          id: string
+          is_active: boolean
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          days: number
+          id?: string
+          is_active?: boolean
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          days?: number
+          id?: string
+          is_active?: boolean
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      platform_pricing: {
+        Row: {
+          created_at: string
+          duration_id: string
+          id: string
+          min_price: number
+          platform_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_id: string
+          id?: string
+          min_price: number
+          platform_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_id?: string
+          id?: string
+          min_price?: number
+          platform_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_pricing_duration_id_fkey"
+            columns: ["duration_id"]
+            isOneToOne: false
+            referencedRelation: "platform_durations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_pricing_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "platforms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_settings: {
         Row: {
           commission_percent: number
@@ -652,6 +721,42 @@ export type Database = {
           trending_limit?: number
           updated_at?: string
           upi_id?: string
+        }
+        Relationships: []
+      }
+      platforms: {
+        Row: {
+          category: Database["public"]["Enums"]["product_category"]
+          created_at: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["product_category"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["product_category"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -760,6 +865,7 @@ export type Database = {
           is_trending: boolean
           plan_name: string | null
           platform: string | null
+          platform_id: string | null
           price_tiers: Json
           rating_count: number
           seller_id: string
@@ -789,6 +895,7 @@ export type Database = {
           is_trending?: boolean
           plan_name?: string | null
           platform?: string | null
+          platform_id?: string | null
           price_tiers?: Json
           rating_count?: number
           seller_id: string
@@ -818,6 +925,7 @@ export type Database = {
           is_trending?: boolean
           plan_name?: string | null
           platform?: string | null
+          platform_id?: string | null
           price_tiers?: Json
           rating_count?: number
           seller_id?: string
@@ -826,7 +934,15 @@ export type Database = {
           stock?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "platforms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1330,6 +1446,10 @@ export type Database = {
       ensure_order_chat: { Args: { _order_id: string }; Returns: string }
       flag_repeated_fraud: { Args: { _user_id: string }; Returns: undefined }
       gen_referral_code: { Args: { _seed: string }; Returns: string }
+      get_platform_min_price: {
+        Args: { _duration_label: string; _platform_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
