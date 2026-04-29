@@ -27,7 +27,7 @@ export const Footer = () => {
             <Zap className="h-3 w-3" /> Secure · Fast · Reliable
           </div>
           <div className="flex items-center gap-3 pt-1">
-            <a href="https://www.instagram.com/streamcart_india/" target="_blank" rel="noreferrer" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Instagram"><Instagram className="h-4 w-4" /></a>
+            <a href="https://www.instagram.com/streamcart_india?igsh=MWRxNmJpdnVieWtvNQ%3D%3D" target="_blank" rel="noreferrer" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Instagram"><Instagram className="h-4 w-4" /></a>
             <a href="https://wa.me/919473937978" target="_blank" rel="noreferrer" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="WhatsApp"><MessageCircle className="h-4 w-4" /></a>
             <a href="mailto:support.streamcart@gmail.com" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Email"><Mail className="h-4 w-4" /></a>
           </div>
