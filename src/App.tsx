@@ -27,6 +27,9 @@ import Privacy from "./pages/Privacy.tsx";
 import Refund from "./pages/Refund.tsx";
 import About from "./pages/About.tsx";
 import PendingOrder from "./pages/PendingOrder.tsx";
+import SellerListChat from "./pages/SellerListChat.tsx";
+import OrderChat from "./pages/OrderChat.tsx";
+import ChatProductCheckout from "./pages/ChatProductCheckout.tsx";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +66,9 @@ const App = () => (
               <Route path="/refund" element={<Refund />} />
               <Route path="/about" element={<About />} />
               <Route path="/orders/pending/:id" element={<RequireAuth><PendingOrder /></RequireAuth>} />
+              <Route path="/seller/list-chat" element={<RequireAuth role="seller"><SellerListChat /></RequireAuth>} />
+              <Route path="/orders/chat/:orderId" element={<RequireAuth><OrderChat /></RequireAuth>} />
+              <Route path="/chat-buy/:id" element={<ChatProductCheckout /></>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
