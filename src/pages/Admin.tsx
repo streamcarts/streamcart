@@ -465,7 +465,9 @@ const Admin = () => {
                     <Smartphone className="h-4 w-4 text-primary" />
                     Pending UPI orders ({pendingOrders.length})
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">Smart-scored • bulk actions • 1-click approval</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Smart-scored • OCR-verified • Click a row, then press <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono">A</kbd> to approve, <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono">R</kbd> to reject.
+                  </p>
                 </div>
                 {pendingOrders.length > 0 && (
                   <div className="flex flex-wrap gap-2">
