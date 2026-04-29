@@ -297,6 +297,45 @@ export type Database = {
         }
         Relationships: []
       }
+      earnings_holds: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          order_id: string | null
+          release_at: string
+          released_at: string | null
+          released_by: string | null
+          source: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          release_at?: string
+          released_at?: string | null
+          released_by?: string | null
+          source: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          release_at?: string
+          released_at?: string | null
+          released_by?: string | null
+          source?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fraud_flags: {
         Row: {
           created_at: string
@@ -981,16 +1020,19 @@ export type Database = {
       wallets: {
         Row: {
           balance: number
+          pending_balance: number
           updated_at: string
           user_id: string
         }
         Insert: {
           balance?: number
+          pending_balance?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           balance?: number
+          pending_balance?: number
           updated_at?: string
           user_id?: string
         }
@@ -1002,6 +1044,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          qr_screenshot_path: string | null
           reviewed_at: string | null
           seller_id: string
           status: Database["public"]["Enums"]["withdrawal_status"]
@@ -1012,6 +1055,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          qr_screenshot_path?: string | null
           reviewed_at?: string | null
           seller_id: string
           status?: Database["public"]["Enums"]["withdrawal_status"]
@@ -1022,6 +1066,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          qr_screenshot_path?: string | null
           reviewed_at?: string | null
           seller_id?: string
           status?: Database["public"]["Enums"]["withdrawal_status"]
@@ -1043,6 +1088,17 @@ export type Database = {
         }
         Returns: string
       }
+      add_earning_to_hold: {
+        Args: {
+          _amount: number
+          _order_id?: string
+          _source: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      admin_release_hold: { Args: { _hold_id: string }; Returns: undefined }
+      admin_release_user_holds: { Args: { _user_id: string }; Returns: number }
       admin_set_affiliate: {
         Args: {
           _commission: number
@@ -1086,6 +1142,15 @@ export type Database = {
       reject_pending_order: {
         Args: { _id: string; _note?: string }
         Returns: undefined
+      }
+      reject_withdrawal: {
+        Args: { _note?: string; _wd_id: string }
+        Returns: undefined
+      }
+      release_due_earnings: { Args: never; Returns: number }
+      request_withdrawal: {
+        Args: { _amount: number; _qr_path: string; _upi_id: string }
+        Returns: string
       }
       score_pending_order: {
         Args: { _po: Database["public"]["Tables"]["pending_orders"]["Row"] }
