@@ -125,7 +125,41 @@ const OrderChat = () => {
     setBody("");
   };
 
-  const markReceived = async () => {
+  const onPickImage = (f: File | null) => {
+    if (!f) { setImgFile(null); setImgPreview(null); return; }
+    if (!f.type.startsWith("image/")) { toast.error("Only image files allowed"); return; }
+    if (f.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
+    setImgFile(f);
+    setImgPreview(URL.createObjectURL(f));
+  };
+
+  const sendImage = async () => {
+    if (!chat || !imgFile || !user) return;
+    setUploading(true);
+    try {
+      const ext = imgFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${chat.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("chat-images").upload(path, imgFile, {
+        contentType: imgFile.type, upsert: false,
+      });
+      if (upErr) throw upErr;
+
+      const { data, error } = await supabase.functions.invoke("chat-image-ocr", {
+        body: { chat_id: chat.id, image_path: path },
+      });
+      if (error) throw error;
+      if ((data as any)?.blocked) {
+        toast.error("Image blocked: contact info detected");
+      } else {
+        toast.success("Image sent");
+      }
+      setImgFile(null); setImgPreview(null);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
     if (!order) return;
     const { error } = await supabase.rpc("mark_order_received", { _order_id: order.id });
     if (error) return toast.error(error.message);
