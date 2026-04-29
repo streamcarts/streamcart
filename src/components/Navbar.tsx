@@ -17,6 +17,7 @@ import {
   MessageSquareText, Menu, Compass, Gift, Info, RotateCcw, Package,
 } from "lucide-react";
 import { CartIcon } from "./CartIcon";
+import { NotificationBell } from "./NotificationBell";
 import { AnnouncementBanner } from "./AnnouncementBanner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +71,7 @@ export const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-1 sm:gap-2">
+          <NotificationBell />
           <CartIcon />
           {!user ? (
             <>
