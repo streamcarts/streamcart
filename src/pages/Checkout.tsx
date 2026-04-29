@@ -350,8 +350,7 @@ const Checkout = () => {
                   </div>
                 </div>
               </div>
-                </TabsContent>
-              </Tabs>
+              </div>
               )}
 
               {!canPayWallet && balance !== null && balance > 0 && (
