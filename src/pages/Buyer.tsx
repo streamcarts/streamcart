@@ -184,7 +184,6 @@ const Buyer = () => {
                   </Button>
                 </form>
               </div>
-            </DialogContent>
               </DialogContent>
             </Dialog>
           </div>
