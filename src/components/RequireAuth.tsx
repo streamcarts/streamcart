@@ -3,8 +3,10 @@ import { ReactNode } from "react";
 import { useAuth, AppRole } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 
-export const RequireAuth = ({ children, role }: { children: ReactNode; role?: AppRole }) => {
-  const { user, roles, loading } = useAuth();
+type RoleProp = AppRole | AppRole[] | "team";
+
+export const RequireAuth = ({ children, role }: { children: ReactNode; role?: RoleProp }) => {
+  const { user, roles, isTeam, loading } = useAuth();
   const loc = useLocation();
 
   if (loading) {
@@ -15,6 +17,18 @@ export const RequireAuth = ({ children, role }: { children: ReactNode; role?: Ap
     );
   }
   if (!user) return <Navigate to={`/auth?next=${encodeURIComponent(loc.pathname)}`} replace />;
-  if (role && !roles.includes(role)) return <Navigate to="/" replace />;
+  if (role) {
+    if (role === "team") {
+      if (!isTeam) return <Navigate to="/" replace />;
+    } else {
+      const allowed = Array.isArray(role) ? role : [role];
+      // Treat "admin" requirement as satisfied by any team role (page-level granularity is enforced inside)
+      const ok = allowed.some((r) => {
+        if (r === "admin") return isTeam;
+        return roles.includes(r);
+      });
+      if (!ok) return <Navigate to="/" replace />;
+    }
+  }
   return <>{children}</>;
 };
