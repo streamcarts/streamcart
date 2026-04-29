@@ -380,9 +380,16 @@ const Index = () => {
       <section className="bg-muted/40 border-y border-border">
         <div className="container py-16">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <Badge variant="secondary" className="bg-card border border-border mb-3">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" /> 4.9 average from 5,200+ buyers
-            </Badge>
+            {stats && stats.ratingCount > 0 ? (
+              <Badge variant="secondary" className="bg-card border border-border mb-3">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
+                {stats.avgRating.toFixed(1)} average from {stats.ratingCount.toLocaleString()} verified review{stats.ratingCount === 1 ? "" : "s"}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-card border border-border mb-3">
+                <BadgeCheck className="h-3 w-3 text-primary mr-1" /> Verified buyers · Real reviews
+              </Badge>
+            )}
             <h2 className="text-2xl md:text-3xl font-bold">Loved by users across India</h2>
             <p className="text-muted-foreground mt-2">Real reviews from verified StreamCart buyers.</p>
           </div>
