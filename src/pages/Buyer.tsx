@@ -312,8 +312,7 @@ const Buyer = () => {
                       </div>
                     </div>
                   </div>
-                    </TabsContent>
-                  </Tabs>
+                  </div>
                 </form>
               </DialogContent>
             </Dialog>
