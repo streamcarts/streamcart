@@ -64,7 +64,7 @@ const App = () => (
               <Route path="/affiliate" element={<RequireAuth><Affiliate /></RequireAuth>} />
               <Route path="/sell" element={<RequireAuth><Sell /></RequireAuth>} />
               <Route path="/seller" element={<RequireAuth role="seller"><Seller /></RequireAuth>} />
-              <Route path="/admin" element={<RequireAuth role="admin"><Admin /></RequireAuth>} />
+              <Route path="/admin" element={<RequireAuth role="team"><Admin /></RequireAuth>} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/refund" element={<Refund />} />
