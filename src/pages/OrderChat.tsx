@@ -49,6 +49,9 @@ const OrderChat = () => {
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [revealCred, setRevealCred] = useState<Record<string, boolean>>({});
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const [imgPreview, setImgPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isSeller = user && order && order.seller_id === user.id;
