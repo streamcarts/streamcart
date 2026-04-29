@@ -26,6 +26,7 @@ import { SupportTickets } from "@/components/SupportTickets";
 import { ReferralPanel } from "@/components/ReferralPanel";
 import { WithdrawDialog } from "@/components/WithdrawDialog";
 import { EarningsHoldsCard } from "@/components/EarningsHoldsCard";
+import { ProfileCard } from "@/components/ProfileCard";
 
 type Order = {
   id: string;
