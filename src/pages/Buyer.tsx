@@ -16,8 +16,6 @@ import { downloadInvoice } from "@/lib/invoice";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, Plus, Wallet, Copy, FileText, RotateCcw, ShieldCheck, Smartphone, Lock, QrCode, Zap, Upload, Clock, CheckCircle2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { UroPayPanel } from "@/components/UroPayPanel";
 import payGpay from "@/assets/pay-gpay.png";
 import payPhonepe from "@/assets/pay-phonepe.png";
 import payPaytm from "@/assets/pay-paytm.png";
