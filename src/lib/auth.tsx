@@ -28,7 +28,7 @@ function getDeviceFingerprint(): string {
   }
 }
 
-export type AppRole = "admin" | "seller" | "buyer";
+export type AppRole = "admin" | "seller" | "buyer" | "super_admin" | "admin_staff" | "support";
 
 type AuthCtx = {
   session: Session | null;
@@ -36,6 +36,11 @@ type AuthCtx = {
   roles: AppRole[];
   isAdmin: boolean;
   isSeller: boolean;
+  isSuperAdmin: boolean;
+  isAdminStaff: boolean;
+  isSupport: boolean;
+  isTeam: boolean;
+  canManagePayments: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshRoles: () => Promise<void>;
