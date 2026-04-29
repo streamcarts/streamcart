@@ -413,6 +413,19 @@ const MessageBubble = ({
   );
 };
 
+const ChatImage = ({ path }: { path: string }) => {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    supabase.storage.from("chat-images").createSignedUrl(path, 600).then(({ data }) => {
+      if (!cancelled) setUrl(data?.signedUrl ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [path]);
+  if (!url) return <div className="w-64 h-40 bg-muted animate-pulse" />;
+  return <img src={url} alt="attachment" className="max-w-full max-h-72 object-contain bg-black/5" />;
+};
+
 const CredRow = ({ label, value, revealed, onCopy }: { label: string; value: string; revealed: boolean; onCopy: () => void }) => {
   const masked = value.length > 2 ? value[0] + "•".repeat(Math.max(4, value.length - 2)) + value[value.length - 1] : "••";
   return (
