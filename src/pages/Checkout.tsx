@@ -236,7 +236,8 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Premium UPI payment card */}
+              {/* Premium UPI payment card — hidden when total is 0 */}
+              {total > 0 && (
               <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center justify-between flex-wrap gap-2">
