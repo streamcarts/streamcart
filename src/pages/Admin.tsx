@@ -23,6 +23,7 @@ import { AffiliatesPanel } from "@/components/AffiliatesPanel";
 import { CategoriesPanel } from "@/components/CategoriesPanel";
 import PlatformsPanel from "@/components/PlatformsPanel";
 import { SignedThumbnail } from "@/components/SignedThumbnail";
+import { TeamPanel } from "@/components/TeamPanel";
 
 const Admin = () => {
   const { user } = useAuth();
