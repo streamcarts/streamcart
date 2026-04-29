@@ -911,7 +911,7 @@ const FinancePanel = ({ orders, refunds, users, onChange }: any) => {
           <h3 className="font-semibold">All transactions ({orders.length})</h3>
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search by order ID, service, email…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <Input className="pl-9" placeholder="Search by order ID, service, buyer email…" value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
         </div>
         <div className="space-y-2">
