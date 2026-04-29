@@ -114,9 +114,11 @@ const Affiliate = () => {
                 <Button asChild variant="outline"><a href={link} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a></Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Slug: <code className="font-mono">{aff.slug}</code> • Conversions credit your wallet instantly. Withdraw via the buyer dashboard.
+                Slug: <code className="font-mono">{aff.slug}</code> • Earnings hold for 3 days, then become withdrawable. Withdrawable now: <span className="font-semibold text-foreground">{inr(balance)}</span>
               </p>
             </Card>
+
+            <EarningsHoldsCard userId={user!.id} pendingBalance={pendingBalance} />
 
             <Card className="p-6">
               <h2 className="font-semibold mb-4">Recent conversions</h2>
