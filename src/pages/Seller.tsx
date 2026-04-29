@@ -405,7 +405,7 @@ const ProductDialog = ({ product, onDone, userId }: { product?: Product; onDone:
         product_id: newProd.id, seller_id: userId,
         cred_email: credEmail.trim(), cred_password: credPwd,
       });
-      toast.success("Product submitted for admin review");
+      toast.success("Product is live");
       setName(""); setDesc(""); setBase(""); setCredEmail(""); setCredPwd(""); setDuration(""); setStock("1");
     }
     setBusy(false); setOpen(false); onDone();
