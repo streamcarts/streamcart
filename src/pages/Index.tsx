@@ -15,6 +15,7 @@ import { inr } from "@/lib/format";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { PopularPlatforms } from "@/components/PopularPlatforms";
+import { SEO } from "@/components/SEO";
 
 const categories = [
   { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700", desc: "ChatGPT, Claude, Midjourney" },
