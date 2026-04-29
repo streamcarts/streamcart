@@ -1514,6 +1514,7 @@ export type Database = {
         }[]
       }
       ensure_order_chat: { Args: { _order_id: string }; Returns: string }
+      expire_pending_orders: { Args: never; Returns: number }
       file_complaint: {
         Args: { _details?: string; _order_id: string; _reason: string }
         Returns: string
@@ -1539,6 +1540,10 @@ export type Database = {
       }
       mark_chat_read: { Args: { _chat_id: string }; Returns: undefined }
       mark_order_received: { Args: { _order_id: string }; Returns: undefined }
+      process_refund: {
+        Args: { _order_id: string; _reason?: string }
+        Returns: string
+      }
       purchase_chat_product: {
         Args: {
           _affiliate_slug?: string
