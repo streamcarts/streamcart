@@ -13,6 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, Smartphone, Upload, Clock, ShieldCheck, Copy, QrCode, Zap, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+import payGpay from "@/assets/pay-gpay.png";
+import payPhonepe from "@/assets/pay-phonepe.png";
+import payPaytm from "@/assets/pay-paytm.png";
 
 type Settings = { upi_id: string; commission_percent: number };
 
@@ -283,12 +286,12 @@ const Checkout = () => {
                       <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Pay with any UPI app</div>
                       <div className="grid grid-cols-3 gap-2">
                         {[
-                          { name: "GPay", color: "from-blue-500 to-green-500", letter: "G" },
-                          { name: "PhonePe", color: "from-purple-600 to-indigo-600", letter: "P" },
-                          { name: "Paytm", color: "from-sky-500 to-blue-600", letter: "P" },
+                          { name: "GPay", logo: payGpay },
+                          { name: "PhonePe", logo: payPhonepe },
+                          { name: "Paytm", logo: payPaytm },
                         ].map((app) => (
                           <div key={app.name} className="rounded-lg border border-border bg-background px-2 py-2 flex items-center gap-2">
-                            <div className={`h-7 w-7 rounded-md bg-gradient-to-br ${app.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>{app.letter}</div>
+                            <img src={app.logo} alt={`${app.name} logo`} loading="lazy" className="h-7 w-7 rounded-md object-contain shrink-0" />
                             <span className="text-xs font-medium truncate">{app.name}</span>
                           </div>
                         ))}
