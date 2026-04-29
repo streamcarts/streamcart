@@ -21,6 +21,7 @@ import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Ey
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AffiliatesPanel } from "@/components/AffiliatesPanel";
 import { CategoriesPanel } from "@/components/CategoriesPanel";
+import PlatformsPanel from "@/components/PlatformsPanel";
 import { SignedThumbnail } from "@/components/SignedThumbnail";
 
 const Admin = () => {
@@ -289,6 +290,7 @@ const Admin = () => {
             <TabsTrigger value="sellers"><ShieldCheck className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Sellers</span></TabsTrigger>
             <TabsTrigger value="products"><Package className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Products</span></TabsTrigger>
             <TabsTrigger value="categories"><LayoutGrid className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Categories</span></TabsTrigger>
+            <TabsTrigger value="platforms"><Smartphone className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Platforms</span></TabsTrigger>
             <TabsTrigger value="finance"><IndianRupee className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Finance</span></TabsTrigger>
             <TabsTrigger value="coupons"><Tag className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Coupons</span></TabsTrigger>
             <TabsTrigger value="tickets"><Ticket className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Tickets</span></TabsTrigger>
@@ -628,6 +630,7 @@ const Admin = () => {
           <TabsContent value="products"><ProductsPanel products={allProducts} onChange={loadAll} /></TabsContent>
 
           <TabsContent value="categories"><CategoriesPanel /></TabsContent>
+          <TabsContent value="platforms"><PlatformsPanel /></TabsContent>
 
           {/* FINANCE */}
           <TabsContent value="finance"><FinancePanel orders={allOrders} refunds={refunds} users={allUsers} onChange={loadAll} /></TabsContent>
