@@ -118,6 +118,20 @@ const OrderChat = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs.length]);
 
+  // Poll other party's online status every 30s
+  useEffect(() => {
+    if (!order || !user) return;
+    const otherId = user.id === order.buyer_id ? order.seller_id : order.buyer_id;
+    let cancelled = false;
+    const check = async () => {
+      const { data } = await supabase.rpc("is_user_online", { _user_id: otherId });
+      if (!cancelled) setOtherOnline(!!data);
+    };
+    check();
+    const i = setInterval(check, 30_000);
+    return () => { cancelled = true; clearInterval(i); };
+  }, [order?.buyer_id, order?.seller_id, user?.id]);
+
   const send = async () => {
     if (!chat || !body.trim()) return;
     setSending(true);
