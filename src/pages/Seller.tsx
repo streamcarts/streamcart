@@ -111,7 +111,17 @@ const Seller = () => {
             <h1 className="text-3xl font-bold">Seller dashboard</h1>
             <p className="text-muted-foreground">Earn 90% on every sale. StreamCart adds a 10% markup automatically.</p>
           </div>
-          <WithdrawDialog balance={balance} onDone={load} userId={user!.id} />
+          {restricted.is ? (
+            <button
+              disabled
+              title={restricted.reason || "Account temporarily restricted"}
+              className="px-4 py-2 rounded-md bg-muted text-muted-foreground cursor-not-allowed text-sm font-medium"
+            >
+              Withdraw disabled
+            </button>
+          ) : (
+            <WithdrawDialog balance={balance} onDone={load} userId={user!.id} />
+          )}
         </div>
 
         {/* Stats */}
