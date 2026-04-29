@@ -71,15 +71,15 @@ const ProductDetail = () => {
     })();
   }, [id, navigate]);
 
-  const handleBuyNow = async () => {
+  const handleBuyNow = () => {
     if (!p) return;
     if (!user) return navigate(`/auth?next=/product/${p.id}`);
-    setBuying(true);
-    const { data, error } = await supabase.rpc("purchase_product", { _product_id: p.id });
-    setBuying(false);
-    if (error) return toast.error(error.message);
-    toast.success("Purchase complete!");
-    navigate(`/success?ids=${data}`);
+    add({
+      id: p.id, service_name: p.service_name, category: p.category,
+      display_price: Number(p.display_price), duration: p.duration,
+      image_url: p.image_url, stock: p.stock,
+    });
+    navigate("/checkout?buyNow=1");
   };
 
   const handleAddToCart = () => {
