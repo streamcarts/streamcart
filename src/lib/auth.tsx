@@ -2,6 +2,32 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+// Lightweight device fingerprint stored in localStorage; stable across sessions on the same browser.
+function getDeviceFingerprint(): string {
+  try {
+    const KEY = "sc_device_fp";
+    let fp = localStorage.getItem(KEY);
+    if (!fp) {
+      const seed = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + "x" + screen.height,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0,
+        Math.random().toString(36).slice(2, 10),
+      ].join("|");
+      // Simple hash
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+      fp = "fp_" + Math.abs(h).toString(36) + "_" + Date.now().toString(36);
+      localStorage.setItem(KEY, fp);
+    }
+    return fp;
+  } catch {
+    return "fp_unknown";
+  }
+}
+
 export type AppRole = "admin" | "seller" | "buyer";
 
 type AuthCtx = {
@@ -30,10 +56,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Set up listener FIRST
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((evt, s) => {
       setSession(s);
       // Defer Supabase calls
       setTimeout(() => fetchRoles(s?.user?.id), 0);
+      // Log device session on sign-in for fraud intelligence
+      if (evt === "SIGNED_IN" && s?.user?.id) {
+        setTimeout(() => {
+          try {
+            const fp = getDeviceFingerprint();
+            supabase.rpc("log_device_session", {
+              _device_fp: fp,
+              _ip: "",
+              _user_agent: navigator.userAgent.slice(0, 300),
+              _event: "login",
+            }).then(() => {});
+          } catch {}
+        }, 0);
+      }
     });
     // Then existing session
     supabase.auth.getSession().then(({ data }) => {
