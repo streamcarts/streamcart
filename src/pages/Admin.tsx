@@ -57,7 +57,7 @@ const Admin = () => {
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("*").order("created_at", { ascending: false }),
       supabase.from("withdrawals").select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("orders").select("id,buyer_id,seller_id,product_id,service_name,tier_label,total_paid,seller_earning,admin_commission,delivery_mode,status,chat_id,created_at,received_at,credentials_sent_at").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id,role"),
       supabase.from("products").select("id,seller_id,service_name,category,base_price,display_price,status,stock,is_active,is_featured,is_trending,avg_rating,rating_count").order("created_at", { ascending: false }),
