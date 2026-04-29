@@ -142,7 +142,7 @@ export const Navbar = () => {
                 <MobileLink icon={Compass} label="Browse" onClick={() => go("/browse")} />
                 {user && (
                   <>
-                    <MobileLink icon={User} label="Profile" onClick={() => go("/buyer?tab=profile")} />
+                    <MobileLink icon={User} label="Profile" onClick={() => go("/buyer#profile")} />
                     <MobileLink icon={MessageSquareText} label="Messages" onClick={() => go("/messages")} />
                     <MobileLink icon={Gift} label="Refer & Earn" onClick={() => go("/buyer?tab=refer")} />
                     {isSeller ? (
