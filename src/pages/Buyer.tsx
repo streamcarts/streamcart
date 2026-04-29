@@ -280,11 +280,9 @@ const Buyer = () => {
                     )}
 
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
-                      {(o as any).delivery_mode === "chat" && (
-                        <Button size="sm" variant="default" asChild>
-                          <Link to={`/orders/chat/${o.id}`}>Open chat</Link>
-                        </Button>
-                      )}
+                      <Button size="sm" variant="default" asChild>
+                        <Link to={`/orders/chat/${o.id}`}>💬 Open chat</Link>
+                      </Button>
                       {(o as any).delivery_mode !== "chat" && o.credentials_email && (
                         <Button size="sm" variant={isOpen ? "outline" : "default"} onClick={() => setRevealed({ ...revealed, [o.id]: !isOpen })}>
                           {isOpen ? <><EyeOff className="h-3.5 w-3.5 mr-1.5" />Hide</> : <><Eye className="h-3.5 w-3.5 mr-1.5" />Reveal credentials</>}

@@ -131,11 +131,16 @@ export default function PendingOrder() {
             <div className="rounded-lg bg-primary/10 border border-primary/30 p-5 text-center space-y-3">
               <CheckCircle2 className="h-12 w-12 mx-auto text-primary" />
               <div className="font-semibold text-lg">Payment verified!</div>
-              <p className="text-sm text-muted-foreground">Your credentials have been delivered.</p>
+              <p className="text-sm text-muted-foreground">Chat with the seller to receive your credentials.</p>
               {po.order_ids && po.order_ids.length > 0 && (
-                <Button asChild>
-                  <Link to={`/success?ids=${po.order_ids.join(",")}`}>View credentials <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                </Button>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button asChild>
+                    <Link to={`/orders/chat/${po.order_ids[0]}`}>💬 Open chat <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to={`/success?ids=${po.order_ids.join(",")}`}>View order</Link>
+                  </Button>
+                </div>
               )}
             </div>
           )}

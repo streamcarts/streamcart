@@ -29,11 +29,16 @@ const Success = () => {
             {ids.length} {ids.length === 1 ? "item" : "items"} purchased successfully.
           </p>
           <p className="text-sm text-muted-foreground inline-flex items-center gap-1.5 mb-8">
-            <Sparkles className="h-3.5 w-3.5 text-primary" /> Credentials are ready in your dashboard
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Chat with the seller to get your credentials instantly
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Button asChild size="lg"><Link to="/buyer">View credentials <ArrowRight className="h-4 w-4 ml-1.5" /></Link></Button>
-            <Button asChild size="lg" variant="outline"><Link to="/browse">Continue shopping</Link></Button>
+            {ids[0] && (
+              <Button asChild size="lg">
+                <Link to={`/orders/chat/${ids[0]}`}>💬 Open chat <ArrowRight className="h-4 w-4 ml-1.5" /></Link>
+              </Button>
+            )}
+            <Button asChild size="lg" variant="outline"><Link to="/buyer">My orders</Link></Button>
+            <Button asChild size="lg" variant="ghost"><Link to="/browse">Continue shopping</Link></Button>
           </div>
         </div>
       </main>
