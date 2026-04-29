@@ -220,6 +220,7 @@ export type Database = {
         Row: {
           body: string | null
           chat_id: string
+          chat_image_path: string | null
           created_at: string
           cred_email: string | null
           cred_notes: string | null
@@ -234,6 +235,7 @@ export type Database = {
         Insert: {
           body?: string | null
           chat_id: string
+          chat_image_path?: string | null
           created_at?: string
           cred_email?: string | null
           cred_notes?: string | null
@@ -248,6 +250,7 @@ export type Database = {
         Update: {
           body?: string | null
           chat_id?: string
+          chat_image_path?: string | null
           created_at?: string
           cred_email?: string | null
           cred_notes?: string | null
@@ -431,6 +434,7 @@ export type Database = {
         Row: {
           auto_complete_at: string | null
           buyer_id: string
+          buyer_last_read_at: string
           completed_at: string | null
           created_at: string
           delivered_at: string | null
@@ -438,12 +442,14 @@ export type Database = {
           order_id: string
           response_due_at: string
           seller_id: string
+          seller_last_read_at: string
           status: string
           updated_at: string
         }
         Insert: {
           auto_complete_at?: string | null
           buyer_id: string
+          buyer_last_read_at?: string
           completed_at?: string | null
           created_at?: string
           delivered_at?: string | null
@@ -451,12 +457,14 @@ export type Database = {
           order_id: string
           response_due_at?: string
           seller_id: string
+          seller_last_read_at?: string
           status?: string
           updated_at?: string
         }
         Update: {
           auto_complete_at?: string | null
           buyer_id?: string
+          buyer_last_read_at?: string
           completed_at?: string | null
           created_at?: string
           delivered_at?: string | null
@@ -464,6 +472,7 @@ export type Database = {
           order_id?: string
           response_due_at?: string
           seller_id?: string
+          seller_last_read_at?: string
           status?: string
           updated_at?: string
         }
@@ -1462,6 +1471,7 @@ export type Database = {
         Args: { _order_id: string; _reason?: string }
         Returns: string
       }
+      mark_chat_read: { Args: { _chat_id: string }; Returns: undefined }
       mark_order_received: { Args: { _order_id: string }; Returns: undefined }
       purchase_chat_product: {
         Args: {
@@ -1508,6 +1518,16 @@ export type Database = {
           _email: string
           _notes?: string
           _password: string
+        }
+        Returns: string
+      }
+      send_chat_image: {
+        Args: {
+          _chat_id: string
+          _contact_detected: boolean
+          _detect_reason: string
+          _image_path: string
+          _ocr_text: string
         }
         Returns: string
       }
