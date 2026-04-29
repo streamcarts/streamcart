@@ -651,6 +651,8 @@ const Admin = () => {
 
           {/* SETTINGS */}
           <TabsContent value="settings"><SettingsPanel settings={settings} onChange={loadAll} /></TabsContent>
+
+          {isSuperAdmin && <TabsContent value="team"><TeamPanel /></TabsContent>}
         </Tabs>
       </main>
       <Footer />
