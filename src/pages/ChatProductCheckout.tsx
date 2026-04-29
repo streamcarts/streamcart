@@ -36,8 +36,8 @@ const ChatProductCheckout = () => {
     (async () => {
       const { data, error } = await supabase.from("products").select("*").eq("id", id).eq("status", "approved").maybeSingle();
       if (error || !data) { toast.error("Not available"); navigate("/browse"); return; }
-      setP(data as Product);
-      const tiers = (data.price_tiers as any[]) ?? [];
+      setP(data as unknown as Product);
+      const tiers = ((data as any).price_tiers as any[]) ?? [];
       if (tiers.length > 0) setTier(tiers[0].key);
       setLoading(false);
     })();
