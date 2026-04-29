@@ -160,6 +160,8 @@ const OrderChat = () => {
       setUploading(false);
     }
   };
+
+  const markReceived = async () => {
     if (!order) return;
     const { error } = await supabase.rpc("mark_order_received", { _order_id: order.id });
     if (error) return toast.error(error.message);
