@@ -573,4 +573,76 @@ const timeUntil = (iso: string) => {
   return `${m}m`;
 };
 
+const ComplaintDialog = ({
+  open, onOpenChange, orderId, onFiled,
+}: { open: boolean; onOpenChange: (v: boolean) => void; orderId: string; onFiled: () => void }) => {
+  const [reason, setReason] = useState("");
+  const [details, setDetails] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (reason.trim().length < 3) return toast.error("Please choose or enter a reason");
+    setBusy(true);
+    const { error } = await supabase.rpc("file_complaint", {
+      _order_id: orderId, _reason: reason.trim(), _details: details.trim() || null,
+    });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Complaint filed. Seller has been restricted pending admin review.");
+    setReason(""); setDetails("");
+    onFiled();
+  };
+
+  const presets = [
+    "Credentials not working",
+    "Account stopped working before plan expiry",
+    "Wrong product / plan delivered",
+    "Seller not responding",
+    "Other",
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Flag className="h-4 w-4 text-destructive" /> File a complaint</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="rounded-md bg-warning/10 border border-warning/30 p-2 text-xs flex gap-2 items-start">
+            <ShieldAlert className="h-3.5 w-3.5 text-warning shrink-0 mt-0.5" />
+            <span>Filing a complaint will <strong>immediately restrict the seller</strong> (no new listings, no withdrawals) until admin reviews. Please file only genuine issues.</span>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Reason</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {presets.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setReason(p)}
+                  className={`text-xs px-2.5 py-1 rounded-full border ${reason === p ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-muted"}`}
+                >{p}</button>
+              ))}
+            </div>
+            {reason === "Other" && (
+              <Input value={reason === "Other" ? "" : reason} onChange={(e) => setReason(e.target.value)} placeholder="Describe in a few words" maxLength={120} />
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>Details (optional)</Label>
+            <Textarea value={details} onChange={(e) => setDetails(e.target.value)} rows={3} maxLength={500}
+              placeholder="Explain what happened. Do not share personal contact info." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="destructive" onClick={submit} disabled={busy}>
+            {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}File complaint
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default OrderChat;
