@@ -54,12 +54,15 @@ const faqsList: Faq[] = [
   { q: "How are payments secured?", a: "Payments flow through your wallet, which is encrypted at rest. Card and UPI processing happens through PCI-DSS compliant payment gateways." },
 ];
 
+type LiveStats = { orders: number; sellers: number; avgRating: number; ratingCount: number };
+
 const Index = () => {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [searchIndex, setSearchIndex] = useState<Product[]>([]);
   const [q, setQ] = useState("");
   const [showSuggest, setShowSuggest] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const [stats, setStats] = useState<LiveStats | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,6 +90,23 @@ const Index = () => {
       .order("created_at", { ascending: false })
       .limit(500)
       .then(({ data }) => setSearchIndex((data as Product[]) ?? []));
+
+    // Live trust stats — counts only, no row data
+    (async () => {
+      const [ordersRes, sellersRes, reviewsRes] = await Promise.all([
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "completed"),
+        supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "seller"),
+        supabase.from("reviews").select("rating"),
+      ]);
+      const ratings = (reviewsRes.data ?? []) as { rating: number }[];
+      const avg = ratings.length ? ratings.reduce((s, r) => s + (r.rating || 0), 0) / ratings.length : 0;
+      setStats({
+        orders: ordersRes.count ?? 0,
+        sellers: sellersRes.count ?? 0,
+        avgRating: Math.round(avg * 10) / 10,
+        ratingCount: ratings.length,
+      });
+    })();
   }, []);
 
   const suggestions = useMemo(() => {
@@ -255,7 +275,11 @@ const Index = () => {
           <div className="mt-10 flex flex-wrap justify-center items-center gap-6 md:gap-10 animate-fade-in">
             <Stat icon={Lock} label="Escrow protected" value="100%" />
             <div className="hidden sm:block h-8 w-px bg-border" />
-            <Stat icon={BadgeCheck} label="Verified sellers" value="Manual review" />
+            {stats && stats.orders > 0 ? (
+              <Stat icon={CheckCircle2} label="Orders delivered" value={stats.orders.toLocaleString() + "+"} />
+            ) : (
+              <Stat icon={BadgeCheck} label="Verified sellers" value="Manual review" />
+            )}
             <div className="hidden sm:block h-8 w-px bg-border" />
             <Stat icon={Zap} label="Chat delivery" value="Under 30 min" />
           </div>
@@ -360,9 +384,16 @@ const Index = () => {
       <section className="bg-muted/40 border-y border-border">
         <div className="container py-16">
           <div className="text-center max-w-2xl mx-auto mb-10">
-            <Badge variant="secondary" className="bg-card border border-border mb-3">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" /> 4.9 average from 5,200+ buyers
-            </Badge>
+            {stats && stats.ratingCount > 0 ? (
+              <Badge variant="secondary" className="bg-card border border-border mb-3">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
+                {stats.avgRating.toFixed(1)} average from {stats.ratingCount.toLocaleString()} verified review{stats.ratingCount === 1 ? "" : "s"}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-card border border-border mb-3">
+                <BadgeCheck className="h-3 w-3 text-primary mr-1" /> Verified buyers · Real reviews
+              </Badge>
+            )}
             <h2 className="text-2xl md:text-3xl font-bold">Loved by users across India</h2>
             <p className="text-muted-foreground mt-2">Real reviews from verified StreamCart buyers.</p>
           </div>

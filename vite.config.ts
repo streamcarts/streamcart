@@ -12,7 +12,16 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react({
+      // Strip console.* and debugger in production builds (keep console.error & console.warn for diagnostics)
+      tsDecorators: false,
+    }),
+    mode === "development" && componentTagger(),
+  ].filter(Boolean),
+  esbuild: mode === "production"
+    ? { drop: ["debugger"], pure: ["console.log", "console.info", "console.debug", "console.trace"] }
+    : undefined,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
