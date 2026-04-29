@@ -19,6 +19,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ReviewDialog } from "@/components/ReviewDialog";
 import { SupportTickets } from "@/components/SupportTickets";
 import { ReferralPanel } from "@/components/ReferralPanel";
+import { WithdrawDialog } from "@/components/WithdrawDialog";
+import { EarningsHoldsCard } from "@/components/EarningsHoldsCard";
 
 type Order = {
   id: string;
@@ -41,6 +43,7 @@ const Buyer = () => {
   const { add } = useCart();
   const navigate = useNavigate();
   const [balance, setBalance] = useState<number | null>(null);
+  const [pendingBalance, setPendingBalance] = useState(0);
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [topups, setTopups] = useState<Topup[]>([]);
   const [reviews, setReviews] = useState<Record<string, Review>>({});
@@ -57,13 +60,14 @@ const Buyer = () => {
 
   const load = async () => {
     const [w, o, t, s] = await Promise.all([
-      supabase.from("wallets").select("balance").eq("user_id", user!.id).maybeSingle(),
+      supabase.from("wallets").select("balance,pending_balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("orders").select("*").eq("buyer_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("id,amount,status,created_at").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(10),
       supabase.from("platform_settings").select("upi_id").eq("id", 1).maybeSingle(),
     ]);
     if (s.data?.upi_id) setUpiId(s.data.upi_id);
     setBalance(Number(w.data?.balance ?? 0));
+    setPendingBalance(Number((w.data as any)?.pending_balance ?? 0));
     const orderList = (o.data as Order[]) ?? [];
     setOrders(orderList);
     setTopups((t.data as Topup[]) ?? []);
@@ -145,10 +149,12 @@ const Buyer = () => {
               <div className="text-3xl font-bold">{balance === null ? <Skeleton className="h-8 w-32" /> : inr(balance)}</div>
             </div>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button><Plus className="h-4 w-4 mr-2" /> Add funds</Button>
-            </DialogTrigger>
+          <div className="flex flex-wrap gap-2">
+            <WithdrawDialog balance={balance ?? 0} userId={user!.id} onDone={load} />
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button><Plus className="h-4 w-4 mr-2" /> Add funds</Button>
+              </DialogTrigger>
              <DialogContent>
               <DialogHeader><DialogTitle>Add funds</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -178,9 +184,15 @@ const Buyer = () => {
                   </Button>
                 </form>
               </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </Card>
+
+        {/* Earnings on hold (referral / rewards) */}
+        {(pendingBalance > 0) && (
+          <EarningsHoldsCard userId={user!.id} pendingBalance={pendingBalance} />
+        )}
 
         {/* Recent topups */}
         {topups.length > 0 && (

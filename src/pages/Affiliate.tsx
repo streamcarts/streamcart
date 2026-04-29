@@ -12,6 +12,8 @@ import { inr } from "@/lib/format";
 import { Copy, ExternalLink, MousePointerClick, ShoppingCart, IndianRupee, Percent, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { WithdrawDialog } from "@/components/WithdrawDialog";
+import { EarningsHoldsCard } from "@/components/EarningsHoldsCard";
 
 type Aff = {
   id: string;
@@ -29,6 +31,8 @@ const Affiliate = () => {
   const { user } = useAuth();
   const [aff, setAff] = useState<Aff | null | "none">(null);
   const [convs, setConvs] = useState<Conversion[]>([]);
+  const [balance, setBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
 
   useEffect(() => {
     document.title = "Affiliate dashboard — StreamCart";
@@ -50,6 +54,9 @@ const Affiliate = () => {
       .order("created_at", { ascending: false })
       .limit(25);
     setConvs((c as Conversion[]) ?? []);
+    const { data: w } = await supabase.from("wallets").select("balance,pending_balance").eq("user_id", user!.id).maybeSingle();
+    setBalance(Number(w?.balance ?? 0));
+    setPendingBalance(Number((w as any)?.pending_balance ?? 0));
   };
 
   const link = aff && aff !== "none" ? `${window.location.origin}/?aff=${aff.slug}` : "";
@@ -63,9 +70,14 @@ const Affiliate = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="flex-1 container py-10 space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold">Affiliate dashboard</h1>
-          <p className="text-muted-foreground">Track clicks, conversions, and commissions.</p>
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Affiliate dashboard</h1>
+            <p className="text-muted-foreground">Track clicks, conversions, and commissions.</p>
+          </div>
+          {aff && aff !== "none" && aff.status === "approved" && (
+            <WithdrawDialog balance={balance} userId={user!.id} onDone={load} />
+          )}
         </div>
 
         {aff === null ? (
@@ -102,9 +114,11 @@ const Affiliate = () => {
                 <Button asChild variant="outline"><a href={link} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a></Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Slug: <code className="font-mono">{aff.slug}</code> • Conversions credit your wallet instantly. Withdraw via the buyer dashboard.
+                Slug: <code className="font-mono">{aff.slug}</code> • Earnings hold for 3 days, then become withdrawable. Withdrawable now: <span className="font-semibold text-foreground">{inr(balance)}</span>
               </p>
             </Card>
+
+            <EarningsHoldsCard userId={user!.id} pendingBalance={pendingBalance} />
 
             <Card className="p-6">
               <h2 className="font-semibold mb-4">Recent conversions</h2>
