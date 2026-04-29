@@ -495,62 +495,111 @@ const Admin = () => {
                     const items = (po.items as any[]) ?? [];
                     const expectedAmount = items.reduce((s, it) => s + Number(it.display_price || 0) * Number(it.qty || 1), 0);
                     const paid = Number(po.amount);
-                    const amountMatch = expectedAmount > 0 && Math.abs(paid - expectedAmount) < 0.5;
-                    const txnLooksValid = po.txn_id && /^[A-Za-z0-9]{10,}$/.test(po.txn_id);
+                    const amountMatch = expectedAmount > 0 && paid >= expectedAmount && (paid - expectedAmount) < 1.0;
+                    const txnLooksValid = po.txn_id && /^[A-Za-z0-9]{10,30}$/.test(po.txn_id);
                     const tag = (po.admin_note || "").split(" ")[0];
                     const score = Number(po.auto_match_score || 0);
-                    const isLikely = tag.startsWith("likely_valid") || tag.startsWith("auto_approved") || tag.startsWith("trusted") || (amountMatch && txnLooksValid);
+                    const ocrStatus = po.ocr_status || "pending";
+                    const ocrAmt = po.ocr_amount != null ? Number(po.ocr_amount) : null;
+                    const ocrAmtMatch = ocrAmt != null && Math.abs(ocrAmt - paid) < 1.0;
+                    const ocrRefMatch = po.ocr_reference && po.txn_id &&
+                      String(po.ocr_reference).replace(/[^A-Za-z0-9]/g, "").toLowerCase() ===
+                      String(po.txn_id).replace(/[^A-Za-z0-9]/g, "").toLowerCase();
+                    const highConfidence = ocrStatus === "done" && ocrAmtMatch && ocrRefMatch;
+                    const isLikely = highConfidence || tag.startsWith("likely_valid") || tag.startsWith("auto_approved") || tag.startsWith("trusted") || tag.startsWith("high_confidence") || (amountMatch && txnLooksValid);
                     const expiresIn = po.expires_at ? Math.max(0, Math.round((new Date(po.expires_at).getTime() - Date.now()) / 60000)) : null;
                     const isSelected = selectedPo.has(po.id);
+                    const isFocused = focusedPoId === po.id;
+                    const previewUrl = poPreviews[po.id];
                     return (
-                      <div key={po.id} className={`p-3 border rounded-lg space-y-2 transition-colors ${isSelected ? "border-primary bg-primary/10" : isLikely ? "border-primary/40 bg-primary/5" : "border-border"}`}>
-                        <div className="flex items-start justify-between flex-wrap gap-3">
-                          <div className="flex items-start gap-3 min-w-0 flex-1">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={(e) => setSelectedPo(prev => {
-                                const n = new Set(prev);
-                                if (e.target.checked) n.add(po.id); else n.delete(po.id);
-                                return n;
-                              })}
-                              className="mt-1 h-4 w-4 rounded border-border accent-primary cursor-pointer"
-                            />
-                            <div className="min-w-0">
-                              <div className="font-semibold flex items-center gap-2 flex-wrap">
-                                <span className={amountMatch ? "text-primary" : ""}>{inr(paid)}</span>
+                      <div
+                        key={po.id}
+                        tabIndex={0}
+                        onClick={() => setFocusedPoId(po.id)}
+                        onFocus={() => setFocusedPoId(po.id)}
+                        className={`p-3 border rounded-lg space-y-3 transition-colors outline-none cursor-pointer ${
+                          isFocused ? "ring-2 ring-primary border-primary" :
+                          isSelected ? "border-primary bg-primary/10" :
+                          highConfidence ? "border-primary bg-primary/10" :
+                          isLikely ? "border-primary/40 bg-primary/5" : "border-border hover:border-border/80"
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Screenshot preview */}
+                          <div className="shrink-0">
+                            {previewUrl ? (
+                              <a href={previewUrl} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                                <img src={previewUrl} alt="Payment proof" className="h-24 w-24 object-cover rounded-md border border-border bg-muted" loading="lazy" />
+                              </a>
+                            ) : (
+                              <div className="h-24 w-24 rounded-md border border-border bg-muted flex items-center justify-center text-[10px] text-muted-foreground">loading…</div>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            <div className="flex items-start justify-between gap-3 flex-wrap">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onChange={(e) => setSelectedPo(prev => {
+                                    const n = new Set(prev);
+                                    if (e.target.checked) n.add(po.id); else n.delete(po.id);
+                                    return n;
+                                  })}
+                                  className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                                />
+                                <span className={`text-xl font-bold ${amountMatch ? "text-green-600 dark:text-green-500" : "text-foreground"}`}>{inr(paid)}</span>
                                 {expectedAmount > 0 && (
-                                  <span className={`text-xs font-normal ${amountMatch ? "text-primary" : "text-warning"}`}>
-                                    {amountMatch ? "✓ matches" : `expected ${inr(expectedAmount)}`}
-                                  </span>
+                                  amountMatch
+                                    ? <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30 hover:bg-green-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />exact match</Badge>
+                                    : <Badge variant="outline" className="text-warning border-warning/40">expected {inr(expectedAmount)}</Badge>
                                 )}
-                                {isLikely && <Badge className="bg-primary/15 text-primary hover:bg-primary/20"><CheckCircle2 className="h-3 w-3 mr-1" />Likely Valid</Badge>}
+                                {highConfidence && <Badge className="bg-primary text-primary-foreground hover:bg-primary/90">High Confidence</Badge>}
+                                {!highConfidence && isLikely && <Badge className="bg-primary/15 text-primary hover:bg-primary/20">Likely Valid</Badge>}
+                                {ocrStatus === "pending" && <Badge variant="outline" className="text-[10px]">OCR…</Badge>}
+                                {ocrStatus === "failed" && <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">OCR failed</Badge>}
                                 {score > 0 && <Badge variant="outline" className="text-[10px]">score {score}</Badge>}
                                 {tag && <Badge variant="secondary" className="text-[10px]">{tag}</Badge>}
                               </div>
-                              <div className="text-xs text-muted-foreground mt-0.5">
-                                {buyer?.display_name || buyer?.email || po.buyer_id.slice(0, 8)} • {new Date(po.created_at).toLocaleString()}
-                                {expiresIn !== null && expiresIn > 0 && <span className="ml-1">• expires in {expiresIn}m</span>}
+                              <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                <Button size="sm" variant="ghost" onClick={() => viewPaymentScreenshot(po.screenshot_path)}><Eye className="h-4 w-4 mr-1" />Open</Button>
+                                <Button size="sm" onClick={() => approvePendingOrder(po.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
+                                <Button size="sm" variant="outline" onClick={() => rejectPendingOrder(po.id)}><XCircle className="h-4 w-4" /></Button>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex gap-2 shrink-0">
-                            <Button size="sm" variant="ghost" onClick={() => viewPaymentScreenshot(po.screenshot_path)}><Eye className="h-4 w-4 mr-1" />Proof</Button>
-                            <Button size="sm" onClick={() => approvePendingOrder(po.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
-                            <Button size="sm" variant="outline" onClick={() => rejectPendingOrder(po.id)}><XCircle className="h-4 w-4" /></Button>
-                          </div>
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-2 text-xs">
-                          <div className="bg-muted/50 rounded px-2 py-1.5">
-                            <span className="text-muted-foreground">Txn ID:</span>{" "}
-                            <code className="font-mono">{po.txn_id || "—"}</code>
-                            {po.txn_id && (
-                              <button className="ml-2 text-primary hover:underline" onClick={() => { navigator.clipboard.writeText(po.txn_id); toast.success("Copied"); }}>copy</button>
-                            )}
-                          </div>
-                          <div className="bg-muted/50 rounded px-2 py-1.5">
-                            <span className="text-muted-foreground">Items:</span>{" "}
-                            {items.map((it: any) => `${it.service_name}×${it.qty}`).join(", ")}
+                            <div className="text-xs text-muted-foreground">
+                              {buyer?.display_name || buyer?.email || po.buyer_id.slice(0, 8)} • {new Date(po.created_at).toLocaleString()}
+                              {expiresIn !== null && expiresIn > 0 && <span className="ml-1">• expires in {expiresIn}m</span>}
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                              <div className="bg-muted/50 rounded px-2 py-1.5">
+                                <span className="text-muted-foreground">Txn ID:</span>{" "}
+                                <code className="font-mono">{po.txn_id || "—"}</code>
+                                {po.txn_id && (
+                                  <button className="ml-2 text-primary hover:underline" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(po.txn_id); toast.success("Copied"); }}>copy</button>
+                                )}
+                                {ocrStatus === "done" && po.ocr_reference && (
+                                  <div className="mt-0.5 text-[11px]">
+                                    <span className="text-muted-foreground">OCR ref:</span>{" "}
+                                    <code className={`font-mono ${ocrRefMatch ? "text-green-600 dark:text-green-500" : "text-warning"}`}>{po.ocr_reference}</code>
+                                    {ocrRefMatch ? " ✓" : " ⚠"}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="bg-muted/50 rounded px-2 py-1.5">
+                                <span className="text-muted-foreground">Items:</span>{" "}
+                                {items.map((it: any) => `${it.service_name}×${it.qty}`).join(", ")}
+                                {ocrStatus === "done" && ocrAmt != null && (
+                                  <div className="mt-0.5 text-[11px]">
+                                    <span className="text-muted-foreground">OCR amount:</span>{" "}
+                                    <span className={`font-mono ${ocrAmtMatch ? "text-green-600 dark:text-green-500" : "text-warning"}`}>{inr(ocrAmt)}</span>
+                                    {ocrAmtMatch ? " ✓" : " ⚠"}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
