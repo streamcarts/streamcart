@@ -90,12 +90,26 @@ const OrderChat = () => {
     const channel = supabase
       .channel(`chat-${chat.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `chat_id=eq.${chat.id}` },
-        (payload) => setMsgs((cur) => [...cur, payload.new as Msg]))
+        (payload) => {
+          setMsgs((cur) => [...cur, payload.new as Msg]);
+          // Mark read if the new message is from the other party and we're viewing
+          const m = payload.new as Msg;
+          if (user && m.sender_id && m.sender_id !== user.id) {
+            supabase.rpc("mark_chat_read", { _chat_id: chat.id });
+          }
+        })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "order_chats", filter: `id=eq.${chat.id}` },
         (payload) => setChat(payload.new as Chat))
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [chat?.id]);
+  }, [chat?.id, user?.id]);
+
+  // Mark chat as read on open
+  useEffect(() => {
+    if (chat?.id && user?.id) {
+      supabase.rpc("mark_chat_read", { _chat_id: chat.id });
+    }
+  }, [chat?.id, user?.id]);
 
   // Auto-scroll
   useEffect(() => {
