@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import { Loader2, Plus, Wallet, Banknote, Package, Pencil, Trash2, Key, ShoppingBag, TrendingUp, Star, BarChart3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, CartesianGrid } from "recharts";
 import { useCategories } from "@/lib/categories";
+import { WithdrawDialog } from "@/components/WithdrawDialog";
+import { EarningsHoldsCard } from "@/components/EarningsHoldsCard";
 
 type Product = {
   id: string; service_name: string; description: string | null; category: string;
@@ -36,6 +38,7 @@ const Seller = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Order[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
@@ -47,13 +50,14 @@ const Seller = () => {
   const load = async () => {
     setLoading(true);
     const [w, p, o, wd, c] = await Promise.all([
-      supabase.from("wallets").select("balance").eq("user_id", user!.id).maybeSingle(),
+      supabase.from("wallets").select("balance,pending_balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("products").select("*").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("orders").select("id,service_name,seller_earning,total_paid,created_at,buyer_id,credentials_email").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("withdrawals").select("id,amount,status,created_at,upi_id").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("product_credentials").select("id,product_id,cred_email,cred_password,status,created_at,assigned_at").eq("seller_id", user!.id).order("created_at", { ascending: false }),
     ]);
     setBalance(Number(w.data?.balance ?? 0));
+    setPendingBalance(Number((w.data as any)?.pending_balance ?? 0));
     setProducts((p.data as Product[]) ?? []);
     setSales((o.data as Order[]) ?? []);
     setWds((wd.data as Withdrawal[]) ?? []);
@@ -234,6 +238,7 @@ const Seller = () => {
 
           {/* ============== PAYOUTS ============== */}
           <TabsContent value="payouts" className="space-y-4">
+            <EarningsHoldsCard userId={user!.id} pendingBalance={pendingBalance} />
             <Card className="p-6">
               <h2 className="font-semibold mb-4">Withdrawal history</h2>
               {loading ? (
@@ -549,51 +554,6 @@ const CredentialDialog = ({ products, onDone, userId }: { products: Product[]; o
   );
 };
 
-// ============= WITHDRAW DIALOG =============
-
-const WithdrawDialog = ({ balance, onDone, userId }: { balance: number; onDone: () => void; userId: string }) => {
-  const [open, setOpen] = useState(false);
-  const [amt, setAmt] = useState("");
-  const [upi, setUpi] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const a = parseFloat(amt);
-    if (!a || a <= 0) return toast.error("Invalid amount");
-    if (a > balance) return toast.error("Amount exceeds balance");
-    if (!upi.trim()) return toast.error("UPI ID required");
-    setBusy(true);
-    const { error } = await supabase.from("withdrawals").insert({ seller_id: userId, amount: a, upi_id: upi.trim() });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Withdrawal requested");
-    setAmt(""); setUpi(""); setOpen(false); onDone();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild><Button variant="outline" disabled={balance <= 0}><Banknote className="h-4 w-4 mr-2" />Withdraw {inr(balance)}</Button></DialogTrigger>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Request withdrawal</DialogTitle></DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Amount (₹) — available {inr(balance)}</Label>
-            <Input type="number" step="0.01" min="1" max={balance} value={amt} onChange={(e) => setAmt(e.target.value)} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Your UPI ID</Label>
-            <Input value={upi} onChange={(e) => setUpi(e.target.value)} placeholder="yourname@bank" required />
-          </div>
-          <DialogFooter>
-            <Button type="submit" className="w-full" disabled={busy}>
-              {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Request
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-};
+// Withdraw dialog moved to shared component @/components/WithdrawDialog
 
 export default Seller;
