@@ -104,12 +104,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { clearInterval(i); document.removeEventListener("visibilitychange", onVis); };
   }, [session?.user?.id]);
 
+  const isSuperAdmin = roles.includes("super_admin") || roles.includes("admin");
+  const isAdminStaff = roles.includes("admin_staff");
+  const isSupport = roles.includes("support");
+  const isTeam = isSuperAdmin || isAdminStaff || isSupport;
   const value: AuthCtx = {
     session,
     user: session?.user ?? null,
     roles,
-    isAdmin: roles.includes("admin"),
+    isAdmin: isSuperAdmin, // legacy
     isSeller: roles.includes("seller"),
+    isSuperAdmin,
+    isAdminStaff,
+    isSupport,
+    isTeam,
+    canManagePayments: isSuperAdmin || isAdminStaff,
     loading,
     signOut: async () => {
       await supabase.auth.signOut();
