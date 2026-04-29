@@ -162,6 +162,14 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        path={`/p/${p.slug ?? p.id}`}
+        image={p.image_url ?? undefined}
+        type="product"
+        jsonLd={productJsonLd}
+      />
       <Navbar />
       <main className="flex-1 container py-10">
         <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2">
