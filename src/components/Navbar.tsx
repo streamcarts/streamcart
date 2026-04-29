@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp,
-  MessageSquareText, Menu, Compass, Gift, Info, RotateCcw, Package,
+  MessageSquareText, Menu, Compass, Gift, Info, RotateCcw, Package, User,
 } from "lucide-react";
 import { CartIcon } from "./CartIcon";
 import { NotificationBell } from "./NotificationBell";
@@ -92,6 +92,9 @@ export const Navbar = () => {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/buyer?tab=profile")}>
+                  <User className="mr-2 h-4 w-4" /> Profile
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/buyer")}>
                   <ShoppingBag className="mr-2 h-4 w-4" /> Buyer dashboard
                 </DropdownMenuItem>
@@ -139,6 +142,7 @@ export const Navbar = () => {
                 <MobileLink icon={Compass} label="Browse" onClick={() => go("/browse")} />
                 {user && (
                   <>
+                    <MobileLink icon={User} label="Profile" onClick={() => go("/buyer?tab=profile")} />
                     <MobileLink icon={MessageSquareText} label="Messages" onClick={() => go("/messages")} />
                     <MobileLink icon={Gift} label="Refer & Earn" onClick={() => go("/buyer?tab=refer")} />
                     {isSeller ? (
