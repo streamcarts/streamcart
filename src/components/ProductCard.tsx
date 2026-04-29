@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 export type ProductCardProduct = {
   id: string;
+  slug?: string | null;
   service_name: string;
   category: string;
   display_price: number;
@@ -59,7 +60,7 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
 
   return (
     <Link
-      to={`/product/${p.id}`}
+      to={`/p/${p.slug ?? p.id}`}
       className="group bg-card border border-border rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-primary/40"
     >
       {/* Image */}
