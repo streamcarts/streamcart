@@ -31,6 +31,7 @@ import SellerListChat from "./pages/SellerListChat.tsx";
 import OrderChat from "./pages/OrderChat.tsx";
 import ChatProductCheckout from "./pages/ChatProductCheckout.tsx";
 import Messages from "./pages/Messages.tsx";
+import { ChatAutoOpener } from "./components/ChatAutoOpener";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
         <ReferralCapture />
         <AuthProvider>
           <CartProvider>
+            <ChatAutoOpener />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
