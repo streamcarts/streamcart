@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp } from "lucide-react";
+import { LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp, MessageSquareText } from "lucide-react";
 import { CartIcon } from "./CartIcon";
 import { AnnouncementBanner } from "./AnnouncementBanner";
 import { useEffect, useState } from "react";
@@ -63,6 +63,9 @@ export const Navbar = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/buyer")}>
                   <ShoppingBag className="mr-2 h-4 w-4" /> Buyer dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/messages")}>
+                  <MessageSquareText className="mr-2 h-4 w-4" /> Messages
                 </DropdownMenuItem>
                 {isSeller && (
                   <DropdownMenuItem onClick={() => navigate("/seller")}>

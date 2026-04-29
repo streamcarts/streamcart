@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Loader2, Send, ShieldAlert, KeyRound, CheckCircle2, AlertTriangle, Clock, MessageSquareText, Copy, Eye, EyeOff, Flag, ChevronLeft,
+  Loader2, Send, ShieldAlert, KeyRound, CheckCircle2, AlertTriangle, Clock, MessageSquareText, Copy, Eye, EyeOff, Flag, ChevronLeft, ImagePlus, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { inr } from "@/lib/format";
@@ -31,9 +31,10 @@ type Chat = {
 };
 type Msg = {
   id: string; chat_id: string; sender_id: string | null;
-  kind: "text" | "credentials" | "system";
+  kind: "text" | "credentials" | "system" | "image";
   body: string | null; cred_email: string | null; cred_password: string | null; cred_notes: string | null;
   is_flagged: boolean; flag_reason: string | null; is_blocked: boolean;
+  chat_image_path: string | null;
   created_at: string;
 };
 
@@ -48,6 +49,9 @@ const OrderChat = () => {
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
   const [revealCred, setRevealCred] = useState<Record<string, boolean>>({});
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const [imgPreview, setImgPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isSeller = user && order && order.seller_id === user.id;
@@ -86,12 +90,26 @@ const OrderChat = () => {
     const channel = supabase
       .channel(`chat-${chat.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: `chat_id=eq.${chat.id}` },
-        (payload) => setMsgs((cur) => [...cur, payload.new as Msg]))
+        (payload) => {
+          setMsgs((cur) => [...cur, payload.new as Msg]);
+          // Mark read if the new message is from the other party and we're viewing
+          const m = payload.new as Msg;
+          if (user && m.sender_id && m.sender_id !== user.id) {
+            supabase.rpc("mark_chat_read", { _chat_id: chat.id });
+          }
+        })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "order_chats", filter: `id=eq.${chat.id}` },
         (payload) => setChat(payload.new as Chat))
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [chat?.id]);
+  }, [chat?.id, user?.id]);
+
+  // Mark chat as read on open
+  useEffect(() => {
+    if (chat?.id && user?.id) {
+      supabase.rpc("mark_chat_read", { _chat_id: chat.id });
+    }
+  }, [chat?.id, user?.id]);
 
   // Auto-scroll
   useEffect(() => {
@@ -105,6 +123,42 @@ const OrderChat = () => {
     setSending(false);
     if (error) return toast.error(error.message);
     setBody("");
+  };
+
+  const onPickImage = (f: File | null) => {
+    if (!f) { setImgFile(null); setImgPreview(null); return; }
+    if (!f.type.startsWith("image/")) { toast.error("Only image files allowed"); return; }
+    if (f.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
+    setImgFile(f);
+    setImgPreview(URL.createObjectURL(f));
+  };
+
+  const sendImage = async () => {
+    if (!chat || !imgFile || !user) return;
+    setUploading(true);
+    try {
+      const ext = imgFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${chat.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("chat-images").upload(path, imgFile, {
+        contentType: imgFile.type, upsert: false,
+      });
+      if (upErr) throw upErr;
+
+      const { data, error } = await supabase.functions.invoke("chat-image-ocr", {
+        body: { chat_id: chat.id, image_path: path },
+      });
+      if (error) throw error;
+      if ((data as any)?.blocked) {
+        toast.error("Image blocked: contact info detected");
+      } else {
+        toast.success("Image sent");
+      }
+      setImgFile(null); setImgPreview(null);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const markReceived = async () => {
@@ -208,15 +262,31 @@ const OrderChat = () => {
               </div>
             ) : (
               <>
+                {imgPreview && (
+                  <div className="relative inline-block rounded-lg border border-border overflow-hidden">
+                    <img src={imgPreview} alt="preview" className="max-h-32 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => onPickImage(null)}
+                      className="absolute top-1 right-1 bg-background/80 rounded-full p-0.5 hover:bg-background"
+                      aria-label="Remove"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                    <Button size="sm" className="absolute bottom-1 right-1" onClick={sendImage} disabled={uploading}>
+                      {uploading ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Scanning…</> : "Send image"}
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Textarea
-                    placeholder="Write a message…"
+                    placeholder="Write a message…  (Enter to send, Shift+Enter for newline)"
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     rows={2}
                     maxLength={2000}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); }
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
                     }}
                     className="resize-none"
                   />
@@ -224,11 +294,22 @@ const OrderChat = () => {
                     <Button onClick={send} disabled={sending || !body.trim()} size="icon">
                       {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
+                    <label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => onPickImage(e.target.files?.[0] ?? null)}
+                      />
+                      <Button type="button" size="icon" variant="outline" asChild title="Attach image (auto-scanned for contact info)">
+                        <span><ImagePlus className="h-4 w-4" /></span>
+                      </Button>
+                    </label>
                     {isSeller && <SendCredentialsDialog chatId={chat.id} onDone={load} />}
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] text-muted-foreground">⌘/Ctrl + Enter to send</p>
+                  <p className="text-[11px] text-muted-foreground">Images are scanned for phone/email/links before sending</p>
                   <div className="flex items-center gap-2">
                     {isBuyer && chat.status === "delivered" && (
                       <Button size="sm" onClick={markReceived}>
@@ -306,6 +387,18 @@ const MessageBubble = ({
       </div>
     );
   }
+  if (m.kind === "image" && m.chat_image_path) {
+    return (
+      <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+        <div className={`max-w-[75%] rounded-2xl overflow-hidden ${isMine ? "bg-primary/10 border border-primary/30" : "bg-card border border-border"}`}>
+          <ChatImage path={m.chat_image_path} />
+          <div className="px-2 py-1 text-[10px] text-muted-foreground text-right">
+            {new Date(m.created_at).toLocaleTimeString()}
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${
@@ -318,6 +411,19 @@ const MessageBubble = ({
       </div>
     </div>
   );
+};
+
+const ChatImage = ({ path }: { path: string }) => {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    supabase.storage.from("chat-images").createSignedUrl(path, 600).then(({ data }) => {
+      if (!cancelled) setUrl(data?.signedUrl ?? null);
+    });
+    return () => { cancelled = true; };
+  }, [path]);
+  if (!url) return <div className="w-64 h-40 bg-muted animate-pulse" />;
+  return <img src={url} alt="attachment" className="max-w-full max-h-72 object-contain bg-black/5" />;
 };
 
 const CredRow = ({ label, value, revealed, onCopy }: { label: string; value: string; revealed: boolean; onCopy: () => void }) => {
