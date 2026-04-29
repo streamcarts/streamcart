@@ -127,13 +127,21 @@ Deno.serve(async (req) => {
       ctaUrl: link,
     });
 
+    // Mark sent FIRST (atomic dedup) — re-invocations skip via push_sent guard above.
+    await admin.from("notifications").update({ push_sent: true }).eq("id", notif.id);
+
     try {
-      const result = await sendEmail({ to: toEmail, subject, html });
-      await admin.from("notifications").update({ push_sent: true }).eq("id", notif.id);
+      const result = await sendEmailWithRetry(admin, {
+        to: toEmail,
+        subject,
+        html,
+        type: notif.type ?? null,
+        notificationId: notif.id,
+      });
       return json({ ok: true, id: result.id });
     } catch (sendErr) {
-      // Email failure must not break the system flow — just log.
-      console.error("Email send failed (non-fatal):", sendErr);
+      // Email failure must not break the system flow — already logged in email_logs.
+      console.error("Email send failed after retries (non-fatal):", sendErr);
       return json({ ok: false, error: sendErr instanceof Error ? sendErr.message : "send_failed" }, 200);
     }
   } catch (e) {
