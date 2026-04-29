@@ -152,6 +152,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        path="/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "StreamCart",
+          url: "https://streamcart.lovable.app",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://streamcart.lovable.app/browse?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
       <Navbar />
 
       {/* HERO */}
