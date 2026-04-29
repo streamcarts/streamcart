@@ -26,7 +26,7 @@ import { SignedThumbnail } from "@/components/SignedThumbnail";
 import { TeamPanel } from "@/components/TeamPanel";
 
 const Admin = () => {
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
 
   // Datasets
