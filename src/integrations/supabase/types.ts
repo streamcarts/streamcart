@@ -1191,6 +1191,51 @@ export type Database = {
         }
         Relationships: []
       }
+      razorpay_orders: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          metadata: Json
+          purpose: string
+          rzp_order_id: string
+          rzp_payment_id: string | null
+          rzp_signature: string | null
+          status: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          purpose: string
+          rzp_order_id: string
+          rzp_payment_id?: string | null
+          rzp_signature?: string | null
+          status?: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          metadata?: Json
+          purpose?: string
+          rzp_order_id?: string
+          rzp_payment_id?: string | null
+          rzp_signature?: string | null
+          status?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
           code: string
@@ -1731,6 +1776,10 @@ export type Database = {
       can_manage_payments: { Args: { _uid: string }; Returns: boolean }
       cancel_expired_pending_orders: { Args: never; Returns: number }
       cancel_my_pending_order: { Args: { _id: string }; Returns: undefined }
+      complete_razorpay_topup: {
+        Args: { _rzp_order_id: string }
+        Returns: undefined
+      }
       create_uropay_intent: {
         Args: {
           _amount: number
