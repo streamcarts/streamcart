@@ -262,15 +262,31 @@ const OrderChat = () => {
               </div>
             ) : (
               <>
+                {imgPreview && (
+                  <div className="relative inline-block rounded-lg border border-border overflow-hidden">
+                    <img src={imgPreview} alt="preview" className="max-h-32 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => onPickImage(null)}
+                      className="absolute top-1 right-1 bg-background/80 rounded-full p-0.5 hover:bg-background"
+                      aria-label="Remove"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                    <Button size="sm" className="absolute bottom-1 right-1" onClick={sendImage} disabled={uploading}>
+                      {uploading ? <><Loader2 className="h-3 w-3 mr-1 animate-spin" />Scanning…</> : "Send image"}
+                    </Button>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <Textarea
-                    placeholder="Write a message…"
+                    placeholder="Write a message…  (Enter to send, Shift+Enter for newline)"
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     rows={2}
                     maxLength={2000}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); }
+                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
                     }}
                     className="resize-none"
                   />
@@ -278,11 +294,22 @@ const OrderChat = () => {
                     <Button onClick={send} disabled={sending || !body.trim()} size="icon">
                       {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
+                    <label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => onPickImage(e.target.files?.[0] ?? null)}
+                      />
+                      <Button type="button" size="icon" variant="outline" asChild title="Attach image (auto-scanned for contact info)">
+                        <span><ImagePlus className="h-4 w-4" /></span>
+                      </Button>
+                    </label>
                     {isSeller && <SendCredentialsDialog chatId={chat.id} onDone={load} />}
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-[11px] text-muted-foreground">⌘/Ctrl + Enter to send</p>
+                  <p className="text-[11px] text-muted-foreground">Images are scanned for phone/email/links before sending</p>
                   <div className="flex items-center gap-2">
                     {isBuyer && chat.status === "delivered" && (
                       <Button size="sm" onClick={markReceived}>
