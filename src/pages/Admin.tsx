@@ -299,8 +299,8 @@ const Admin = () => {
             <TabsTrigger value="announce"><Megaphone className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Announce</span></TabsTrigger>
             <TabsTrigger value="affiliates"><TrendingUp className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Affiliates</span></TabsTrigger>
             <TabsTrigger value="settings"><SettingsIcon className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Settings</span></TabsTrigger>
+            {isSuperAdmin && <TabsTrigger value="team"><ShieldCheck className="h-4 w-4 md:mr-1.5" /><span className="hidden md:inline">Team</span></TabsTrigger>}
           </TabsList>
-
           {/* OVERVIEW */}
           <TabsContent value="overview" className="space-y-6">
             <Card className="p-6">
