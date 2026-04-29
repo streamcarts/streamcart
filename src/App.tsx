@@ -21,6 +21,7 @@ import Buyer from "./pages/Buyer.tsx";
 import Sell from "./pages/Sell.tsx";
 import Seller from "./pages/Seller.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminEmailLogs from "./pages/AdminEmailLogs.tsx";
 import Affiliate from "./pages/Affiliate.tsx";
 import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="/sell" element={<RequireAuth><Sell /></RequireAuth>} />
               <Route path="/seller" element={<RequireAuth role="seller"><Seller /></RequireAuth>} />
               <Route path="/admin" element={<RequireAuth role="team"><Admin /></RequireAuth>} />
+              <Route path="/admin/email-logs" element={<RequireAuth role="team"><AdminEmailLogs /></RequireAuth>} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/refund" element={<Refund />} />
