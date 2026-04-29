@@ -1,89 +1,83 @@
 import { useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import { ScrollText } from "lucide-react";
+import { LegalLayout, Section, Bullets, SUPPORT_EMAIL } from "@/components/LegalLayout";
 
 const Terms = () => {
   useEffect(() => {
-    document.title = "Terms of Service — StreamCart";
+    document.title = "Terms & Conditions — StreamCart";
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      <main className="flex-1 container max-w-3xl py-14">
-        <header className="mb-10">
-          <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-            <ScrollText className="h-6 w-6" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold">Terms of Service</h1>
-          <p className="text-muted-foreground mt-2">Last updated: April 28, 2026</p>
-        </header>
+    <LegalLayout icon={ScrollText} title="Terms & Conditions">
+      <Section title="Acceptance">
+        <p>
+          By accessing or using StreamCart, you agree to follow these Terms & Conditions. If you do
+          not agree with any part of these terms, please do not use the platform.
+        </p>
+      </Section>
 
-        <article className="prose prose-sm max-w-none space-y-6 text-foreground/90 leading-relaxed">
-          <Section title="1. Acceptance of Terms">
-            By accessing or using StreamCart (“the Platform”), you agree to be bound by these Terms.
-            If you do not agree, please do not use the Platform.
-          </Section>
+      <Section title="Platform Role">
+        <Bullets items={[
+          "StreamCart is a marketplace that connects buyers and sellers of digital subscriptions",
+          "We are not affiliated with, endorsed by, or partnered with brands like Netflix, Amazon Prime, etc.",
+          "All trademarks belong to their respective owners",
+        ]} />
+      </Section>
 
-          <Section title="2. What StreamCart is">
-            StreamCart is a marketplace that connects buyers seeking short-term access to digital
-            subscriptions with verified independent sellers. We facilitate the transaction; the
-            underlying services (e.g. Netflix, ChatGPT) are owned by their respective companies.
-          </Section>
+      <Section title="User Responsibility">
+        <Bullets items={[
+          "Provide correct and genuine payment proof",
+          "Do not misuse purchased accounts or share them outside the allowed terms",
+          "Do not attempt fraud, chargebacks, or fake claims",
+        ]} />
+      </Section>
 
-          <Section title="3. Account & Eligibility">
-            You must be 18 years or older to register. You are responsible for keeping your account
-            credentials secure and for all activity under your account.
-          </Section>
+      <Section title="Seller Responsibility">
+        <Bullets items={[
+          "Provide valid, working credentials at the time of delivery",
+          "Maintain product quality and replace credentials promptly if they fail",
+          "Honor the duration and description listed in the product",
+        ]} />
+      </Section>
 
-          <Section title="4. Payments & Wallet">
-            All payments made on StreamCart pass through your secure wallet. Funds added to your
-            wallet are non-transferable. Prices are inclusive of platform fees.
-          </Section>
+      <Section title="Payments">
+        <Bullets items={[
+          "Payments are made through UPI or other manual methods listed at checkout",
+          "Orders are verified against your payment proof before access is delivered",
+          "High-confidence payments may be auto-approved; others are reviewed manually",
+        ]} />
+      </Section>
 
-          <Section title="5. Seller Obligations">
-            Sellers must deliver working credentials within the agreed duration and respond to
-            buyer queries promptly. Selling stolen, illegally obtained, or non-functional access
-            is strictly prohibited.
-          </Section>
+      <Section title="Account Sharing Disclaimer">
+        <p>
+          Some subscriptions sold on StreamCart are shared accounts provided by sellers. By
+          purchasing, you understand and accept that the access may be on a shared profile.
+        </p>
+      </Section>
 
-          <Section title="6. Buyer Obligations">
-            Buyers may not share, resell, or redistribute credentials received through StreamCart.
-            Misuse will result in account suspension without refund.
-          </Section>
+      <Section title="Limitation of Liability">
+        <p>
+          StreamCart is not liable for disruptions, downtime, or policy changes caused by
+          third-party service providers. Our maximum liability is limited to the value of the order
+          in question.
+        </p>
+      </Section>
 
-          <Section title="7. Prohibited Conduct">
-            Fraud, chargeback abuse, multi-accounting, scraping, or any attempt to circumvent
-            platform fees will result in permanent bans and forfeiture of wallet balance.
-          </Section>
+      <Section title="Termination">
+        <p>
+          Accounts may be suspended or terminated for fraud, repeated chargebacks, abuse of the
+          platform, or violation of these terms.
+        </p>
+      </Section>
 
-          <Section title="8. Limitation of Liability">
-            StreamCart is not responsible for service interruptions caused by the underlying
-            subscription provider. Our maximum liability is limited to the value of the order in
-            question.
-          </Section>
-
-          <Section title="9. Changes to Terms">
-            We may update these Terms from time to time. Continued use of the Platform after
-            changes are posted constitutes acceptance.
-          </Section>
-
-          <Section title="10. Contact">
-            Questions about these Terms? Email <a className="text-primary underline" href="mailto:support@streamcart.app">support@streamcart.app</a>.
-          </Section>
-        </article>
-      </main>
-      <Footer />
-    </div>
+      <Section title="Contact">
+        <p>
+          Questions about these Terms? Email{" "}
+          <a className="text-primary underline" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+        </p>
+      </Section>
+    </LegalLayout>
   );
 };
-
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section>
-    <h2 className="text-lg font-semibold mb-2">{title}</h2>
-    <p className="text-muted-foreground">{children}</p>
-  </section>
-);
 
 export default Terms;
