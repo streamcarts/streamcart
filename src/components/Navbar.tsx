@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/co
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LayoutDashboard, LogOut, ShoppingBag, Store, Shield, TrendingUp,
-  MessageSquareText, Menu, Compass, Gift, Info, RotateCcw, Package,
+  MessageSquareText, Menu, Compass, Gift, Info, RotateCcw, Package, User,
 } from "lucide-react";
 import { CartIcon } from "./CartIcon";
 import { NotificationBell } from "./NotificationBell";
