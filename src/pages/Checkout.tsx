@@ -16,6 +16,8 @@ import { Link } from "react-router-dom";
 import payGpay from "@/assets/pay-gpay.png";
 import payPhonepe from "@/assets/pay-phonepe.png";
 import payPaytm from "@/assets/pay-paytm.png";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { UroPayPanel } from "@/components/UroPayPanel";
 
 type Settings = { upi_id: string; commission_percent: number };
 
