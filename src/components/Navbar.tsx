@@ -92,7 +92,7 @@ export const Navbar = () => {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/buyer?tab=profile")}>
+                <DropdownMenuItem onClick={() => navigate("/buyer#profile")}>
                   <User className="mr-2 h-4 w-4" /> Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/buyer")}>
@@ -142,7 +142,7 @@ export const Navbar = () => {
                 <MobileLink icon={Compass} label="Browse" onClick={() => go("/browse")} />
                 {user && (
                   <>
-                    <MobileLink icon={User} label="Profile" onClick={() => go("/buyer?tab=profile")} />
+                    <MobileLink icon={User} label="Profile" onClick={() => go("/buyer#profile")} />
                     <MobileLink icon={MessageSquareText} label="Messages" onClick={() => go("/messages")} />
                     <MobileLink icon={Gift} label="Refer & Earn" onClick={() => go("/buyer?tab=refer")} />
                     {isSeller ? (

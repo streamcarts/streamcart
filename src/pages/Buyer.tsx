@@ -26,6 +26,7 @@ import { SupportTickets } from "@/components/SupportTickets";
 import { ReferralPanel } from "@/components/ReferralPanel";
 import { WithdrawDialog } from "@/components/WithdrawDialog";
 import { EarningsHoldsCard } from "@/components/EarningsHoldsCard";
+import { ProfileCard } from "@/components/ProfileCard";
 
 type Order = {
   id: string;
@@ -62,6 +63,13 @@ const Buyer = () => {
 
   useEffect(() => { document.title = "Buyer dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
+  useEffect(() => {
+    if (window.location.hash === "#profile") {
+      setTimeout(() => {
+        document.getElementById("profile")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, []);
 
   const load = async () => {
     const [w, o, t, s] = await Promise.all([
@@ -450,12 +458,14 @@ const Buyer = () => {
           )}
         </Card>
 
-        {/* Support */}
         {/* Refer & earn */}
         <ReferralPanel />
 
         {/* Support */}
         <SupportTickets />
+
+        {/* Profile & customization */}
+        <ProfileCard />
       </main>
       <Footer />
     </div>
