@@ -509,6 +509,53 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          attempt: number
+          created_at: string
+          error: string | null
+          id: string
+          notification_id: string | null
+          provider_id: string | null
+          recipient: string
+          status: string
+          subject: string
+          type: string | null
+        }
+        Insert: {
+          attempt?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          notification_id?: string | null
+          provider_id?: string | null
+          recipient: string
+          status: string
+          subject: string
+          type?: string | null
+        }
+        Update: {
+          attempt?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          notification_id?: string | null
+          provider_id?: string | null
+          recipient?: string
+          status?: string
+          subject?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fraud_flags: {
         Row: {
           created_at: string
