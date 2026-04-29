@@ -53,6 +53,8 @@ const OrderChat = () => {
   const [imgPreview, setImgPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [otherOnline, setOtherOnline] = useState(false);
+  const [complaintOpen, setComplaintOpen] = useState(false);
 
   const isSeller = user && order && order.seller_id === user.id;
   const isBuyer = user && order && order.buyer_id === user.id;
