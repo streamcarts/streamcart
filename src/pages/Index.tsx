@@ -139,7 +139,7 @@ const Index = () => {
           {/* Highlight badge */}
           <Badge variant="secondary" className="bg-card border border-primary/20 text-primary mb-6 px-3.5 py-1.5 animate-fade-in shadow-sm">
             <span className="h-2 w-2 rounded-full bg-primary animate-pulse mr-1.5" />
-            Trusted by 19,000+ users
+            New on StreamCart — verified sellers only
           </Badge>
 
           <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight animate-fade-in">
@@ -253,11 +253,11 @@ const Index = () => {
 
           {/* Stat bar */}
           <div className="mt-10 flex flex-wrap justify-center items-center gap-6 md:gap-10 animate-fade-in">
-            <Stat icon={Users} label="Happy buyers" value="19,000+" />
+            <Stat icon={Lock} label="Escrow protected" value="100%" />
             <div className="hidden sm:block h-8 w-px bg-border" />
-            <Stat icon={Star} label="Avg. rating" value="4.9 / 5" />
+            <Stat icon={BadgeCheck} label="Verified sellers" value="Manual review" />
             <div className="hidden sm:block h-8 w-px bg-border" />
-            <Stat icon={IndianRupee} label="Saved by users" value="₹38L+" />
+            <Stat icon={Zap} label="Chat delivery" value="Under 30 min" />
           </div>
         </div>
       </section>
@@ -266,7 +266,7 @@ const Index = () => {
       <section className="border-b border-border bg-card">
         <div className="container py-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-            <TrustBadge icon={Star} label="4.9 Rating" sub="From 5,200+ reviews" tone="amber" />
+            <TrustBadge icon={Star} label="Quality-checked" sub="Approved listings only" tone="amber" />
             <TrustBadge icon={Lock} label="Secure Payments" sub="UPI · Wallet · Cards" tone="primary" />
             <TrustBadge icon={Zap} label="Instant Delivery" sub="Credentials in 5s" tone="primary" />
             <TrustBadge icon={BadgeCheck} label="Verified Sellers" sub="Manually approved" tone="primary" />
@@ -324,7 +324,7 @@ const Index = () => {
             </div>
             <h3 className="text-lg font-semibold">No listings yet. Start selling and earn now 🚀</h3>
             <p className="text-sm text-muted-foreground mt-1.5 max-w-md mx-auto">
-              Be one of the first verified vendors on StreamCart and reach 19,000+ ready buyers.
+              Be one of the first verified vendors on StreamCart and start earning today.
             </p>
             <Button asChild size="lg" className="mt-5 rounded-xl font-semibold">
               <Link to="/sell">Become a Seller</Link>
