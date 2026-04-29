@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/format";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
+import { PopularPlatforms } from "@/components/PopularPlatforms";
 
 const categories = [
   { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700", desc: "ChatGPT, Claude, Midjourney" },
@@ -299,6 +300,9 @@ const Index = () => {
           ))}
         </div>
       </section>
+
+      {/* POPULAR PLATFORMS */}
+      <PopularPlatforms />
 
       {/* FEATURED PRODUCTS */}
       <section className="container py-14">
