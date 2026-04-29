@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { inr } from "@/lib/format";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Eye, Search, Ban, ShieldAlert, Star, Flame, Megaphone, Ticket, Tag, BarChart3, RotateCcw, Settings as SettingsIcon, AlertTriangle, Loader2, Plus, MessageSquare, ShieldCheck, TrendingUp, LayoutGrid } from "lucide-react";
+import { CheckCircle2, XCircle, IndianRupee, Users, Package, ArrowDownToLine, Eye, Search, Ban, ShieldAlert, Star, Flame, Megaphone, Ticket, Tag, BarChart3, RotateCcw, Settings as SettingsIcon, AlertTriangle, Loader2, Plus, MessageSquare, ShieldCheck, TrendingUp, LayoutGrid, Smartphone } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { AffiliatesPanel } from "@/components/AffiliatesPanel";
 import { CategoriesPanel } from "@/components/CategoriesPanel";
@@ -31,6 +31,7 @@ const Admin = () => {
   const [pendingProducts, setPendingProducts] = useState<any[]>([]);
   const [topups, setTopups] = useState<any[]>([]);
   const [pendingOrders, setPendingOrders] = useState<any[]>([]);
+  const [selectedPo, setSelectedPo] = useState<Set<string>>(new Set());
   const [wds, setWds] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -194,13 +195,29 @@ const Admin = () => {
   const approvePendingOrder = async (id: string) => {
     const { error } = await supabase.rpc("approve_pending_order", { _id: id, _note: null });
     if (error) return toast.error(error.message);
-    toast.success("Order approved & credentials delivered"); loadAll();
+    toast.success("Order approved & credentials delivered");
+    setSelectedPo(prev => { const n = new Set(prev); n.delete(id); return n; });
+    loadAll();
   };
   const rejectPendingOrder = async (id: string) => {
     const note = window.prompt("Reason for rejection (optional):") || null;
     const { error } = await supabase.rpc("reject_pending_order", { _id: id, _note: note });
     if (error) return toast.error(error.message);
-    toast.success("Order rejected"); loadAll();
+    toast.success("Order rejected");
+    setSelectedPo(prev => { const n = new Set(prev); n.delete(id); return n; });
+    loadAll();
+  };
+  const bulkApprovePending = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    if (!confirm(`Approve ${ids.length} order(s)? Credentials will be delivered immediately.`)) return;
+    let ok = 0, fail = 0;
+    for (const id of ids) {
+      const { error } = await supabase.rpc("approve_pending_order", { _id: id, _note: "bulk approved" });
+      if (error) fail++; else ok++;
+    }
+    toast.success(`Approved ${ok}${fail ? ` • ${fail} failed` : ""}`);
+    setSelectedPo(new Set());
+    loadAll();
   };
 
   const pendingCount = vapps.filter(v => v.status === "pending").length + pendingProducts.length + topups.length + wds.length + pendingOrders.length;
@@ -406,31 +423,77 @@ const Admin = () => {
             </Card>
 
             <Card className="p-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                Pending UPI orders ({pendingOrders.length})
-                <span className="text-xs font-normal text-muted-foreground">• auto-flagged where txn ID looks valid</span>
-              </h3>
+              <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+                <div>
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Smartphone className="h-4 w-4 text-primary" />
+                    Pending UPI orders ({pendingOrders.length})
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Smart-scored • bulk actions • 1-click approval</p>
+                </div>
+                {pendingOrders.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" onClick={() => {
+                      const ids = pendingOrders.filter(p => (p.admin_note || "").startsWith("likely_valid") || (p.admin_note || "").startsWith("auto_approved") || (p.admin_note || "").startsWith("trusted_auto")).map(p => p.id);
+                      bulkApprovePending(ids);
+                    }}>
+                      <CheckCircle2 className="h-4 w-4 mr-1" />Approve all Likely Valid
+                    </Button>
+                    {selectedPo.size > 0 && (
+                      <>
+                        <Button size="sm" onClick={() => bulkApprovePending(Array.from(selectedPo))}>
+                          <CheckCircle2 className="h-4 w-4 mr-1" />Approve selected ({selectedPo.size})
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setSelectedPo(new Set())}>Clear</Button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
               {pendingOrders.length === 0 ? <Empty msg="No payments awaiting verification." /> : (
                 <div className="space-y-2">
                   {pendingOrders.map(po => {
                     const buyer = allUsers.find((u: any) => u.id === po.buyer_id);
-                    const itemsCount = (po.items as any[])?.length ?? 0;
+                    const items = (po.items as any[]) ?? [];
+                    const expectedAmount = items.reduce((s, it) => s + Number(it.display_price || 0) * Number(it.qty || 1), 0);
+                    const paid = Number(po.amount);
+                    const amountMatch = expectedAmount > 0 && Math.abs(paid - expectedAmount) < 0.5;
                     const txnLooksValid = po.txn_id && /^[A-Za-z0-9]{10,}$/.test(po.txn_id);
-                    const amountUnique = Number(po.amount) % 1 !== 0; // has paise → unique
-                    const likelyValid = txnLooksValid && amountUnique;
+                    const tag = (po.admin_note || "").split(" ")[0];
+                    const score = Number(po.auto_match_score || 0);
+                    const isLikely = tag.startsWith("likely_valid") || tag.startsWith("auto_approved") || tag.startsWith("trusted") || (amountMatch && txnLooksValid);
                     const expiresIn = po.expires_at ? Math.max(0, Math.round((new Date(po.expires_at).getTime() - Date.now()) / 60000)) : null;
+                    const isSelected = selectedPo.has(po.id);
                     return (
-                      <div key={po.id} className={`p-3 border rounded-lg space-y-2 ${likelyValid ? "border-primary/40 bg-primary/5" : "border-border"}`}>
+                      <div key={po.id} className={`p-3 border rounded-lg space-y-2 transition-colors ${isSelected ? "border-primary bg-primary/10" : isLikely ? "border-primary/40 bg-primary/5" : "border-border"}`}>
                         <div className="flex items-start justify-between flex-wrap gap-3">
-                          <div className="min-w-0">
-                            <div className="font-semibold flex items-center gap-2 flex-wrap">
-                              {inr(Number(po.amount))}
-                              <span className="text-xs text-muted-foreground font-normal">• {itemsCount} item(s)</span>
-                              {likelyValid && <Badge className="bg-primary/15 text-primary hover:bg-primary/20"><CheckCircle2 className="h-3 w-3 mr-1" />Likely Valid</Badge>}
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              {buyer?.display_name || buyer?.email || po.buyer_id.slice(0, 8)} • {new Date(po.created_at).toLocaleString()}
-                              {expiresIn !== null && expiresIn > 0 && <span className="ml-1">• expires in {expiresIn}m</span>}
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => setSelectedPo(prev => {
+                                const n = new Set(prev);
+                                if (e.target.checked) n.add(po.id); else n.delete(po.id);
+                                return n;
+                              })}
+                              className="mt-1 h-4 w-4 rounded border-border accent-primary cursor-pointer"
+                            />
+                            <div className="min-w-0">
+                              <div className="font-semibold flex items-center gap-2 flex-wrap">
+                                <span className={amountMatch ? "text-primary" : ""}>{inr(paid)}</span>
+                                {expectedAmount > 0 && (
+                                  <span className={`text-xs font-normal ${amountMatch ? "text-primary" : "text-warning"}`}>
+                                    {amountMatch ? "✓ matches" : `expected ${inr(expectedAmount)}`}
+                                  </span>
+                                )}
+                                {isLikely && <Badge className="bg-primary/15 text-primary hover:bg-primary/20"><CheckCircle2 className="h-3 w-3 mr-1" />Likely Valid</Badge>}
+                                {score > 0 && <Badge variant="outline" className="text-[10px]">score {score}</Badge>}
+                                {tag && <Badge variant="secondary" className="text-[10px]">{tag}</Badge>}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {buyer?.display_name || buyer?.email || po.buyer_id.slice(0, 8)} • {new Date(po.created_at).toLocaleString()}
+                                {expiresIn !== null && expiresIn > 0 && <span className="ml-1">• expires in {expiresIn}m</span>}
+                              </div>
                             </div>
                           </div>
                           <div className="flex gap-2 shrink-0">
@@ -449,7 +512,7 @@ const Admin = () => {
                           </div>
                           <div className="bg-muted/50 rounded px-2 py-1.5">
                             <span className="text-muted-foreground">Items:</span>{" "}
-                            {((po.items as any[]) ?? []).map((it: any) => `${it.service_name}×${it.qty}`).join(", ")}
+                            {items.map((it: any) => `${it.service_name}×${it.qty}`).join(", ")}
                           </div>
                         </div>
                       </div>

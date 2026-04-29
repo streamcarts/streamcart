@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { inr } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, Smartphone, Upload, Clock, ShieldCheck, Copy } from "lucide-react";
+import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle2, Smartphone, Upload, Clock, ShieldCheck, Copy, QrCode, Zap, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Settings = { upi_id: string; commission_percent: number };
@@ -218,64 +218,110 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* Manual UPI */}
-              <div className="rounded-lg border border-border p-4 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="h-5 w-5 text-primary" />
-                  <div className="font-semibold">Pay via UPI {canPayWallet && <span className="text-xs text-muted-foreground font-normal">(alternative)</span>}</div>
-                </div>
-
-                {/* Instructions */}
-                <ol className="text-sm space-y-1.5 text-muted-foreground list-decimal pl-5">
-                  <li>Pay <span className="text-primary font-bold">exactly {inr(uniqueAmount)}</span> to the UPI ID or scan the QR</li>
-                  <li>Copy the <span className="text-foreground font-medium">UPI Transaction ID</span> from your payment app</li>
-                  <li>Upload screenshot + paste txn ID below — verified in <span className="text-foreground font-medium">5–10 minutes</span></li>
-                  <li>Credentials delivered instantly after approval</li>
-                </ol>
-
-                {/* Highlighted unique amount */}
-                <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 text-center">
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Pay this exact amount</div>
-                  <div className="text-3xl font-bold text-primary font-mono mt-1">{inr(uniqueAmount)}</div>
-                  <div className="text-[11px] text-muted-foreground mt-1">Unique amount helps us auto-match your payment ✨</div>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-4 items-start">
-                  <div className="rounded-lg bg-muted p-4 text-center">
-                    <img src={qrUrl} alt="UPI QR code" className="mx-auto rounded-md bg-background p-2" width={200} height={200} loading="lazy" />
-                    <div className="text-xs text-muted-foreground mt-2">Scan with any UPI app</div>
-                  </div>
-                  <div className="space-y-3">
+              {/* Premium UPI payment card */}
+              <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <Smartphone className="h-4.5 w-4.5 text-primary" />
+                    </div>
                     <div>
-                      <Label className="text-xs">UPI ID</Label>
-                      <div className="flex gap-2 mt-1">
-                        <code className="flex-1 px-3 py-2 rounded-md bg-muted font-mono text-sm break-all">{upiId}</code>
-                        <Button type="button" size="icon" variant="outline" onClick={copyUpi}><Copy className="h-4 w-4" /></Button>
+                      <div className="font-semibold leading-tight">Pay via UPI</div>
+                      <div className="text-[11px] text-muted-foreground">Instant verification • Secure</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted/60 rounded-full px-2.5 py-1">
+                    <Lock className="h-3 w-3" /> 256-bit secured
+                  </div>
+                </div>
+
+                {/* Split layout: QR (left) + How-to (right) */}
+                <div className="grid md:grid-cols-2 gap-0">
+                  {/* LEFT — QR card */}
+                  <div className="p-5 md:p-6 bg-gradient-to-b from-background to-muted/30 md:border-r border-border space-y-4">
+                    <div className="rounded-xl bg-white border-2 border-primary/20 p-4 shadow-md">
+                      <div className="flex items-center justify-center mb-3">
+                        <img src={qrUrl} alt="UPI QR code" className="rounded-md" width={200} height={200} loading="lazy" />
+                      </div>
+                      <div className="text-center border-t border-border pt-3">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Scan & pay exactly</div>
+                        <div className="text-3xl font-bold text-primary font-mono mt-0.5">{inr(uniqueAmount)}</div>
                       </div>
                     </div>
+
+                    {/* UPI ID copy */}
+                    <div>
+                      <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">UPI ID</Label>
+                      <div className="flex gap-2 mt-1.5">
+                        <code className="flex-1 px-3 py-2.5 rounded-lg bg-muted border border-border font-mono text-sm break-all">{upiId}</code>
+                        <Button type="button" size="icon" variant="outline" onClick={copyUpi} title="Copy UPI ID"><Copy className="h-4 w-4" /></Button>
+                      </div>
+                    </div>
+
+                    {/* Supported apps */}
+                    <div>
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Pay with any UPI app</div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { name: "GPay", color: "from-blue-500 to-green-500", letter: "G" },
+                          { name: "PhonePe", color: "from-purple-600 to-indigo-600", letter: "P" },
+                          { name: "Paytm", color: "from-sky-500 to-blue-600", letter: "P" },
+                        ].map((app) => (
+                          <div key={app.name} className="rounded-lg border border-border bg-background px-2 py-2 flex items-center gap-2">
+                            <div className={`h-7 w-7 rounded-md bg-gradient-to-br ${app.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>{app.letter}</div>
+                            <span className="text-xs font-medium truncate">{app.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <Button type="button" variant="outline" className="w-full" asChild>
-                      <a href={upiLink}>Open in UPI app</a>
+                      <a href={upiLink}><Zap className="h-4 w-4 mr-2" />Open in UPI app</a>
                     </Button>
                   </div>
-                </div>
 
-                <div className="border-t border-border pt-4 space-y-3">
-                  <div>
-                    <Label htmlFor="txn" className="text-sm">UPI Transaction ID <span className="text-destructive">*</span></Label>
-                    <Input id="txn" value={txnId} onChange={(e) => setTxnId(e.target.value)} maxLength={50} placeholder="e.g. 412387654321 (12-digit UTR)" className="mt-1.5 font-mono" />
-                    <p className="text-[11px] text-muted-foreground mt-1">Find it in your UPI app's payment receipt. Each ID can only be used once.</p>
-                  </div>
-                  <div>
-                    <Label htmlFor="file" className="text-sm">Payment screenshot <span className="text-destructive">*</span></Label>
-                    <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1.5" />
-                    {file && <p className="text-xs text-muted-foreground mt-1">{file.name} ({(file.size / 1024).toFixed(0)} KB)</p>}
-                  </div>
-                  <Button className="w-full" size="lg" onClick={submitManualUpi} disabled={processing || !file || !txnId.trim() || uniqueAmount <= 0}>
-                    {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : <><Upload className="h-4 w-4 mr-2" />Submit payment for verification</>}
-                  </Button>
-                  <div className="rounded-md bg-warning/10 text-foreground text-xs p-3 flex gap-2 items-start">
-                    <Clock className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
-                    <span>After payment, upload the screenshot + paste the transaction ID. Verification usually takes <strong>5–10 minutes</strong>. Pending orders auto-cancel after 30 minutes if no proof submitted.</span>
+                  {/* RIGHT — Steps + proof submission */}
+                  <div className="p-5 md:p-6 space-y-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <QrCode className="h-4 w-4 text-primary" />
+                        <h3 className="font-semibold text-sm">How to pay</h3>
+                      </div>
+                      <ol className="space-y-2.5">
+                        {[
+                          "Scan the QR using any UPI app",
+                          <>Pay <span className="text-primary font-bold">exactly {inr(uniqueAmount)}</span> (unique amount)</>,
+                          "Copy the Transaction ID from the receipt",
+                          "Upload screenshot + paste txn ID below",
+                        ].map((step, i) => (
+                          <li key={i} className="flex gap-2.5 text-sm">
+                            <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
+                            <span className="text-muted-foreground">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
+                    <div className="border-t border-border pt-4 space-y-3">
+                      <div>
+                        <Label htmlFor="txn" className="text-sm font-medium">Transaction ID <span className="text-destructive">*</span></Label>
+                        <Input id="txn" value={txnId} onChange={(e) => setTxnId(e.target.value)} maxLength={50} placeholder="e.g. 412387654321" className="mt-1.5 font-mono" />
+                        <p className="text-[11px] text-muted-foreground mt-1">12-digit UTR from your UPI receipt. One-time use only.</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="file" className="text-sm font-medium">Payment screenshot <span className="text-destructive">*</span></Label>
+                        <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1.5" />
+                        {file && <p className="text-xs text-primary mt-1 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />{file.name} ({(file.size / 1024).toFixed(0)} KB)</p>}
+                      </div>
+                      <Button className="w-full" size="lg" onClick={submitManualUpi} disabled={processing || !file || !txnId.trim() || uniqueAmount <= 0}>
+                        {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : <><Upload className="h-4 w-4 mr-2" />Submit for verification</>}
+                      </Button>
+                      <div className="rounded-lg bg-primary/5 border border-primary/20 text-xs p-3 flex gap-2 items-start">
+                        <Clock className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                        <span>Smart auto-verification in <strong>seconds</strong> when amount + txn ID match. Otherwise reviewed within <strong>5–10 minutes</strong>. Auto-cancels in 10 min if no proof.</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
