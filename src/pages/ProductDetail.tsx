@@ -28,7 +28,7 @@ type Product = {
   rating_count: number;
 };
 
-type SellerInfo = { display_name: string | null; created_at: string; orders_count: number };
+type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,14 +58,16 @@ const ProductDetail = () => {
       setP(data as Product);
       document.title = `${data.service_name} — StreamCart`;
 
-      const [{ data: prof }, { count }] = await Promise.all([
+      const [{ data: prof }, { count }, { data: verified }] = await Promise.all([
         supabase.from("profiles").select("display_name, created_at").eq("id", data.seller_id).maybeSingle(),
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", data.seller_id),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", data.seller_id).eq("status", "completed"),
+        supabase.rpc("is_seller_verified", { _seller_id: data.seller_id }),
       ]);
       setSeller({
         display_name: prof?.display_name ?? "Verified seller",
         created_at: prof?.created_at ?? data.created_at,
         orders_count: count ?? 0,
+        verified: !!verified,
       });
       setLoading(false);
     })();
