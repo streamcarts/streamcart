@@ -15,15 +15,12 @@ import { Loader2, Wallet, ArrowRight, ShoppingBag, TicketPercent, X, CheckCircle
 import { Link } from "react-router-dom";
 import { RazorpayButton } from "@/components/RazorpayButton";
 
-type Settings = { upi_id: string; commission_percent: number };
-
 const Checkout = () => {
   const { items, subtotal, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [balance, setBalance] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [settings, setSettings] = useState<Settings | null>(null);
 
   // Coupon
   const [couponInput, setCouponInput] = useState("");
@@ -32,34 +29,21 @@ const Checkout = () => {
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
 
-  // Manual UPI
-  const [txnId, setTxnId] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-
-  // Unique amount with random paise (0.01–0.99) — generated once per checkout session
-  const [amountSuffix] = useState<number>(() => {
-    // 1..99 paise → 0.01..0.99
-    return Math.floor(Math.random() * 99) + 1;
-  });
+  const loadBalance = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
+    setBalance(Number(data?.balance ?? 0));
+  };
 
   useEffect(() => {
     document.title = "Checkout — StreamCart";
     if (!user) { navigate("/auth?next=/checkout"); return; }
     if (items.length === 0) { navigate("/cart"); return; }
-    Promise.all([
-      supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
-      supabase.from("platform_settings").select("upi_id,commission_percent").eq("id", 1).maybeSingle(),
-    ]).then(([w, s]) => {
-      setBalance(Number(w.data?.balance ?? 0));
-      setSettings((s.data as Settings) ?? { upi_id: "streamcart@upi", commission_percent: 10 });
-    });
+    loadBalance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, items.length, navigate]);
 
   const baseTotal = Math.max(0, subtotal - couponDiscount);
-  // Unique payable: base + paise suffix (only when base > 0)
-  const uniqueAmount = baseTotal > 0
-    ? Math.round((baseTotal + amountSuffix / 100) * 100) / 100
-    : 0;
   const total = baseTotal;
   const canPayWallet = balance !== null && balance >= total;
 
@@ -113,44 +97,6 @@ const Checkout = () => {
       toast.error(err.message || "Checkout failed");
     } finally { setProcessing(false); }
   };
-
-  const submitManualUpi = async () => {
-    if (!user) return;
-    if (!txnId.trim() || txnId.trim().length < 6) return toast.error("Enter the UPI transaction ID (min 6 characters)");
-    if (!file) return toast.error("Please upload your payment screenshot");
-    if (file.size > 5 * 1024 * 1024) return toast.error("Screenshot must be under 5 MB");
-    setProcessing(true);
-    try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const up = await supabase.storage.from("payment-screenshots").upload(path, file);
-      if (up.error) throw up.error;
-      const affSlug = (await import("@/lib/refTracking")).getStoredAffSlug();
-      const { data, error } = await supabase.rpc("submit_pending_order", {
-        _amount: uniqueAmount,
-        _txn_id: txnId.trim(),
-        _screenshot_path: path,
-        _items: items.map((i) => ({ id: i.id, qty: i.qty, service_name: i.service_name, display_price: i.display_price })),
-        _coupon_code: couponCode,
-        _affiliate_slug: affSlug,
-        _upi_reference: null,
-      });
-      if (error) throw error;
-      clear();
-      // Fire OCR in background — trigger re-scores when done
-      supabase.functions.invoke("ocr-payment", { body: { pending_order_id: data } }).catch((e) => console.error("OCR invoke failed", e));
-      toast.success("Payment submitted! Verifying — this is usually instant.");
-      navigate(`/orders/pending/${data}`);
-    } catch (err: any) {
-      toast.error(err.message || "Could not submit payment");
-    } finally { setProcessing(false); }
-  };
-
-  const upiId = settings?.upi_id || "streamcart@upi";
-  const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("StreamCart")}&am=${uniqueAmount}&cu=INR&tn=${encodeURIComponent(`Order ${user?.id?.slice(0, 8)}`)}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(upiLink)}`;
-
-  const copyUpi = () => { navigator.clipboard.writeText(upiId); toast.success("UPI ID copied"); };
 
   if (!user || items.length === 0) return null;
 
