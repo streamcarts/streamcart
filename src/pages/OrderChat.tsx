@@ -573,9 +573,9 @@ const timeUntil = (iso: string) => {
   return `${m}m`;
 };
 
-const ComplaintDialog = ({
+function ComplaintDialog({
   open, onOpenChange, orderId, onFiled,
-}: { open: boolean; onOpenChange: (v: boolean) => void; orderId: string; onFiled: () => void }) => {
+}: { open: boolean; onOpenChange: (v: boolean) => void; orderId: string; onFiled: () => void }) {
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
@@ -619,14 +619,17 @@ const ComplaintDialog = ({
                 <button
                   key={p}
                   type="button"
-                  onClick={() => setReason(p)}
-                  className={`text-xs px-2.5 py-1 rounded-full border ${reason === p ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-muted"}`}
+                  onClick={() => setReason(p === "Other" ? "" : p)}
+                  className={`text-xs px-2.5 py-1 rounded-full border ${reason === p || (p === "Other" && reason === "" ) ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border hover:bg-muted"}`}
                 >{p}</button>
               ))}
             </div>
-            {reason === "Other" && (
-              <Input value={reason === "Other" ? "" : reason} onChange={(e) => setReason(e.target.value)} placeholder="Describe in a few words" maxLength={120} />
-            )}
+            <Input
+              value={presets.includes(reason) ? "" : reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Or type your own reason"
+              maxLength={120}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Details (optional)</Label>
@@ -643,6 +646,6 @@ const ComplaintDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}
 
 export default OrderChat;
