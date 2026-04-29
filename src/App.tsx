@@ -56,6 +56,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/browse" element={<Browse />} />
               <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/p/:slug" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
               <Route path="/success" element={<RequireAuth><Success /></RequireAuth>} />

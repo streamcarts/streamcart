@@ -15,6 +15,7 @@ import { inr } from "@/lib/format";
 import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { PopularPlatforms } from "@/components/PopularPlatforms";
+import { SEO } from "@/components/SEO";
 
 const categories = [
   { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700", desc: "ChatGPT, Claude, Midjourney" },
@@ -151,6 +152,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        path="/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "StreamCart",
+          url: "https://streamcart.lovable.app",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://streamcart.lovable.app/browse?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }}
+      />
       <Navbar />
 
       {/* HERO */}

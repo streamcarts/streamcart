@@ -1,14 +1,24 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Allow: /browse
+Allow: /p/
+Allow: /product/
+Allow: /about
+Allow: /terms
+Allow: /privacy
+Allow: /refund
+
+Disallow: /admin
+Disallow: /buyer
+Disallow: /seller
+Disallow: /sell
+Disallow: /cart
+Disallow: /checkout
+Disallow: /success
+Disallow: /auth
+Disallow: /messages
+Disallow: /orders/
+Disallow: /affiliate
+Disallow: /chat-buy/
+
+Sitemap: https://streamcart.lovable.app/sitemap.xml

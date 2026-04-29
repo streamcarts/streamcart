@@ -12,9 +12,11 @@ import { inr } from "@/lib/format";
 import { toast } from "sonner";
 import { Loader2, ShoppingCart, Zap, Lock, BadgeCheck, Star, Users, Clock, Package, ChevronLeft, ShieldCheck } from "lucide-react";
 import { ProductReviews } from "@/components/ProductReviews";
+import { SEO } from "@/components/SEO";
 
 type Product = {
   id: string;
+  slug: string | null;
   service_name: string;
   category: string;
   description: string | null;
@@ -26,12 +28,13 @@ type Product = {
   created_at: string;
   avg_rating: number;
   rating_count: number;
+  platform?: string | null;
 };
 
 type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { add } = useCart();
@@ -41,22 +44,26 @@ const ProductDetail = () => {
   const [buying, setBuying] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id && !slug) return;
     setLoading(true);
     (async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode")
-        .eq("id", id)
-        .eq("status", "approved")
-        .maybeSingle();
+      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform";
+      const sb = supabase as any;
+      const q = sb.from("products").select(cols).eq("status", "approved");
+      const { data, error } = await (slug ? q.eq("slug", slug) : q.eq("id", id!)).maybeSingle();
       if (error || !data) {
         toast.error("Product not found");
         navigate("/browse");
         return;
       }
-      setP(data as Product);
-      document.title = `${data.service_name} — StreamCart`;
+      // Redirect /product/:id → /p/:slug for canonical clean URL
+      const dataSlug = (data as any).slug as string | null | undefined;
+      if (id && dataSlug) {
+        navigate(`/p/${dataSlug}`, { replace: true });
+        return;
+      }
+      setP(data as unknown as Product);
+      document.title = `${(data as any).service_name} — StreamCart`;
 
       const [{ data: prof }, { count }, { data: verified }] = await Promise.all([
         supabase.from("profiles").select("display_name, created_at").eq("id", data.seller_id).maybeSingle(),
@@ -71,11 +78,11 @@ const ProductDetail = () => {
       });
       setLoading(false);
     })();
-  }, [id, navigate]);
+  }, [id, slug, navigate]);
 
   const handleBuyNow = () => {
     if (!p) return;
-    if (!user) return navigate(`/auth?next=/product/${p.id}`);
+    if (!user) return navigate(`/auth?next=/p/${p.slug ?? p.id}`);
     if ((p as any).delivery_mode === "chat") {
       navigate(`/chat-buy/${p.id}`);
       return;
@@ -124,8 +131,45 @@ const ProductDetail = () => {
   const reviewCount = hasReal ? p.rating_count : 0;
   const sellerYear = new Date(seller?.created_at ?? p.created_at).getFullYear();
 
+  // SEO: keyword-rich title/description + Product schema (price, rating, availability)
+  const platformName = (p.platform || "").trim();
+  const seoTitle = `Buy ${p.service_name}${p.duration ? ` (${p.duration})` : ""} Cheap`;
+  const seoDesc = (p.description?.slice(0, 150) ||
+    `Get ${p.service_name}${platformName ? ` ${platformName}` : ""} subscription at the lowest price in India. Instant delivery, verified sellers, money-back guarantee on StreamCart.`).trim();
+  const productJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.service_name,
+    description: p.description ?? seoDesc,
+    image: p.image_url ? [p.image_url] : undefined,
+    brand: { "@type": "Brand", name: platformName || "StreamCart" },
+    category: p.category,
+    offers: {
+      "@type": "Offer",
+      price: Number(p.display_price),
+      priceCurrency: "INR",
+      availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `https://streamcart.lovable.app/p/${p.slug ?? p.id}`,
+    },
+  };
+  if (hasReal) {
+    productJsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: Number(p.avg_rating).toFixed(1),
+      reviewCount: p.rating_count,
+    };
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title={seoTitle}
+        description={seoDesc}
+        path={`/p/${p.slug ?? p.id}`}
+        image={p.image_url ?? undefined}
+        type="product"
+        jsonLd={productJsonLd}
+      />
       <Navbar />
       <main className="flex-1 container py-10">
         <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2">

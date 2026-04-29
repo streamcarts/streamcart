@@ -997,6 +997,7 @@ export type Database = {
           rating_count: number
           seller_id: string
           service_name: string
+          slug: string | null
           status: Database["public"]["Enums"]["product_status"]
           stock: number
           updated_at: string
@@ -1027,6 +1028,7 @@ export type Database = {
           rating_count?: number
           seller_id: string
           service_name: string
+          slug?: string | null
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
           updated_at?: string
@@ -1057,6 +1059,7 @@ export type Database = {
           rating_count?: number
           seller_id?: string
           service_name?: string
+          slug?: string | null
           status?: Database["public"]["Enums"]["product_status"]
           stock?: number
           updated_at?: string
@@ -1814,6 +1817,7 @@ export type Database = {
         Args: { _banned: boolean; _reason?: string; _user_id: string }
         Returns: undefined
       }
+      slugify: { Args: { input: string }; Returns: string }
       submit_pending_order: {
         Args: {
           _affiliate_slug?: string

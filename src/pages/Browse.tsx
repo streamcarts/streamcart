@@ -93,6 +93,11 @@ const Browse = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title="Browse Premium Subscriptions"
+        description="Browse Netflix, ChatGPT, Spotify, Adobe and 100+ premium subscriptions at the lowest prices in India. Instant delivery & verified sellers."
+        path="/browse"
+      />
       <Navbar />
       <main className="flex-1 container py-10">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
