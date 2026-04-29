@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
 import { RequireAuth } from "@/components/RequireAuth";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { captureUrlReferrals } from "@/lib/refTracking";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -39,6 +40,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <ReferralCapture />
         <AuthProvider>
           <CartProvider>
