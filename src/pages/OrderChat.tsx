@@ -349,6 +349,13 @@ const OrderChat = () => {
             )}
           </div>
         </Card>
+
+        <ComplaintDialog
+          open={complaintOpen}
+          onOpenChange={setComplaintOpen}
+          orderId={order.id}
+          onFiled={() => { setComplaintOpen(false); load(); }}
+        />
       </main>
       <Footer />
     </div>
