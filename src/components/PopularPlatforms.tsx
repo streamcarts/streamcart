@@ -136,7 +136,7 @@ export const PopularPlatforms = () => {
             </h3>
 
             {/* Mobile: horizontal scroll */}
-            <div className="md:hidden -mx-4 px-4 overflow-x-auto scrollbar-hide">
+            <div className="md:hidden -mx-4 px-4 overflow-x-auto no-scrollbar">
               <div className="flex gap-3 pb-2">
                 {g.items.map((p) => (
                   <div key={p.name} className="flex-shrink-0 w-[120px]">
