@@ -573,9 +573,9 @@ const timeUntil = (iso: string) => {
   return `${m}m`;
 };
 
-const ComplaintDialog = ({
+function ComplaintDialog({
   open, onOpenChange, orderId, onFiled,
-}: { open: boolean; onOpenChange: (v: boolean) => void; orderId: string; onFiled: () => void }) => {
+}: { open: boolean; onOpenChange: (v: boolean) => void; orderId: string; onFiled: () => void }) {
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
