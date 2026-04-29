@@ -158,7 +158,7 @@ const Index = () => {
           </div>
 
           {/* Search bar */}
-          <form onSubmit={submitSearch} className="relative mt-8 w-full max-w-2xl animate-fade-in">
+          <form onSubmit={submitSearch} className="relative mt-8 w-full max-w-2xl animate-fade-in z-40">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
               value={q}
@@ -177,7 +177,7 @@ const Index = () => {
 
             {showSuggest && (
               <div
-                className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-30 text-left overflow-hidden"
+                className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-2xl z-50 text-left overflow-hidden"
                 onMouseDown={(e) => e.preventDefault()}
               >
                 <div className="px-4 py-2 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold border-b border-border bg-muted/40">
