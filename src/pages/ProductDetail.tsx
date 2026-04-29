@@ -51,16 +51,22 @@ const ProductDetail = () => {
     (async () => {
       const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform,status";
       const sb = supabase as any;
-      // Try approved first
-      let { data, error } = await (slug
+
+      // If the :slug param is actually a UUID, treat it as an id lookup
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const slugIsUuid = !!slug && UUID_RE.test(slug);
+      const lookupBySlug = !!slug && !slugIsUuid;
+      const lookupId = id ?? (slugIsUuid ? slug! : null);
+
+      let { data, error } = await (lookupBySlug
         ? sb.from("products").select(cols).eq("slug", slug).eq("status", "approved").maybeSingle()
-        : sb.from("products").select(cols).eq("id", id!).eq("status", "approved").maybeSingle());
+        : sb.from("products").select(cols).eq("id", lookupId!).eq("status", "approved").maybeSingle());
 
       if (!data && !error) {
         // Approved row not found — check if it exists at all (any status) to give a better reason
-        const probe = await (slug
-          ? sb.from("products").select("id,status").eq("slug", slug).maybeSingle()
-          : sb.from("products").select("id,status").eq("id", id!).maybeSingle());
+        const probe = await (lookupBySlug
+          ? sb.from("products").select("id,status,slug").eq("slug", slug).maybeSingle()
+          : sb.from("products").select("id,status,slug").eq("id", lookupId!).maybeSingle());
         if (probe.data) {
           setNotFoundReason("unavailable");
         } else {
