@@ -43,18 +43,20 @@ const Seller = () => {
   const [sales, setSales] = useState<Order[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
   const [creds, setCreds] = useState<Credential[]>([]);
+  const [restricted, setRestricted] = useState<{ is: boolean; reason: string | null }>({ is: false, reason: null });
 
   useEffect(() => { document.title = "Seller dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
 
   const load = async () => {
     setLoading(true);
-    const [w, p, o, wd, c] = await Promise.all([
+    const [w, p, o, wd, c, prof] = await Promise.all([
       supabase.from("wallets").select("balance,pending_balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("products").select("*").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("orders").select("id,service_name,seller_earning,total_paid,created_at,buyer_id,credentials_email").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("withdrawals").select("id,amount,status,created_at,upi_id").eq("seller_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("product_credentials").select("id,product_id,cred_email,cred_password,status,created_at,assigned_at").eq("seller_id", user!.id).order("created_at", { ascending: false }),
+      supabase.from("profiles").select("is_restricted,restriction_reason").eq("id", user!.id).maybeSingle(),
     ]);
     setBalance(Number(w.data?.balance ?? 0));
     setPendingBalance(Number((w.data as any)?.pending_balance ?? 0));
@@ -62,6 +64,7 @@ const Seller = () => {
     setSales((o.data as Order[]) ?? []);
     setWds((wd.data as Withdrawal[]) ?? []);
     setCreds((c.data as Credential[]) ?? []);
+    setRestricted({ is: !!(prof.data as any)?.is_restricted, reason: (prof.data as any)?.restriction_reason ?? null });
     setLoading(false);
   };
 
@@ -93,6 +96,16 @@ const Seller = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       <main className="flex-1 container py-10 space-y-8">
+        {restricted.is && (
+          <div className="rounded-lg border-2 border-destructive bg-destructive/10 p-4 flex gap-3 items-start">
+            <Package className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <div className="font-bold text-destructive mb-1">Account restricted</div>
+              <p className="text-foreground">A buyer has filed a complaint. Your listings are deactivated, and you cannot create new listings or request withdrawals until an admin reviews and clears the issue.</p>
+              {restricted.reason && <p className="text-muted-foreground mt-1">Reason: {restricted.reason}</p>}
+            </div>
+          </div>
+        )}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-3xl font-bold">Seller dashboard</h1>

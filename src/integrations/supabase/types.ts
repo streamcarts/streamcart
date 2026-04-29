@@ -272,6 +272,48 @@ export type Database = {
           },
         ]
       }
+      complaints: {
+        Row: {
+          buyer_id: string
+          created_at: string
+          details: string | null
+          id: string
+          order_id: string
+          reason: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          seller_id: string
+          status: string
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          order_id: string
+          reason: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seller_id: string
+          status?: string
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          order_id?: string
+          reason?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          seller_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       coupon_redemptions: {
         Row: {
           coupon_id: string
@@ -961,10 +1003,14 @@ export type Database = {
           email: string | null
           id: string
           is_banned: boolean
+          is_restricted: boolean
+          last_seen_at: string | null
           phone: string | null
           referred_by: string | null
+          restriction_reason: string | null
           signup_ip: string | null
           updated_at: string
+          whatsapp_number: string | null
         }
         Insert: {
           ban_reason?: string | null
@@ -973,10 +1019,14 @@ export type Database = {
           email?: string | null
           id: string
           is_banned?: boolean
+          is_restricted?: boolean
+          last_seen_at?: string | null
           phone?: string | null
           referred_by?: string | null
+          restriction_reason?: string | null
           signup_ip?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Update: {
           ban_reason?: string | null
@@ -985,10 +1035,14 @@ export type Database = {
           email?: string | null
           id?: string
           is_banned?: boolean
+          is_restricted?: boolean
+          last_seen_at?: string | null
           phone?: string | null
           referred_by?: string | null
+          restriction_reason?: string | null
           signup_ip?: string | null
           updated_at?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
@@ -1275,6 +1329,7 @@ export type Database = {
           reviewed_at: string | null
           status: Database["public"]["Enums"]["application_status"]
           user_id: string
+          whatsapp_number: string | null
         }
         Insert: {
           business_name: string
@@ -1288,6 +1343,7 @@ export type Database = {
           reviewed_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           user_id: string
+          whatsapp_number?: string | null
         }
         Update: {
           business_name?: string
@@ -1301,6 +1357,7 @@ export type Database = {
           reviewed_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           user_id?: string
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
@@ -1420,6 +1477,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_clear_seller_restriction: {
+        Args: { _note?: string; _seller_id: string }
+        Returns: undefined
+      }
       admin_release_hold: { Args: { _hold_id: string }; Returns: undefined }
       admin_release_user_holds: { Args: { _user_id: string }; Returns: number }
       admin_resolve_seller_flag: {
@@ -1453,6 +1514,10 @@ export type Database = {
         }[]
       }
       ensure_order_chat: { Args: { _order_id: string }; Returns: string }
+      file_complaint: {
+        Args: { _details?: string; _order_id: string; _reason: string }
+        Returns: string
+      }
       flag_repeated_fraud: { Args: { _user_id: string }; Returns: undefined }
       gen_referral_code: { Args: { _seed: string }; Returns: string }
       get_platform_min_price: {
@@ -1467,6 +1532,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_user_online: { Args: { _user_id: string }; Returns: boolean }
       issue_refund: {
         Args: { _order_id: string; _reason?: string }
         Returns: string
@@ -1561,6 +1627,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_my_presence: { Args: never; Returns: undefined }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: {

@@ -22,6 +22,7 @@ const Sell = () => {
   const [productType, setProductType] = useState("OTT");
   const [experience, setExperience] = useState("");
   const [desc, setDesc] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -36,11 +37,17 @@ const Sell = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!biz.trim()) return toast.error("Business name required");
+    const wa = whatsapp.replace(/[^0-9+]/g, "");
+    if (wa.replace(/[^0-9]/g, "").length < 10) return toast.error("Valid WhatsApp number required (min 10 digits)");
     setBusy(true);
     const { error } = await supabase.from("vendor_applications").insert({
       user_id: user!.id, business_name: biz.trim(), description: desc.trim() || null,
       product_type: productType, experience: experience.trim() || null,
+      whatsapp_number: wa,
     });
+    if (!error) {
+      await supabase.from("profiles").update({ whatsapp_number: wa }).eq("id", user!.id);
+    }
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Application submitted! Admin will review shortly.");
@@ -92,6 +99,11 @@ const Sell = () => {
                   <Label htmlFor="exp">Experience (optional)</Label>
                   <Input id="exp" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="e.g. 2 years reselling" maxLength={100} />
                 </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wa">WhatsApp number <span className="text-destructive">*</span></Label>
+                <Input id="wa" type="tel" inputMode="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+91 98XXXXXXXX" maxLength={20} required />
+                <p className="text-[11px] text-muted-foreground">Required so admin can verify and contact you. Never shown to buyers.</p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="desc">What will you sell?</Label>
