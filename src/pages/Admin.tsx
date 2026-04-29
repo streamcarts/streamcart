@@ -32,6 +32,8 @@ const Admin = () => {
   const [topups, setTopups] = useState<any[]>([]);
   const [pendingOrders, setPendingOrders] = useState<any[]>([]);
   const [selectedPo, setSelectedPo] = useState<Set<string>>(new Set());
+  const [focusedPoId, setFocusedPoId] = useState<string | null>(null);
+  const [poPreviews, setPoPreviews] = useState<Record<string, string>>({});
   const [wds, setWds] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
