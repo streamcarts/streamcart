@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Loader2, Send, ShieldAlert, KeyRound, CheckCircle2, AlertTriangle, Clock, MessageSquareText, Copy, Eye, EyeOff, Flag, ChevronLeft,
+  Loader2, Send, ShieldAlert, KeyRound, CheckCircle2, AlertTriangle, Clock, MessageSquareText, Copy, Eye, EyeOff, Flag, ChevronLeft, ImagePlus, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { inr } from "@/lib/format";
