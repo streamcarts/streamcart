@@ -63,6 +63,13 @@ const Buyer = () => {
 
   useEffect(() => { document.title = "Buyer dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
+  useEffect(() => {
+    if (window.location.hash === "#profile") {
+      setTimeout(() => {
+        document.getElementById("profile")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, []);
 
   const load = async () => {
     const [w, o, t, s] = await Promise.all([
