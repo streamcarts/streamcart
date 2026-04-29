@@ -451,12 +451,14 @@ const Buyer = () => {
           )}
         </Card>
 
-        {/* Support */}
         {/* Refer & earn */}
         <ReferralPanel />
 
         {/* Support */}
         <SupportTickets />
+
+        {/* Profile & customization */}
+        <ProfileCard />
       </main>
       <Footer />
     </div>
