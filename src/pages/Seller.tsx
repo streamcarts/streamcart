@@ -43,6 +43,7 @@ const Seller = () => {
   const [sales, setSales] = useState<Order[]>([]);
   const [wds, setWds] = useState<Withdrawal[]>([]);
   const [creds, setCreds] = useState<Credential[]>([]);
+  const [restricted, setRestricted] = useState<{ is: boolean; reason: string | null }>({ is: false, reason: null });
 
   useEffect(() => { document.title = "Seller dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
