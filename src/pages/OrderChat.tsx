@@ -339,8 +339,8 @@ const OrderChat = () => {
                       </Button>
                     )}
                     {isBuyer && (
-                      <Button size="sm" variant="outline" onClick={() => navigate("/buyer")}>
-                        <Flag className="h-3.5 w-3.5 mr-1.5" /> Report
+                      <Button size="sm" variant="outline" onClick={() => setComplaintOpen(true)}>
+                        <Flag className="h-3.5 w-3.5 mr-1.5" /> Complaint
                       </Button>
                     )}
                   </div>
