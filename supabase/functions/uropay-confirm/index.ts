@@ -30,11 +30,11 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
-    const { data: claims, error: cErr } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (cErr || !claims?.claims) {
+    const { data: userData, error: cErr } = await supabase.auth.getUser();
+    if (cErr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const userId: string = claims.claims.sub;
+    const userId: string = userData.user.id;
 
     const { uropay_order_id, reference_number } = await req.json();
     if (!uropay_order_id || typeof uropay_order_id !== "string") throw new Error("uropay_order_id required");
