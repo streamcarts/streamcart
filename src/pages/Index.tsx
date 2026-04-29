@@ -253,11 +253,11 @@ const Index = () => {
 
           {/* Stat bar */}
           <div className="mt-10 flex flex-wrap justify-center items-center gap-6 md:gap-10 animate-fade-in">
-            <Stat icon={Users} label="Happy buyers" value="19,000+" />
+            <Stat icon={Lock} label="Escrow protected" value="100%" />
             <div className="hidden sm:block h-8 w-px bg-border" />
-            <Stat icon={Star} label="Avg. rating" value="4.9 / 5" />
+            <Stat icon={BadgeCheck} label="Verified sellers" value="Manual review" />
             <div className="hidden sm:block h-8 w-px bg-border" />
-            <Stat icon={IndianRupee} label="Saved by users" value="₹38L+" />
+            <Stat icon={Zap} label="Chat delivery" value="Under 30 min" />
           </div>
         </div>
       </section>
