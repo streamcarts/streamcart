@@ -48,9 +48,9 @@ const ProductDetail = () => {
     setLoading(true);
     (async () => {
       const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform";
-      const { data, error } = slug
-        ? await supabase.from("products").select(cols).eq("status", "approved" as any).eq("slug" as any, slug).maybeSingle()
-        : await supabase.from("products").select(cols).eq("status", "approved" as any).eq("id", id!).maybeSingle();
+      const sb = supabase as any;
+      const q = sb.from("products").select(cols).eq("status", "approved");
+      const { data, error } = await (slug ? q.eq("slug", slug) : q.eq("id", id!)).maybeSingle();
       if (error || !data) {
         toast.error("Product not found");
         navigate("/browse");
