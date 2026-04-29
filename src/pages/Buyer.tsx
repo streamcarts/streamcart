@@ -51,11 +51,7 @@ const Buyer = () => {
   const [reviews, setReviews] = useState<Record<string, Review>>({});
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [amount, setAmount] = useState("");
-  const [upiRef, setUpiRef] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
-  const [upiId, setUpiId] = useState<string>("streamcart@upi");
 
   useEffect(() => { document.title = "Buyer dashboard — StreamCart"; }, []);
   useEffect(() => { if (user) load(); }, [user]);
@@ -68,13 +64,11 @@ const Buyer = () => {
   }, []);
 
   const load = async () => {
-    const [w, o, t, s] = await Promise.all([
+    const [w, o, t] = await Promise.all([
       supabase.from("wallets").select("balance,pending_balance").eq("user_id", user!.id).maybeSingle(),
       supabase.from("orders").select("*").eq("buyer_id", user!.id).order("created_at", { ascending: false }),
       supabase.from("wallet_topups").select("id,amount,status,created_at").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(10),
-      supabase.from("platform_settings").select("upi_id").eq("id", 1).maybeSingle(),
     ]);
-    if (s.data?.upi_id) setUpiId(s.data.upi_id);
     setBalance(Number(w.data?.balance ?? 0));
     setPendingBalance(Number((w.data as any)?.pending_balance ?? 0));
     const orderList = (o.data as Order[]) ?? [];
@@ -86,31 +80,6 @@ const Buyer = () => {
       (rData ?? []).forEach((r: any) => { map[r.order_id] = r; });
       setReviews(map);
     }
-  };
-
-  const submitTopup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const amt = parseFloat(amount);
-    if (!amt || amt <= 0) return toast.error("Enter a valid amount");
-    const ref = upiRef.trim();
-    if (!ref) return toast.error("UPI reference / Transaction ID is required");
-    if (ref.length < 6) return toast.error("Transaction ID looks too short");
-    if (!file) return toast.error("Please attach a UPI screenshot");
-    if (file.size > 5 * 1024 * 1024) return toast.error("File too large (max 5MB)");
-    setBusy(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user!.id}/${Date.now()}.${ext}`;
-      const up = await supabase.storage.from("topup-screenshots").upload(path, file);
-      if (up.error) throw up.error;
-      const { error } = await supabase.from("wallet_topups").insert({
-        user_id: user!.id, amount: amt, upi_reference: ref, screenshot_path: path,
-      });
-      if (error) throw error;
-      toast.success("Top-up submitted! Admin will approve shortly.");
-      setAmount(""); setUpiRef(""); setFile(null); setOpen(false);
-      load();
-    } catch (err: any) { toast.error(err.message); } finally { setBusy(false); }
   };
 
   const copy = async (text: string, label: string) => {
