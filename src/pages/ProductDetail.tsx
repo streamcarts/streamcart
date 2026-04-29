@@ -188,6 +188,14 @@ const ProductDetail = () => {
               </div>
             )}
 
+            {/* Money-secured banner */}
+            <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs">
+              <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-foreground/90">
+                <strong className="text-primary">Money secured by StreamCart.</strong> Your payment is held safely until you confirm the credentials work.
+              </span>
+            </div>
+
             {/* CTAs */}
             <div className="flex gap-3 pt-2">
               <Button size="lg" className="flex-1" onClick={handleBuyNow} disabled={buying || p.stock === 0}>
