@@ -54,12 +54,15 @@ const faqsList: Faq[] = [
   { q: "How are payments secured?", a: "Payments flow through your wallet, which is encrypted at rest. Card and UPI processing happens through PCI-DSS compliant payment gateways." },
 ];
 
+type LiveStats = { orders: number; sellers: number; avgRating: number; ratingCount: number };
+
 const Index = () => {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [searchIndex, setSearchIndex] = useState<Product[]>([]);
   const [q, setQ] = useState("");
   const [showSuggest, setShowSuggest] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const [stats, setStats] = useState<LiveStats | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,6 +90,23 @@ const Index = () => {
       .order("created_at", { ascending: false })
       .limit(500)
       .then(({ data }) => setSearchIndex((data as Product[]) ?? []));
+
+    // Live trust stats — counts only, no row data
+    (async () => {
+      const [ordersRes, sellersRes, reviewsRes] = await Promise.all([
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "completed"),
+        supabase.from("user_roles").select("user_id", { count: "exact", head: true }).eq("role", "seller"),
+        supabase.from("reviews").select("rating"),
+      ]);
+      const ratings = (reviewsRes.data ?? []) as { rating: number }[];
+      const avg = ratings.length ? ratings.reduce((s, r) => s + (r.rating || 0), 0) / ratings.length : 0;
+      setStats({
+        orders: ordersRes.count ?? 0,
+        sellers: sellersRes.count ?? 0,
+        avgRating: Math.round(avg * 10) / 10,
+        ratingCount: ratings.length,
+      });
+    })();
   }, []);
 
   const suggestions = useMemo(() => {
