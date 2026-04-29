@@ -131,6 +131,35 @@ const ProductDetail = () => {
   const reviewCount = hasReal ? p.rating_count : 0;
   const sellerYear = new Date(seller?.created_at ?? p.created_at).getFullYear();
 
+  // SEO: keyword-rich title/description + Product schema (price, rating, availability)
+  const platformName = (p.platform || "").trim();
+  const seoTitle = `Buy ${p.service_name}${p.duration ? ` (${p.duration})` : ""} Cheap`;
+  const seoDesc = (p.description?.slice(0, 150) ||
+    `Get ${p.service_name}${platformName ? ` ${platformName}` : ""} subscription at the lowest price in India. Instant delivery, verified sellers, money-back guarantee on StreamCart.`).trim();
+  const productJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: p.service_name,
+    description: p.description ?? seoDesc,
+    image: p.image_url ? [p.image_url] : undefined,
+    brand: { "@type": "Brand", name: platformName || "StreamCart" },
+    category: p.category,
+    offers: {
+      "@type": "Offer",
+      price: Number(p.display_price),
+      priceCurrency: "INR",
+      availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `https://streamcart.lovable.app/p/${p.slug ?? p.id}`,
+    },
+  };
+  if (hasReal) {
+    productJsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: Number(p.avg_rating).toFixed(1),
+      reviewCount: p.rating_count,
+    };
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
