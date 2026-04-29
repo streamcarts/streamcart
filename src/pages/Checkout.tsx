@@ -237,122 +237,48 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* UPI payment */}
-              {total > 0 && (
-              <div className="w-full">
-              <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2.5">
+              {/* Razorpay payment (only when wallet is short / not used) */}
+              {total > 0 && !canPayWallet && (
+                <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+                  <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border px-5 py-4 flex items-center gap-2.5">
                     <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center">
-                      <Smartphone className="h-4.5 w-4.5 text-primary" />
+                      <Zap className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <div className="font-semibold leading-tight">Pay via UPI</div>
-                      <div className="text-[11px] text-muted-foreground">Manual verification • Secure</div>
+                    <div className="flex-1">
+                      <div className="font-semibold leading-tight">Pay with Razorpay</div>
+                      <div className="text-[11px] text-muted-foreground">UPI · Cards · Netbanking · Wallets — fully automated</div>
                     </div>
+                    <Badge variant="outline" className="hidden sm:inline-flex">Instant</Badge>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted/60 rounded-full px-2.5 py-1">
-                    <Lock className="h-3 w-3" /> 256-bit secured
-                  </div>
-                </div>
-
-                {/* Split layout: QR (left) + How-to (right) */}
-                <div className="grid md:grid-cols-2 gap-0">
-                  {/* LEFT — QR card */}
-                  <div className="p-5 md:p-6 bg-gradient-to-b from-background to-muted/30 md:border-r border-border space-y-4">
-                    <div className="rounded-xl bg-white border-2 border-primary/20 p-4 shadow-md">
-                      <div className="flex items-center justify-center mb-3">
-                        <img src={qrUrl} alt="UPI QR code" className="rounded-md" width={200} height={200} loading="lazy" />
-                      </div>
-                      <div className="text-center border-t border-border pt-3">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Scan & pay exactly</div>
-                        <div className="text-3xl font-bold text-primary font-mono mt-0.5">{inr(uniqueAmount)}</div>
-                      </div>
-                    </div>
-
-                    {/* UPI ID copy */}
-                    <div>
-                      <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">UPI ID</Label>
-                      <div className="flex gap-2 mt-1.5">
-                        <code className="flex-1 px-3 py-2.5 rounded-lg bg-muted border border-border font-mono text-sm break-all">{upiId}</code>
-                        <Button type="button" size="icon" variant="outline" onClick={copyUpi} title="Copy UPI ID"><Copy className="h-4 w-4" /></Button>
-                      </div>
-                    </div>
-
-                    {/* Supported apps */}
-                    <div>
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Pay with any UPI app</div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { name: "GPay", logo: payGpay },
-                          { name: "PhonePe", logo: payPhonepe },
-                          { name: "Paytm", logo: payPaytm },
-                        ].map((app) => (
-                          <div key={app.name} className="rounded-lg border border-border bg-background px-2 py-2 flex items-center gap-2">
-                            <img src={app.logo} alt={`${app.name} logo`} loading="lazy" className="h-7 w-7 rounded-md object-contain shrink-0" />
-                            <span className="text-xs font-medium truncate">{app.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Button type="button" variant="outline" className="w-full" asChild>
-                      <a href={upiLink}><Zap className="h-4 w-4 mr-2" />Open in UPI app</a>
-                    </Button>
-                  </div>
-
-                  {/* RIGHT — Steps + proof submission */}
                   <div className="p-5 md:p-6 space-y-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <QrCode className="h-4 w-4 text-primary" />
-                        <h3 className="font-semibold text-sm">How to pay</h3>
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-center justify-between flex-wrap gap-2">
+                      <div>
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide">Amount payable</div>
+                        <div className="text-3xl font-bold text-primary font-mono">{inr(total)}</div>
                       </div>
-                      <ol className="space-y-2.5">
-                        {[
-                          "Scan the QR using any UPI app",
-                          <>Pay <span className="text-primary font-bold">exactly {inr(uniqueAmount)}</span> (unique amount)</>,
-                          "Copy the Transaction ID from the receipt",
-                          "Upload screenshot + paste txn ID below",
-                        ].map((step, i) => (
-                          <li key={i} className="flex gap-2.5 text-sm">
-                            <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</div>
-                            <span className="text-muted-foreground">{step}</span>
-                          </li>
-                        ))}
-                      </ol>
+                      <div className="text-xs text-muted-foreground max-w-xs">
+                        Pay → wallet credited instantly → order placed automatically. No manual approval.
+                      </div>
                     </div>
-
-                    <div className="border-t border-border pt-4 space-y-3">
-                      <div>
-                        <Label htmlFor="txn" className="text-sm font-medium">Transaction ID <span className="text-destructive">*</span></Label>
-                        <Input id="txn" value={txnId} onChange={(e) => setTxnId(e.target.value)} maxLength={50} placeholder="e.g. 412387654321" className="mt-1.5 font-mono" />
-                        <p className="text-[11px] text-muted-foreground mt-1">12-digit UTR from your UPI receipt. One-time use only.</p>
-                      </div>
-                      <div>
-                        <Label htmlFor="file" className="text-sm font-medium">Payment screenshot <span className="text-destructive">*</span></Label>
-                        <Input id="file" type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="mt-1.5" />
-                        {file && <p className="text-xs text-primary mt-1 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />{file.name} ({(file.size / 1024).toFixed(0)} KB)</p>}
-                      </div>
-                      <Button className="w-full" size="lg" onClick={submitManualUpi} disabled={processing || !file || !txnId.trim() || uniqueAmount <= 0}>
-                        {processing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting…</> : <><Upload className="h-4 w-4 mr-2" />Submit for verification</>}
-                      </Button>
-                      <div className="rounded-lg bg-primary/5 border border-primary/20 text-xs p-3 flex gap-2 items-start">
-                        <Clock className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
-                        <span>Smart auto-verification in <strong>seconds</strong> when amount + txn ID match. Otherwise reviewed within <strong>5–10 minutes</strong>. Auto-cancels in 10 min if no proof.</span>
-                      </div>
+                    <RazorpayButton
+                      amount={total}
+                      purpose="topup"
+                      userEmail={user?.email}
+                      description={`StreamCart order — ${items.length} item${items.length > 1 ? "s" : ""}`}
+                      label={`Pay ${inr(total)} securely`}
+                      onSuccess={async () => {
+                        // Wallet just got credited — auto-place the order
+                        await payFromWallet();
+                      }}
+                    />
+                    <div className="text-[11px] text-muted-foreground text-center">
+                      <ShieldCheck className="h-3 w-3 inline mr-1" />
+                      Signature-verified payments • PCI-DSS compliant • No fake confirmations
                     </div>
                   </div>
                 </div>
-              </div>
-              </div>
               )}
 
-              {!canPayWallet && balance !== null && balance > 0 && (
-                <p className="text-xs text-muted-foreground mt-3">
-                  Wallet balance ({inr(balance)}) is below total. <Link to="/buyer" className="text-primary hover:underline">Top up</Link> or pay via UPI above.
-                </p>
               )}
             </section>
           </div>
