@@ -1071,6 +1071,14 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      score_pending_order: {
+        Args: { _po: Database["public"]["Tables"]["pending_orders"]["Row"] }
+        Returns: {
+          score: number
+          should_auto_approve: boolean
+          tag: string
+        }[]
+      }
       set_user_ban: {
         Args: { _banned: boolean; _reason?: string; _user_id: string }
         Returns: undefined
