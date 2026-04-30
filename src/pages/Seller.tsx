@@ -183,9 +183,8 @@ const Seller = () => {
               <h2 className="font-semibold">Your listings</h2>
               <div className="flex gap-2 flex-wrap">
                 <Button asChild className="bg-gradient-to-r from-primary to-primary/80 shadow-md">
-                  <a href="/seller/list-chat"><Plus className="h-4 w-4 mr-1" />Add product (chat delivery)</a>
+                  <a href="/seller/list-chat"><Plus className="h-4 w-4 mr-1" />Add product</a>
                 </Button>
-                <ProductDialog onDone={load} userId={user!.id} />
               </div>
             </div>
             <ProductsTable products={products} loading={loading} creds={creds} onRefresh={load} userId={user!.id} />

@@ -16,17 +16,7 @@ import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { PopularPlatforms } from "@/components/PopularPlatforms";
 import { SEO } from "@/components/SEO";
-
-const categories = [
-  { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700", desc: "ChatGPT, Claude, Midjourney" },
-  { name: "OTT", icon: Tv, color: "bg-rose-100 text-rose-700", desc: "Netflix, Prime, Hotstar" },
-  { name: "Design", icon: Palette, color: "bg-pink-100 text-pink-700", desc: "Adobe, Figma, Canva" },
-  { name: "Games", icon: Gamepad2, color: "bg-amber-100 text-amber-700", desc: "Game Pass, PSN, Steam" },
-  { name: "VPN", icon: Shield, color: "bg-sky-100 text-sky-700", desc: "Nord, Express, Surfshark" },
-  { name: "Cloud", icon: Cloud, color: "bg-indigo-100 text-indigo-700", desc: "Drive, iCloud, Dropbox" },
-  { name: "Education", icon: GraduationCap, color: "bg-emerald-100 text-emerald-700", desc: "Coursera, Udemy, LinkedIn" },
-  { name: "SMM", icon: Share2, color: "bg-orange-100 text-orange-700", desc: "Followers, panels, analytics" },
-];
+import { useCategories, getCategoryIcon } from "@/lib/categories";
 
 type Product = {
   id: string;
@@ -58,6 +48,7 @@ const faqsList: Faq[] = [
 type LiveStats = { orders: number; sellers: number; avgRating: number; ratingCount: number };
 
 const Index = () => {
+  const { cats } = useCategories({ activeOnly: true });
   const [products, setProducts] = useState<Product[] | null>(null);
   const [searchIndex, setSearchIndex] = useState<Product[]>([]);
   const [q, setQ] = useState("");
@@ -317,23 +308,34 @@ const Index = () => {
             <p className="text-muted-foreground mt-1">Premium services across every digital need.</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {categories.map((c) => (
-            <Link
-              key={c.name}
-              to={`/browse?cat=${encodeURIComponent(c.name)}`}
-              className="group bg-card border border-border rounded-2xl p-5 flex items-center gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
-            >
-              <div className={`h-12 w-12 rounded-xl ${c.color} flex items-center justify-center transition-transform duration-200 group-hover:scale-110 flex-shrink-0`}>
-                <c.icon className="h-6 w-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold leading-tight truncate group-hover:text-primary transition-colors">{c.name}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{c.desc}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {cats.length === 0 ? (
+          <div className="text-sm text-muted-foreground border border-dashed border-border rounded-2xl p-8 text-center">
+            No categories yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {cats.map((c) => {
+              const Icon = getCategoryIcon(c.icon);
+              return (
+                <Link
+                  key={c.id}
+                  to={`/browse?cat=${encodeURIComponent(c.name)}`}
+                  className="group bg-card border border-border rounded-2xl p-5 flex items-center gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+                >
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-transform duration-200 group-hover:scale-110 flex-shrink-0">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-semibold leading-tight truncate group-hover:text-primary transition-colors">{c.name}</div>
+                    {c.min_price > 0 && (
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">From ₹{c.min_price}</div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* FEATURED PRODUCTS */}

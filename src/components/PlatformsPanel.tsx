@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, Pencil, Trash2, Upload, Image as ImageIcon, Save } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Upload, Image as ImageIcon, Save, X } from "lucide-react";
+import { useCategories } from "@/lib/categories";
 
 type Platform = {
   id: string;
@@ -19,17 +20,19 @@ type Platform = {
   category: string;
   sort_order: number;
   is_active: boolean;
+  plan_tiers?: string[];
 };
 type Duration = { id: string; label: string; days: number; sort_order: number; is_active: boolean };
 type Pricing = { id: string; platform_id: string; duration_id: string; min_price: number };
 
-const CATEGORIES = ["OTT", "AI Tools", "VPN", "Other"];
+const DEFAULT_PLAN_TIERS = ["Mobile", "Basic", "Standard", "Premium"];
 
 export default function PlatformsPanel() {
   const [loading, setLoading] = useState(true);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [durations, setDurations] = useState<Duration[]>([]);
   const [pricing, setPricing] = useState<Pricing[]>([]);
+  const { cats } = useCategories({ activeOnly: true });
 
   const [editPlatform, setEditPlatform] = useState<Platform | null>(null);
   const [editDuration, setEditDuration] = useState<Duration | null>(null);
@@ -93,7 +96,7 @@ export default function PlatformsPanel() {
             <h3 className="font-semibold">Platforms</h3>
             <p className="text-xs text-muted-foreground">Sirf yahan add ki gayi platforms sellers ko dikhti hain.</p>
           </div>
-          <Button size="sm" onClick={() => setEditPlatform({ id: "", name: "", slug: "", logo_url: null, category: "OTT", sort_order: 100, is_active: true })}>
+          <Button size="sm" onClick={() => setEditPlatform({ id: "", name: "", slug: "", logo_url: null, category: cats[0]?.name ?? "Other", sort_order: 100, is_active: true, plan_tiers: DEFAULT_PLAN_TIERS })}>
             <Plus className="h-4 w-4 mr-1" /> Add platform
           </Button>
         </div>
@@ -200,6 +203,7 @@ export default function PlatformsPanel() {
       {editPlatform && (
         <PlatformDialog
           platform={editPlatform}
+          categories={cats.map((c) => c.name)}
           onClose={() => setEditPlatform(null)}
           onSaved={() => { setEditPlatform(null); load(); }}
         />
@@ -239,14 +243,30 @@ function PriceCell({ value, onSave, onClear }: { value: number | null; onSave: (
   );
 }
 
-function PlatformDialog({ platform, onClose, onSaved }: { platform: Platform; onClose: () => void; onSaved: () => void }) {
+function PlatformDialog({ platform, categories, onClose, onSaved }: { platform: Platform; categories: string[]; onClose: () => void; onSaved: () => void }) {
   const isNew = !platform.id;
-  const [form, setForm] = useState<Platform>(platform);
+  const [form, setForm] = useState<Platform>({ ...platform, plan_tiers: platform.plan_tiers ?? DEFAULT_PLAN_TIERS });
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [newTier, setNewTier] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  const addTier = () => {
+    const t = newTier.trim();
+    if (!t) return;
+    const list = form.plan_tiers ?? [];
+    if (list.some((x) => x.toLowerCase() === t.toLowerCase())) {
+      setNewTier("");
+      return toast.error("Tier already added");
+    }
+    setForm({ ...form, plan_tiers: [...list, t] });
+    setNewTier("");
+  };
+  const removeTier = (t: string) => {
+    setForm({ ...form, plan_tiers: (form.plan_tiers ?? []).filter((x) => x !== t) });
+  };
 
   const handleUpload = async (file: File) => {
     if (!file) return;
@@ -270,21 +290,22 @@ function PlatformDialog({ platform, onClose, onSaved }: { platform: Platform; on
 
   const save = async () => {
     if (!form.name.trim()) return toast.error("Name required");
+    if (!form.category) return toast.error("Category required");
+    const tiers = (form.plan_tiers ?? []).filter(Boolean);
+    if (tiers.length === 0) return toast.error("Add at least one plan tier");
     const slug = form.slug.trim() || slugify(form.name);
     setBusy(true);
     try {
+      const payload = {
+        name: form.name.trim(), slug, logo_url: form.logo_url, category: form.category,
+        sort_order: form.sort_order, is_active: form.is_active, plan_tiers: tiers,
+      };
       if (isNew) {
-        const { error } = await (supabase.from("platforms" as any) as any).insert({
-          name: form.name.trim(), slug, logo_url: form.logo_url, category: form.category,
-          sort_order: form.sort_order, is_active: form.is_active,
-        });
+        const { error } = await (supabase.from("platforms" as any) as any).insert(payload);
         if (error) throw error;
         toast.success("Platform added");
       } else {
-        const { error } = await (supabase.from("platforms" as any) as any).update({
-          name: form.name.trim(), slug, logo_url: form.logo_url, category: form.category,
-          sort_order: form.sort_order, is_active: form.is_active,
-        }).eq("id", form.id);
+        const { error } = await (supabase.from("platforms" as any) as any).update(payload).eq("id", form.id);
         if (error) throw error;
         toast.success("Saved");
       }
@@ -346,15 +367,47 @@ function PlatformDialog({ platform, onClose, onSaved }: { platform: Platform; on
             <div className="space-y-1.5">
               <Label>Category</Label>
               <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {categories.length === 0 && <SelectItem value="Other">Other</SelectItem>}
+                  {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Sort order</Label>
               <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} />
+            </div>
+          </div>
+
+          {/* Plan tiers */}
+          <div className="space-y-2 rounded-lg border p-3">
+            <div>
+              <Label>Plan tiers</Label>
+              <p className="text-xs text-muted-foreground">Sellers will pick from these when listing this platform (e.g. Mobile, Basic, Premium, Annual).</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(form.plan_tiers ?? []).map((t) => (
+                <Badge key={t} variant="secondary" className="gap-1 pr-1">
+                  {t}
+                  <button type="button" onClick={() => removeTier(t)} className="ml-1 rounded hover:bg-destructive/20 p-0.5">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              {(form.plan_tiers ?? []).length === 0 && (
+                <span className="text-xs text-muted-foreground">No tiers yet.</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newTier}
+                onChange={(e) => setNewTier(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTier(); } }}
+                placeholder="Add tier (e.g. Premium, Annual)"
+                className="h-9"
+              />
+              <Button type="button" size="sm" variant="outline" onClick={addTier}>Add</Button>
             </div>
           </div>
 
