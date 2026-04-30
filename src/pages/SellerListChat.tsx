@@ -24,11 +24,12 @@ type Platform = {
   logo_url: string | null;
   category: string;
   is_active: boolean;
+  plan_tiers?: string[] | null;
 };
 type Duration = { id: string; label: string; days: number; sort_order: number; is_active: boolean };
 type Pricing = { platform_id: string; duration_id: string; min_price: number };
 
-const PLAN_NAMES = ["Mobile", "Basic", "Standard", "Premium", "4K UHD", "Family", "Individual", "Annual"];
+const FALLBACK_PLAN_NAMES = ["Mobile", "Basic", "Standard", "Premium"];
 
 const SellerListChat = () => {
   const { user, isSeller, loading: authLoading } = useAuth();
