@@ -72,19 +72,23 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
   const bestSeller = isBestSeller(p.id);
   const saleEnd = p.sale_ends_at ? new Date(p.sale_ends_at) : fallbackSaleEnd(p.id);
 
-  // Pause the countdown ticker when the card is offscreen
-  const cardRef = useRef<HTMLAnchorElement>(null);
+  // Pause the countdown ticker when the card is offscreen.
+  // Attach the observer to a callback ref so we don't pass a ref into a
+  // component that may not forward it (which triggered a React dev warning).
   const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") { setVisible(true); return; }
+  const cardRefCb = (el: HTMLAnchorElement | null) => {
+    if (!el || typeof IntersectionObserver === "undefined") {
+      if (el) setVisible(true);
+      return;
+    }
     const io = new IntersectionObserver(
       ([entry]) => setVisible(entry.isIntersecting),
       { rootMargin: "120px" },
     );
     io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    // Cleanup happens when element unmounts (callback called with null).
+    (el as any).__io_cleanup = () => io.disconnect();
+  };
   const cd = useCountdown(saleEnd, visible);
 
   const handleAdd = (e: React.MouseEvent) => {
@@ -111,7 +115,7 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
 
   return (
     <Link
-      ref={cardRef}
+      ref={cardRefCb}
       to={`/p/${p.slug ?? p.id}`}
       className="group bg-card border border-border rounded-2xl p-3 sm:p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-primary/40"
     >
