@@ -72,7 +72,7 @@ const Index = () => {
     // Featured products (cards on home)
     supabase
       .from("products")
-      .select("id, service_name, category, display_price, duration, image_url")
+      .select("id, service_name, category, display_price, duration, image_url, sale_ends_at")
       .eq("status", "approved")
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -82,7 +82,7 @@ const Index = () => {
     // Full search index — every approved product, lightweight columns
     supabase
       .from("products")
-      .select("id, service_name, category, display_price, duration, image_url")
+      .select("id, service_name, category, display_price, duration, image_url, sale_ends_at")
       .eq("status", "approved")
       .eq("is_active", true)
       .gt("stock", 0)
