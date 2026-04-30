@@ -122,6 +122,23 @@ const Index = () => {
       .slice(0, 6);
   }, [q, searchIndex]);
 
+  // Trending now: products whose name matches our hot-keyword list
+  const trendingPicks = useMemo(() => {
+    const matched: Product[] = [];
+    const seen = new Set<string>();
+    for (const kw of TRENDING_KEYWORDS) {
+      const k = kw.toLowerCase();
+      const hit = searchIndex.find(
+        (p) => !seen.has(p.id) && p.service_name.toLowerCase().includes(k),
+      );
+      if (hit) {
+        matched.push(hit);
+        seen.add(hit.id);
+      }
+    }
+    return matched.slice(0, 8);
+  }, [searchIndex]);
+
   // Reset highlight when suggestions change
   useEffect(() => { setActiveIdx(-1); }, [q, showSuggest]);
 
