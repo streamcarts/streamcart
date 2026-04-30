@@ -308,23 +308,34 @@ const Index = () => {
             <p className="text-muted-foreground mt-1">Premium services across every digital need.</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {categories.map((c) => (
-            <Link
-              key={c.name}
-              to={`/browse?cat=${encodeURIComponent(c.name)}`}
-              className="group bg-card border border-border rounded-2xl p-5 flex items-center gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
-            >
-              <div className={`h-12 w-12 rounded-xl ${c.color} flex items-center justify-center transition-transform duration-200 group-hover:scale-110 flex-shrink-0`}>
-                <c.icon className="h-6 w-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold leading-tight truncate group-hover:text-primary transition-colors">{c.name}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{c.desc}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {cats.length === 0 ? (
+          <div className="text-sm text-muted-foreground border border-dashed border-border rounded-2xl p-8 text-center">
+            No categories yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {cats.map((c) => {
+              const Icon = getCategoryIcon(c.icon);
+              return (
+                <Link
+                  key={c.id}
+                  to={`/browse?cat=${encodeURIComponent(c.name)}`}
+                  className="group bg-card border border-border rounded-2xl p-5 flex items-center gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
+                >
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-transform duration-200 group-hover:scale-110 flex-shrink-0">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-semibold leading-tight truncate group-hover:text-primary transition-colors">{c.name}</div>
+                    {c.min_price > 0 && (
+                      <div className="text-[11px] text-muted-foreground mt-0.5 truncate">From ₹{c.min_price}</div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* FEATURED PRODUCTS */}
