@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, Pencil, Trash2, Upload, Image as ImageIcon, Save } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Upload, Image as ImageIcon, Save, X } from "lucide-react";
+import { useCategories } from "@/lib/categories";
 
 type Platform = {
   id: string;
@@ -19,11 +20,12 @@ type Platform = {
   category: string;
   sort_order: number;
   is_active: boolean;
+  plan_tiers?: string[];
 };
 type Duration = { id: string; label: string; days: number; sort_order: number; is_active: boolean };
 type Pricing = { id: string; platform_id: string; duration_id: string; min_price: number };
 
-const CATEGORIES = ["OTT", "AI Tools", "VPN", "Other"];
+const DEFAULT_PLAN_TIERS = ["Mobile", "Basic", "Standard", "Premium"];
 
 export default function PlatformsPanel() {
   const [loading, setLoading] = useState(true);
