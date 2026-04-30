@@ -31,7 +31,7 @@ const Cart = () => {
                 <div key={it.id} className="card-elevated p-4 flex gap-4 items-center">
                   <div className="h-20 w-20 rounded-lg bg-muted overflow-hidden flex-shrink-0 flex items-center justify-center">
                     {it.image_url ? (
-                      <img src={it.image_url} alt={it.service_name} className="w-full h-full object-cover" />
+                      <img src={it.image_url} alt={it.service_name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-2xl font-bold text-muted-foreground">{it.service_name[0]}</span>
                     )}

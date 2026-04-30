@@ -248,7 +248,7 @@ const Index = () => {
                         >
                           <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
                             {s.image_url ? (
-                              <img src={s.image_url} alt="" className="w-full h-full object-cover" />
+                              <img src={s.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
                             ) : (
                               <span className="font-bold text-muted-foreground">{s.service_name[0]}</span>
                             )}

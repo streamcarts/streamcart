@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Star, BadgeCheck, Zap, Flame, Clock } from "lucide-react";
@@ -39,13 +39,16 @@ const fallbackSaleEnd = (id: string) => {
   return new Date(start.getTime() + hours * 60 * 60 * 1000);
 };
 
-const useCountdown = (target: Date | null) => {
+// Countdown that only ticks while the card is visible — saves a ton of
+// setInterval work on long product grids (esp. on mobile).
+const useCountdown = (target: Date | null, active: boolean) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
-    if (!target) return;
+    if (!target || !active) return;
+    setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
-  }, [target?.getTime()]);
+  }, [target?.getTime(), active]);
   if (!target) return null;
   const diff = target.getTime() - now;
   if (diff <= 0) return null;
@@ -68,7 +71,21 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
   const stock = p.stock ?? 99;
   const bestSeller = isBestSeller(p.id);
   const saleEnd = p.sale_ends_at ? new Date(p.sale_ends_at) : fallbackSaleEnd(p.id);
-  const cd = useCountdown(saleEnd);
+
+  // Pause the countdown ticker when the card is offscreen
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") { setVisible(true); return; }
+    const io = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { rootMargin: "120px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const cd = useCountdown(saleEnd, visible);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -94,8 +111,9 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
 
   return (
     <Link
+      ref={cardRef}
       to={`/p/${p.slug ?? p.id}`}
-      className="group bg-card border border-border rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-primary/40"
+      className="group bg-card border border-border rounded-2xl p-3 sm:p-4 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:border-primary/40"
     >
       {/* Image */}
       <div className="relative aspect-[16/10] rounded-xl bg-muted overflow-hidden flex items-center justify-center">
@@ -104,6 +122,7 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
             src={p.image_url}
             alt={p.service_name}
             loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
@@ -157,11 +176,11 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
 
       {/* Pricing row — bigger green price + clear duration */}
       <div className="flex items-end justify-between gap-2 pt-1">
-        <div>
-          <div className="text-2xl font-extrabold text-primary leading-none">{inr(p.display_price)}</div>
-          {p.duration && <div className="text-xs text-muted-foreground mt-1.5">for {p.duration}</div>}
+        <div className="min-w-0">
+          <div className="text-xl sm:text-2xl font-extrabold text-primary leading-none">{inr(p.display_price)}</div>
+          {p.duration && <div className="text-[11px] sm:text-xs text-muted-foreground mt-1.5 truncate">for {p.duration}</div>}
         </div>
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium whitespace-nowrap">
           inc. taxes
         </div>
       </div>
