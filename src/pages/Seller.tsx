@@ -182,6 +182,9 @@ const Seller = () => {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-semibold">Your listings</h2>
               <div className="flex gap-2 flex-wrap">
+                <Button asChild variant="outline" className="border-2">
+                  <a href="/seller/list-pack"><Package className="h-4 w-4 mr-1" />Create Pack (multi-platform)</a>
+                </Button>
                 <Button asChild className="bg-gradient-to-r from-primary to-primary/80 shadow-md">
                   <a href="/seller/list-chat"><Plus className="h-4 w-4 mr-1" />Add product</a>
                 </Button>
