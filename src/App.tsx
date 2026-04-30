@@ -29,6 +29,7 @@ import Refund from "./pages/Refund.tsx";
 import About from "./pages/About.tsx";
 import PendingOrder from "./pages/PendingOrder.tsx";
 import SellerListChat from "./pages/SellerListChat.tsx";
+import SellerListPack from "./pages/SellerListPack.tsx";
 import OrderChat from "./pages/OrderChat.tsx";
 import ChatProductCheckout from "./pages/ChatProductCheckout.tsx";
 import Messages from "./pages/Messages.tsx";
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/orders/pending/:id" element={<RequireAuth><PendingOrder /></RequireAuth>} />
               <Route path="/seller/list-chat" element={<RequireAuth role="seller"><SellerListChat /></RequireAuth>} />
+              <Route path="/seller/list-pack" element={<RequireAuth role="seller"><SellerListPack /></RequireAuth>} />
               <Route path="/orders/chat/:orderId" element={<RequireAuth><OrderChat /></RequireAuth>} />
               <Route path="/messages" element={<RequireAuth><Messages /></RequireAuth>} />
               <Route path="/chat-buy/:id" element={<ChatProductCheckout />} />
