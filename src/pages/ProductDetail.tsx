@@ -229,7 +229,7 @@ const ProductDetail = () => {
           {/* Image */}
           <div className="card-elevated overflow-hidden aspect-square flex items-center justify-center bg-muted">
             {p.image_url ? (
-              <img src={p.image_url} alt={p.service_name} className="w-full h-full object-cover" />
+              <img src={p.image_url} alt={p.service_name} fetchPriority="high" decoding="async" className="w-full h-full object-cover" />
             ) : (
               <div className="text-7xl font-bold text-muted-foreground">{p.service_name[0]}</div>
             )}
