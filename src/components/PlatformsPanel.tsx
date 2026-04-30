@@ -203,6 +203,7 @@ export default function PlatformsPanel() {
       {editPlatform && (
         <PlatformDialog
           platform={editPlatform}
+          categories={cats.map((c) => c.name)}
           onClose={() => setEditPlatform(null)}
           onSaved={() => { setEditPlatform(null); load(); }}
         />
@@ -242,14 +243,30 @@ function PriceCell({ value, onSave, onClear }: { value: number | null; onSave: (
   );
 }
 
-function PlatformDialog({ platform, onClose, onSaved }: { platform: Platform; onClose: () => void; onSaved: () => void }) {
+function PlatformDialog({ platform, categories, onClose, onSaved }: { platform: Platform; categories: string[]; onClose: () => void; onSaved: () => void }) {
   const isNew = !platform.id;
-  const [form, setForm] = useState<Platform>(platform);
+  const [form, setForm] = useState<Platform>({ ...platform, plan_tiers: platform.plan_tiers ?? DEFAULT_PLAN_TIERS });
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [newTier, setNewTier] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  const addTier = () => {
+    const t = newTier.trim();
+    if (!t) return;
+    const list = form.plan_tiers ?? [];
+    if (list.some((x) => x.toLowerCase() === t.toLowerCase())) {
+      setNewTier("");
+      return toast.error("Tier already added");
+    }
+    setForm({ ...form, plan_tiers: [...list, t] });
+    setNewTier("");
+  };
+  const removeTier = (t: string) => {
+    setForm({ ...form, plan_tiers: (form.plan_tiers ?? []).filter((x) => x !== t) });
+  };
 
   const handleUpload = async (file: File) => {
     if (!file) return;
@@ -273,21 +290,22 @@ function PlatformDialog({ platform, onClose, onSaved }: { platform: Platform; on
 
   const save = async () => {
     if (!form.name.trim()) return toast.error("Name required");
+    if (!form.category) return toast.error("Category required");
+    const tiers = (form.plan_tiers ?? []).filter(Boolean);
+    if (tiers.length === 0) return toast.error("Add at least one plan tier");
     const slug = form.slug.trim() || slugify(form.name);
     setBusy(true);
     try {
+      const payload = {
+        name: form.name.trim(), slug, logo_url: form.logo_url, category: form.category,
+        sort_order: form.sort_order, is_active: form.is_active, plan_tiers: tiers,
+      };
       if (isNew) {
-        const { error } = await (supabase.from("platforms" as any) as any).insert({
-          name: form.name.trim(), slug, logo_url: form.logo_url, category: form.category,
-          sort_order: form.sort_order, is_active: form.is_active,
-        });
+        const { error } = await (supabase.from("platforms" as any) as any).insert(payload);
         if (error) throw error;
         toast.success("Platform added");
       } else {
-        const { error } = await (supabase.from("platforms" as any) as any).update({
-          name: form.name.trim(), slug, logo_url: form.logo_url, category: form.category,
-          sort_order: form.sort_order, is_active: form.is_active,
-        }).eq("id", form.id);
+        const { error } = await (supabase.from("platforms" as any) as any).update(payload).eq("id", form.id);
         if (error) throw error;
         toast.success("Saved");
       }
