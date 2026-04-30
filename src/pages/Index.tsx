@@ -25,7 +25,14 @@ type Product = {
   display_price: number;
   duration: string | null;
   image_url: string | null;
+  sale_ends_at?: string | null;
 };
+
+// Curated "highest sell-through" picks — shown front and center on home
+const TRENDING_KEYWORDS = [
+  "Netflix", "ChatGPT", "Prime", "Spotify", "Hotstar",
+  "YouTube", "Canva", "Adobe", "NordVPN", "JioSaavn",
+];
 
 type Review = { name: string; role: string; text: string };
 type Faq = { q: string; a: string };
