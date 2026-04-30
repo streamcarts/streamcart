@@ -1068,13 +1068,16 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           is_featured: boolean
+          is_pack: boolean
           is_private_account: boolean
           is_trending: boolean
+          pack_platforms: Json
           plan_name: string | null
           platform: string | null
           platform_id: string | null
           price_tiers: Json
           rating_count: number
+          sale_ends_at: string | null
           seller_id: string
           service_name: string
           slug: string | null
@@ -1099,13 +1102,16 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean
+          is_pack?: boolean
           is_private_account?: boolean
           is_trending?: boolean
+          pack_platforms?: Json
           plan_name?: string | null
           platform?: string | null
           platform_id?: string | null
           price_tiers?: Json
           rating_count?: number
+          sale_ends_at?: string | null
           seller_id: string
           service_name: string
           slug?: string | null
@@ -1130,13 +1136,16 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_featured?: boolean
+          is_pack?: boolean
           is_private_account?: boolean
           is_trending?: boolean
+          pack_platforms?: Json
           plan_name?: string | null
           platform?: string | null
           platform_id?: string | null
           price_tiers?: Json
           rating_count?: number
+          sale_ends_at?: string | null
           seller_id?: string
           service_name?: string
           slug?: string | null
