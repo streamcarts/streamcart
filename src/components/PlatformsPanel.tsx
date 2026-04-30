@@ -367,15 +367,47 @@ function PlatformDialog({ platform, categories, onClose, onSaved }: { platform: 
             <div className="space-y-1.5">
               <Label>Category</Label>
               <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {categories.length === 0 && <SelectItem value="Other">Other</SelectItem>}
+                  {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Sort order</Label>
               <Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} />
+            </div>
+          </div>
+
+          {/* Plan tiers */}
+          <div className="space-y-2 rounded-lg border p-3">
+            <div>
+              <Label>Plan tiers</Label>
+              <p className="text-xs text-muted-foreground">Sellers will pick from these when listing this platform (e.g. Mobile, Basic, Premium, Annual).</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {(form.plan_tiers ?? []).map((t) => (
+                <Badge key={t} variant="secondary" className="gap-1 pr-1">
+                  {t}
+                  <button type="button" onClick={() => removeTier(t)} className="ml-1 rounded hover:bg-destructive/20 p-0.5">
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+              {(form.plan_tiers ?? []).length === 0 && (
+                <span className="text-xs text-muted-foreground">No tiers yet.</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newTier}
+                onChange={(e) => setNewTier(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTier(); } }}
+                placeholder="Add tier (e.g. Premium, Annual)"
+                className="h-9"
+              />
+              <Button type="button" size="sm" variant="outline" onClick={addTier}>Add</Button>
             </div>
           </div>
 
