@@ -16,17 +16,7 @@ import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { PopularPlatforms } from "@/components/PopularPlatforms";
 import { SEO } from "@/components/SEO";
-
-const categories = [
-  { name: "AI Tools", icon: Brain, color: "bg-violet-100 text-violet-700", desc: "ChatGPT, Claude, Midjourney" },
-  { name: "OTT", icon: Tv, color: "bg-rose-100 text-rose-700", desc: "Netflix, Prime, Hotstar" },
-  { name: "Design", icon: Palette, color: "bg-pink-100 text-pink-700", desc: "Adobe, Figma, Canva" },
-  { name: "Games", icon: Gamepad2, color: "bg-amber-100 text-amber-700", desc: "Game Pass, PSN, Steam" },
-  { name: "VPN", icon: Shield, color: "bg-sky-100 text-sky-700", desc: "Nord, Express, Surfshark" },
-  { name: "Cloud", icon: Cloud, color: "bg-indigo-100 text-indigo-700", desc: "Drive, iCloud, Dropbox" },
-  { name: "Education", icon: GraduationCap, color: "bg-emerald-100 text-emerald-700", desc: "Coursera, Udemy, LinkedIn" },
-  { name: "SMM", icon: Share2, color: "bg-orange-100 text-orange-700", desc: "Followers, panels, analytics" },
-];
+import { useCategories, getCategoryIcon } from "@/lib/categories";
 
 type Product = {
   id: string;
@@ -58,6 +48,7 @@ const faqsList: Faq[] = [
 type LiveStats = { orders: number; sellers: number; avgRating: number; ratingCount: number };
 
 const Index = () => {
+  const { cats } = useCategories({ activeOnly: true });
   const [products, setProducts] = useState<Product[] | null>(null);
   const [searchIndex, setSearchIndex] = useState<Product[]>([]);
   const [q, setQ] = useState("");
