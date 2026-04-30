@@ -32,6 +32,7 @@ export default function PlatformsPanel() {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [durations, setDurations] = useState<Duration[]>([]);
   const [pricing, setPricing] = useState<Pricing[]>([]);
+  const { cats } = useCategories({ activeOnly: true });
 
   const [editPlatform, setEditPlatform] = useState<Platform | null>(null);
   const [editDuration, setEditDuration] = useState<Duration | null>(null);
@@ -95,7 +96,7 @@ export default function PlatformsPanel() {
             <h3 className="font-semibold">Platforms</h3>
             <p className="text-xs text-muted-foreground">Sirf yahan add ki gayi platforms sellers ko dikhti hain.</p>
           </div>
-          <Button size="sm" onClick={() => setEditPlatform({ id: "", name: "", slug: "", logo_url: null, category: "OTT", sort_order: 100, is_active: true })}>
+          <Button size="sm" onClick={() => setEditPlatform({ id: "", name: "", slug: "", logo_url: null, category: cats[0]?.name ?? "Other", sort_order: 100, is_active: true, plan_tiers: DEFAULT_PLAN_TIERS })}>
             <Plus className="h-4 w-4 mr-1" /> Add platform
           </Button>
         </div>
