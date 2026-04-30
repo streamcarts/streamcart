@@ -930,34 +930,37 @@ export type Database = {
       }
       platforms: {
         Row: {
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at: string
           id: string
           is_active: boolean
           logo_url: string | null
           name: string
+          plan_tiers: string[]
           slug: string
           sort_order: number
           updated_at: string
         }
         Insert: {
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           id?: string
           is_active?: boolean
           logo_url?: string | null
           name: string
+          plan_tiers?: string[]
           slug: string
           sort_order?: number
           updated_at?: string
         }
         Update: {
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           id?: string
           is_active?: boolean
           logo_url?: string | null
           name?: string
+          plan_tiers?: string[]
           slug?: string
           sort_order?: number
           updated_at?: string
@@ -1051,7 +1054,7 @@ export type Database = {
         Row: {
           avg_rating: number
           base_price: number
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at: string
           credentials_email: string | null
           credentials_password: string | null
@@ -1082,7 +1085,7 @@ export type Database = {
         Insert: {
           avg_rating?: number
           base_price: number
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           credentials_email?: string | null
           credentials_password?: string | null
@@ -1113,7 +1116,7 @@ export type Database = {
         Update: {
           avg_rating?: number
           base_price?: number
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           credentials_email?: string | null
           credentials_password?: string | null
