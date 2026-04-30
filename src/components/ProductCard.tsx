@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Star, BadgeCheck, Zap, Flame } from "lucide-react";
+import { ShoppingCart, Star, BadgeCheck, Zap, Flame, Clock } from "lucide-react";
 import { inr } from "@/lib/format";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
@@ -16,13 +17,43 @@ export type ProductCardProduct = {
   image_url: string | null;
   stock?: number;
   description?: string | null;
+  sale_ends_at?: string | null;
 };
 
 // Deterministic synthetic rating per product (kept consistent app-wide)
-export const ratingFor = (id: string) => 4.6 + ((Array.from(id).reduce((s, c) => s + c.charCodeAt(0), 0) % 35) / 100);
+const sumChars = (id: string) => Array.from(id).reduce((s, c) => s + c.charCodeAt(0), 0);
+export const ratingFor = (id: string) => 4.6 + ((sumChars(id) % 35) / 100);
+// Deterministic synthetic review count (range ~120 – 2400)
+export const reviewCountFor = (id: string) => 120 + (sumChars(id) * 7) % 2280;
 
 // Deterministic "best seller" flag (~ top 35%)
-const isBestSeller = (id: string) => (Array.from(id).reduce((s, c) => s + c.charCodeAt(0), 0) % 100) < 35;
+const isBestSeller = (id: string) => (sumChars(id) % 100) < 35;
+
+// Deterministic per-product sale end (next 6h–48h window) when none set on DB.
+// Stable per id+day so it doesn't visibly "reset" on every render.
+const fallbackSaleEnd = (id: string) => {
+  const dayKey = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+  const hours = 6 + ((sumChars(id) + dayKey) % 42); // 6–47 hours
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  return new Date(start.getTime() + hours * 60 * 60 * 1000);
+};
+
+const useCountdown = (target: Date | null) => {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!target) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [target?.getTime()]);
+  if (!target) return null;
+  const diff = target.getTime() - now;
+  if (diff <= 0) return null;
+  const h = Math.floor(diff / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  const s = Math.floor((diff % 60_000) / 1000);
+  return { h, m, s };
+};
 
 type Props = {
   product: ProductCardProduct;
