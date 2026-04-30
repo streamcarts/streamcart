@@ -362,6 +362,26 @@ const Index = () => {
         )}
       </section>
 
+      {/* TRENDING NOW — curated hot picks */}
+      {trendingPicks.length > 0 && (
+        <section className="container py-10">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold inline-flex items-center gap-2">
+                🔥 Trending right now
+              </h2>
+              <p className="text-muted-foreground mt-1">The subscriptions Indians are buying most this week.</p>
+            </div>
+            <Button variant="ghost" asChild className="text-primary hover:text-primary">
+              <Link to="/browse">See all <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {trendingPicks.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
+
       {/* FEATURED PRODUCTS */}
       <section className="container py-14">
         <div className="flex items-end justify-between mb-8">
@@ -389,11 +409,22 @@ const Index = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {products.map((p) => <ProductCard key={p.id} product={p} />)}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {products.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+            {/* View all products CTA — replaces the empty space after the grid */}
+            <div className="mt-10 flex justify-center">
+              <Button asChild size="lg" variant="outline" className="h-12 px-8 rounded-2xl border-2 font-semibold hover:bg-accent hover:-translate-y-0.5 transition-all">
+                <Link to="/browse">
+                  View all products <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </>
         )}
       </section>
+
 
       {/* TRUST / WHY US */}
       <section className="container pb-16">
