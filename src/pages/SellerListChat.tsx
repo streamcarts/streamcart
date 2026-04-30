@@ -81,6 +81,19 @@ const SellerListChat = () => {
     [platforms, platformId],
   );
 
+  // Plan tiers come from selected platform (admin-defined)
+  const planOptions = useMemo(() => {
+    const t = selectedPlatform?.plan_tiers;
+    return t && t.length > 0 ? t : FALLBACK_PLAN_NAMES;
+  }, [selectedPlatform]);
+
+  // Reset plan when platform changes / its options change
+  useEffect(() => {
+    if (planOptions.length === 0) return;
+    if (!planOptions.includes(plan)) setPlan(planOptions[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planOptions]);
+
   // Auto-fill title when platform/plan changes (only if user hasn't customised)
   const [titleEdited, setTitleEdited] = useState(false);
   useEffect(() => {
@@ -250,7 +263,7 @@ const SellerListChat = () => {
                 <Select value={plan} onValueChange={(v) => { setPlan(v); setTitleEdited(false); }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {PLAN_NAMES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    {planOptions.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
