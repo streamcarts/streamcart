@@ -64,8 +64,11 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
   const { add } = useCart();
   const navigate = useNavigate();
   const r = ratingFor(p.id).toFixed(2);
+  const reviews = reviewCountFor(p.id);
   const stock = p.stock ?? 99;
   const bestSeller = isBestSeller(p.id);
+  const saleEnd = p.sale_ends_at ? new Date(p.sale_ends_at) : fallbackSaleEnd(p.id);
+  const cd = useCountdown(saleEnd);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -124,6 +127,17 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
             Only {stock} left
           </Badge>
         )}
+
+        {/* Bottom: sale ends timer */}
+        {cd && (
+          <div className="absolute bottom-2 left-2 right-2 flex items-center justify-center gap-1.5 rounded-lg bg-destructive/95 text-destructive-foreground text-[11px] font-bold px-2 py-1 shadow-md">
+            <Clock className="h-3 w-3" />
+            <span>Sale ends in</span>
+            <span className="font-mono tabular-nums">
+              {String(cd.h).padStart(2, "0")}:{String(cd.m).padStart(2, "0")}:{String(cd.s).padStart(2, "0")}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Title + Trusted Seller */}
@@ -133,6 +147,7 @@ export const ProductCard = ({ product: p, showActions = true }: Props) => {
           <span className="inline-flex items-center gap-1">
             <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
             <span className="font-medium text-foreground">{r}</span>
+            <span className="text-muted-foreground">({reviews.toLocaleString()})</span>
           </span>
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium">
             <BadgeCheck className="h-3 w-3" /> Trusted Seller
