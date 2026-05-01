@@ -38,6 +38,7 @@ const SellerListPack = lazy(() => import("./pages/SellerListPack.tsx"));
 const OrderChat = lazy(() => import("./pages/OrderChat.tsx"));
 const ChatProductCheckout = lazy(() => import("./pages/ChatProductCheckout.tsx"));
 const Messages = lazy(() => import("./pages/Messages.tsx"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,6 +100,7 @@ const App = () => (
                 <Route path="/orders/chat/:orderId" element={<RequireAuth><OrderChat /></RequireAuth>} />
                 <Route path="/messages" element={<RequireAuth><Messages /></RequireAuth>} />
                 <Route path="/chat-buy/:id" element={<ChatProductCheckout />} />
+                <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
