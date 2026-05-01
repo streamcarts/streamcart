@@ -45,6 +45,6 @@ export const Bullets = ({ items }: { items: ReactNode[] }) => (
   </ul>
 );
 
-export const SUPPORT_EMAIL = "support.streamcart@gmail.com";
+export const SUPPORT_EMAIL = "support@streamcart.store";
 export const SUPPORT_WHATSAPP = "+91 9473937978";
 export const BUSINESS_ADDRESS = "Bheemapar, Near Royal Palace, Siddharth Nagar, UP 272207";
