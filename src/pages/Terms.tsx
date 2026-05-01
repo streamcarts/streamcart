@@ -1,13 +1,15 @@
-import { useEffect } from "react";
 import { ScrollText } from "lucide-react";
 import { LegalLayout, Section, Bullets, SUPPORT_EMAIL } from "@/components/LegalLayout";
+import SEO from "@/components/SEO";
 
 const Terms = () => {
-  useEffect(() => {
-    document.title = "Terms & Conditions — StreamCart";
-  }, []);
-
   return (
+    <>
+      <SEO
+        title="Terms & Conditions"
+        description="Read the terms and conditions for using StreamCart — India's marketplace for premium digital subscriptions."
+        path="/terms"
+      />
     <LegalLayout icon={ScrollText} title="Terms & Conditions">
       <Section title="Acceptance">
         <p>
