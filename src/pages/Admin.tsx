@@ -741,6 +741,12 @@ const UsersPanel = ({ users, roles, orders, onChange }: any) => {
                   {u.is_banned && <Badge variant="destructive" className="text-[10px]">Banned</Badge>}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">{u.email} • {u.orderCount} orders • {u.salesCount} sales</div>
+                {(u.whatsapp_number || u.phone) && (
+                  <div className="text-xs mt-0.5 flex flex-wrap gap-x-3">
+                    {u.whatsapp_number && <a href={`https://wa.me/${u.whatsapp_number.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">WA: {u.whatsapp_number}</a>}
+                    {u.phone && u.phone !== u.whatsapp_number && <span className="text-muted-foreground">📞 {u.phone}</span>}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {u.is_banned ? (
