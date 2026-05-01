@@ -803,6 +803,10 @@ const SellersPanel = ({ vapps, users, orders, products, onChange, onFlag }: any)
                   {s.avgRating > 0 && <span className="text-xs flex items-center gap-1 text-muted-foreground"><Star className="h-3 w-3 fill-amber-400 text-amber-400" />{s.avgRating.toFixed(1)}</span>}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">{s.profile?.email} • {s.productsCount} products • {s.salesCount} sales • {inr(s.revenue)} earned</div>
+                <div className="text-xs mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                  {(s.whatsapp_number || s.profile?.whatsapp_number) && (() => { const wa = s.whatsapp_number || s.profile?.whatsapp_number; return <a href={`https://wa.me/${wa.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">WA: {wa}</a>; })()}
+                  {s.profile?.phone && s.profile.phone !== (s.whatsapp_number || s.profile?.whatsapp_number) && <span className="text-muted-foreground">📞 {s.profile.phone}</span>}
+                </div>
                 {s.is_flagged && s.flag_reason && <div className="text-xs text-destructive mt-1">⚠ {s.flag_reason}</div>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
