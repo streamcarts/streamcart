@@ -78,6 +78,7 @@ const About = () => {
         <p className="text-xs text-muted-foreground pt-3">Address: {BUSINESS_ADDRESS}</p>
       </Section>
     </LegalLayout>
+    </>
   );
 };
 
