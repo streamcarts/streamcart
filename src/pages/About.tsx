@@ -1,15 +1,17 @@
-import { useEffect } from "react";
 import { Sparkles, ShieldCheck, Wallet, Headphones, MessageCircle, Mail } from "lucide-react";
 import { LegalLayout, Section, Bullets, SUPPORT_EMAIL, SUPPORT_WHATSAPP, BUSINESS_ADDRESS } from "@/components/LegalLayout";
+import SEO from "@/components/SEO";
 
 const About = () => {
-  useEffect(() => {
-    document.title = "About Us — StreamCart";
-  }, []);
-
   const waLink = `https://wa.me/${SUPPORT_WHATSAPP.replace(/[^0-9]/g, "")}`;
 
   return (
+    <>
+      <SEO
+        title="About Us"
+        description="StreamCart is India's trusted marketplace for premium digital subscriptions — Netflix, ChatGPT, Spotify and more at the lowest prices."
+        path="/about"
+      />
     <LegalLayout icon={Sparkles} title="About StreamCart">
       <Section title="Who We Are">
         <p>
