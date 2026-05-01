@@ -412,7 +412,7 @@ const Admin = () => {
                         <Button size="sm" variant="outline" onClick={() => rejectVendor(v.id)}><XCircle className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                  ))}
+                  );})}
                 </div>
               )}
             </Card>
