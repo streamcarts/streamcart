@@ -1,13 +1,15 @@
-import { useEffect } from "react";
 import { Shield } from "lucide-react";
 import { LegalLayout, Section, Bullets, SUPPORT_EMAIL, BUSINESS_ADDRESS } from "@/components/LegalLayout";
+import SEO from "@/components/SEO";
 
 const Privacy = () => {
-  useEffect(() => {
-    document.title = "Privacy Policy — StreamCart";
-  }, []);
-
   return (
+    <>
+      <SEO
+        title="Privacy Policy"
+        description="How StreamCart collects, uses, and protects your data when you buy premium subscriptions on our marketplace."
+        path="/privacy"
+      />
     <LegalLayout icon={Shield} title="Privacy Policy">
       <Section title="Introduction">
         <p>
@@ -73,6 +75,7 @@ const Privacy = () => {
         </p>
       </Section>
     </LegalLayout>
+    </>
   );
 };
 
