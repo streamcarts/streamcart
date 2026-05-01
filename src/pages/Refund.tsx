@@ -1,13 +1,15 @@
-import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
 import { LegalLayout, Section, Bullets, SUPPORT_EMAIL } from "@/components/LegalLayout";
+import SEO from "@/components/SEO";
 
 const Refund = () => {
-  useEffect(() => {
-    document.title = "Refund Policy — StreamCart";
-  }, []);
-
   return (
+    <>
+      <SEO
+        title="Refund Policy"
+        description="StreamCart's refund policy for premium digital subscription purchases — replacements, eligibility, and timelines."
+        path="/refund"
+      />
     <LegalLayout icon={RefreshCw} title="Refund Policy">
       <Section title="General Policy">
         <p>
@@ -58,6 +60,7 @@ const Refund = () => {
         </p>
       </Section>
     </LegalLayout>
+    </>
   );
 };
 

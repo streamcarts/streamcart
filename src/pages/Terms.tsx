@@ -79,6 +79,7 @@ const Terms = () => {
         </p>
       </Section>
     </LegalLayout>
+    </>
   );
 };
 
