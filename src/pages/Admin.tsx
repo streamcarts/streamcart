@@ -392,18 +392,27 @@ const Admin = () => {
               <h3 className="font-semibold mb-3">Vendor applications ({vapps.filter(v => v.status === "pending").length})</h3>
               {vapps.filter(v => v.status === "pending").length === 0 ? <Empty msg="No pending applications." /> : (
                 <div className="space-y-2">
-                  {vapps.filter(v => v.status === "pending").map(v => (
+                  {vapps.filter(v => v.status === "pending").map(v => {
+                    const profile = allUsers.find((u: any) => u.id === v.user_id);
+                    const wa = v.whatsapp_number || profile?.whatsapp_number;
+                    const ph = profile?.phone;
+                    return (
                     <div key={v.id} className="flex items-center justify-between gap-3 p-3 border border-border rounded-lg">
                       <div className="min-w-0">
                         <div className="font-medium">{v.business_name} {v.product_type && <Badge variant="outline" className="ml-1 text-xs">{v.product_type}</Badge>}</div>
                         <div className="text-xs text-muted-foreground truncate">{v.description || "—"} {v.experience && `• ${v.experience}`}</div>
+                        <div className="text-xs mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                          {profile?.email && <span className="text-muted-foreground truncate">{profile.email}</span>}
+                          {wa && <a href={`https://wa.me/${wa.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">WA: {wa}</a>}
+                          {ph && ph !== wa && <span className="text-muted-foreground">📞 {ph}</span>}
+                        </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
                         <Button size="sm" onClick={() => approveVendor(v.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
                         <Button size="sm" variant="outline" onClick={() => rejectVendor(v.id)}><XCircle className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                  ))}
+                  );})}
                 </div>
               )}
             </Card>
@@ -690,7 +699,7 @@ const UsersPanel = ({ users, roles, orders, onChange }: any) => {
   }, [users, roles, orders]);
 
   const filtered = enriched.filter((u: any) => {
-    if (q && !`${u.email} ${u.display_name ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
+    if (q && !`${u.email} ${u.display_name ?? ""} ${u.phone ?? ""} ${u.whatsapp_number ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
     if (filter === "banned") return u.is_banned;
     if (filter === "sellers") return u.roles.includes("seller");
     if (filter === "buyers") return !u.roles.includes("seller") && !u.roles.includes("admin");
@@ -732,6 +741,12 @@ const UsersPanel = ({ users, roles, orders, onChange }: any) => {
                   {u.is_banned && <Badge variant="destructive" className="text-[10px]">Banned</Badge>}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">{u.email} • {u.orderCount} orders • {u.salesCount} sales</div>
+                {(u.whatsapp_number || u.phone) && (
+                  <div className="text-xs mt-0.5 flex flex-wrap gap-x-3">
+                    {u.whatsapp_number && <a href={`https://wa.me/${u.whatsapp_number.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">WA: {u.whatsapp_number}</a>}
+                    {u.phone && u.phone !== u.whatsapp_number && <span className="text-muted-foreground">📞 {u.phone}</span>}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {u.is_banned ? (
@@ -794,6 +809,10 @@ const SellersPanel = ({ vapps, users, orders, products, onChange, onFlag }: any)
                   {s.avgRating > 0 && <span className="text-xs flex items-center gap-1 text-muted-foreground"><Star className="h-3 w-3 fill-amber-400 text-amber-400" />{s.avgRating.toFixed(1)}</span>}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">{s.profile?.email} • {s.productsCount} products • {s.salesCount} sales • {inr(s.revenue)} earned</div>
+                <div className="text-xs mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                  {(s.whatsapp_number || s.profile?.whatsapp_number) && (() => { const wa = s.whatsapp_number || s.profile?.whatsapp_number; return <a href={`https://wa.me/${wa.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">WA: {wa}</a>; })()}
+                  {s.profile?.phone && s.profile.phone !== (s.whatsapp_number || s.profile?.whatsapp_number) && <span className="text-muted-foreground">📞 {s.profile.phone}</span>}
+                </div>
                 {s.is_flagged && s.flag_reason && <div className="text-xs text-destructive mt-1">⚠ {s.flag_reason}</div>}
               </div>
               <div className="flex items-center gap-2 shrink-0">
