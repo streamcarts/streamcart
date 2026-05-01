@@ -699,7 +699,7 @@ const UsersPanel = ({ users, roles, orders, onChange }: any) => {
   }, [users, roles, orders]);
 
   const filtered = enriched.filter((u: any) => {
-    if (q && !`${u.email} ${u.display_name ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
+    if (q && !`${u.email} ${u.display_name ?? ""} ${u.phone ?? ""} ${u.whatsapp_number ?? ""}`.toLowerCase().includes(q.toLowerCase())) return false;
     if (filter === "banned") return u.is_banned;
     if (filter === "sellers") return u.roles.includes("seller");
     if (filter === "buyers") return !u.roles.includes("seller") && !u.roles.includes("admin");
