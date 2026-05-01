@@ -392,11 +392,20 @@ const Admin = () => {
               <h3 className="font-semibold mb-3">Vendor applications ({vapps.filter(v => v.status === "pending").length})</h3>
               {vapps.filter(v => v.status === "pending").length === 0 ? <Empty msg="No pending applications." /> : (
                 <div className="space-y-2">
-                  {vapps.filter(v => v.status === "pending").map(v => (
+                  {vapps.filter(v => v.status === "pending").map(v => {
+                    const profile = allUsers.find((u: any) => u.id === v.user_id);
+                    const wa = v.whatsapp_number || profile?.whatsapp_number;
+                    const ph = profile?.phone;
+                    return (
                     <div key={v.id} className="flex items-center justify-between gap-3 p-3 border border-border rounded-lg">
                       <div className="min-w-0">
                         <div className="font-medium">{v.business_name} {v.product_type && <Badge variant="outline" className="ml-1 text-xs">{v.product_type}</Badge>}</div>
                         <div className="text-xs text-muted-foreground truncate">{v.description || "—"} {v.experience && `• ${v.experience}`}</div>
+                        <div className="text-xs mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                          {profile?.email && <span className="text-muted-foreground truncate">{profile.email}</span>}
+                          {wa && <a href={`https://wa.me/${wa.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">WA: {wa}</a>}
+                          {ph && ph !== wa && <span className="text-muted-foreground">📞 {ph}</span>}
+                        </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
                         <Button size="sm" onClick={() => approveVendor(v.id)}><CheckCircle2 className="h-4 w-4 mr-1" />Approve</Button>
