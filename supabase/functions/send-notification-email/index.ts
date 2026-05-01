@@ -10,7 +10,7 @@ const corsHeaders = {
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
 const SITE_URL = "https://streamcart.lovable.app";
 const BRAND = "StreamCart";
-const SUPPORT_EMAIL = "support.streamcart@gmail.com";
+const SUPPORT_EMAIL = "support@streamcart.store";
 
 // Per-event subject + CTA mapping. Falls back to notification.title when type is unknown.
 type Mapping = { subject: string; cta: string; tagline?: string };

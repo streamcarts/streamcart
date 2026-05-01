@@ -29,7 +29,7 @@ export const Footer = () => {
           <div className="flex items-center gap-3 pt-1">
             <a href="https://www.instagram.com/streamcart_india?igsh=MWRxNmJpdnVieWtvNQ%3D%3D" target="_blank" rel="noreferrer" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Instagram"><Instagram className="h-4 w-4" /></a>
             <a href="https://wa.me/919473937978" target="_blank" rel="noreferrer" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="WhatsApp"><MessageCircle className="h-4 w-4" /></a>
-            <a href="mailto:support.streamcart@gmail.com" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Email"><Mail className="h-4 w-4" /></a>
+            <a href="mailto:support@streamcart.store" className="h-8 w-8 grid place-items-center rounded-full bg-white/5 hover:bg-white/10 transition-colors" aria-label="Email"><Mail className="h-4 w-4" /></a>
           </div>
         </div>
 
@@ -53,13 +53,13 @@ export const Footer = () => {
 
         <div className="col-span-2 md:col-span-4">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-5 grid gap-3 sm:grid-cols-2">
-            <a href="mailto:support.streamcart@gmail.com" className="flex items-center gap-3 group">
+            <a href="mailto:support@streamcart.store" className="flex items-center gap-3 group">
               <div className="h-10 w-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center flex-shrink-0">
                 <Mail className="h-4 w-4" />
               </div>
               <div className="min-w-0">
                 <div className="text-[11px] uppercase tracking-wider text-white/50">Support email</div>
-                <div className="text-sm font-medium text-white group-hover:text-primary transition-colors truncate">support.streamcart@gmail.com</div>
+                <div className="text-sm font-medium text-white group-hover:text-primary transition-colors truncate">support@streamcart.store</div>
               </div>
             </a>
             <a href="https://wa.me/919473937978" target="_blank" rel="noreferrer" className="flex items-center gap-3 group">
