@@ -294,6 +294,9 @@ const ProductDetail = () => {
               </span>
             </div>
 
+            {/* Sale countdown (only if a sale end is set) */}
+            <SaleCountdown endsAt={p.sale_ends_at} />
+
             {/* CTAs */}
             <div className="flex gap-3 pt-2">
               <Button size="lg" className="flex-1" onClick={handleBuyNow} disabled={buying || p.stock === 0}>
@@ -341,6 +344,8 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        <FrequentlyBoughtTogether productId={p.id} category={p.category} />
 
         <ProductReviews
           productId={p.id}
