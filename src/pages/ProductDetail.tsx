@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { Loader2, ShoppingCart, Zap, Lock, BadgeCheck, Star, Users, Clock, Package, ChevronLeft, ShieldCheck } from "lucide-react";
 import { ProductReviews } from "@/components/ProductReviews";
 import { SEO } from "@/components/SEO";
+import { SaleCountdown } from "@/components/SaleCountdown";
+import { FrequentlyBoughtTogether } from "@/components/FrequentlyBoughtTogether";
 
 type Product = {
   id: string;

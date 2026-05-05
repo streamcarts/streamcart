@@ -11,6 +11,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 import { captureUrlReferrals } from "@/lib/refTracking";
 import Index from "./pages/Index.tsx";
 import { ChatAutoOpener } from "./components/ChatAutoOpener";
+import { ExitIntentPopup } from "./components/ExitIntentPopup";
 
 // Lazy-loaded routes — keeps the initial bundle tiny so the home page paints fast
 // on mobile networks. React.lazy + dynamic import lets Vite split each page into
@@ -74,6 +75,7 @@ const App = () => (
         <AuthProvider>
           <CartProvider>
             <ChatAutoOpener />
+            <ExitIntentPopup />
             <Suspense fallback={<RouteFallback />}>
               <Routes>
                 <Route path="/" element={<Index />} />
