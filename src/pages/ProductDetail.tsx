@@ -31,6 +31,7 @@ type Product = {
   avg_rating: number;
   rating_count: number;
   platform?: string | null;
+  sale_ends_at?: string | null;
 };
 
 type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
@@ -51,7 +52,7 @@ const ProductDetail = () => {
     setLoading(true);
     setNotFoundReason(null);
     (async () => {
-      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform,status";
+      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform,status,sale_ends_at";
       const sb = supabase as any;
 
       // If the :slug param is actually a UUID, treat it as an id lookup
