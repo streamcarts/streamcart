@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { Loader2, ShoppingCart, Zap, Lock, BadgeCheck, Star, Users, Clock, Package, ChevronLeft, ShieldCheck } from "lucide-react";
 import { ProductReviews } from "@/components/ProductReviews";
 import { SEO } from "@/components/SEO";
+import { SaleCountdown } from "@/components/SaleCountdown";
+import { FrequentlyBoughtTogether } from "@/components/FrequentlyBoughtTogether";
 
 type Product = {
   id: string;
@@ -29,6 +31,7 @@ type Product = {
   avg_rating: number;
   rating_count: number;
   platform?: string | null;
+  sale_ends_at?: string | null;
 };
 
 type SellerInfo = { display_name: string | null; created_at: string; orders_count: number; verified: boolean };
@@ -49,7 +52,7 @@ const ProductDetail = () => {
     setLoading(true);
     setNotFoundReason(null);
     (async () => {
-      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform,status";
+      const cols = "id,slug,service_name,category,description,display_price,duration,image_url,stock,seller_id,created_at,avg_rating,rating_count,delivery_mode,platform,status,sale_ends_at";
       const sb = supabase as any;
 
       // If the :slug param is actually a UUID, treat it as an id lookup
@@ -291,6 +294,9 @@ const ProductDetail = () => {
               </span>
             </div>
 
+            {/* Sale countdown (only if a sale end is set) */}
+            <SaleCountdown endsAt={p.sale_ends_at} />
+
             {/* CTAs */}
             <div className="flex gap-3 pt-2">
               <Button size="lg" className="flex-1" onClick={handleBuyNow} disabled={buying || p.stock === 0}>
@@ -338,6 +344,8 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        <FrequentlyBoughtTogether productId={p.id} category={p.category} />
 
         <ProductReviews
           productId={p.id}
