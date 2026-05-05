@@ -16,6 +16,7 @@ import { ProductGridSkeleton } from "@/components/ProductCardSkeleton";
 import { ProductCard } from "@/components/ProductCard";
 import { PopularPlatforms } from "@/components/PopularPlatforms";
 import { SEO } from "@/components/SEO";
+import { RecentOrdersTicker } from "@/components/RecentOrdersTicker";
 import { useCategories, getCategoryIcon } from "@/lib/categories";
 
 type Product = {
@@ -315,6 +316,7 @@ const Index = () => {
       {/* TRUST STRIP */}
       <section className="border-b border-border bg-card">
         <div className="container py-4">
+          <RecentOrdersTicker />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
             <TrustBadge icon={Star} label="Quality-checked" sub="Approved listings only" tone="amber" />
             <TrustBadge icon={Lock} label="Secure Payments" sub="UPI · Wallet · Cards" tone="primary" />
